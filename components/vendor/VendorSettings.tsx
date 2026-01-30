@@ -155,14 +155,14 @@ export default function VendorSettings() {
       const fileExt = image.uri.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${vendorId}/${Date.now()}.${fileExt}`;
 
-      let fileData: Blob | File;
+      let fileData: Blob | ArrayBuffer;
 
       if (Platform.OS === 'web') {
         const response = await fetch(image.uri);
         fileData = await response.blob();
       } else {
         const response = await fetch(image.uri);
-        fileData = await response.blob();
+        fileData = await response.arrayBuffer();
       }
 
       const { data: uploadData, error: uploadError } = await supabase.storage
