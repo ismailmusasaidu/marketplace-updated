@@ -1,11 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, TextInput, Modal, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { User, Mail, Phone, LogOut, Shield, Edit, Save, X, Store, MapPin, FileText, Wallet } from 'lucide-react-native';
+import { User, Mail, Phone, LogOut, Shield, Edit, Save, X, Store, MapPin, FileText, Wallet, Settings } from 'lucide-react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import WalletManagement from '@/components/WalletManagement';
+import VendorSettings from '@/components/vendor/VendorSettings';
 import { useToast } from '@/contexts/ToastContext';
 
 export default function ProfileScreen() {
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
+  const [showVendorSettings, setShowVendorSettings] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [showSignOutConfirmation, setShowSignOutConfirmation] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -174,6 +176,22 @@ export default function ProfileScreen() {
     );
   }
 
+  if (showVendorSettings) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.walletHeader, { paddingTop: insets.top + 20 }]}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => setShowVendorSettings(false)}
+          >
+            <Text style={styles.backButtonText}>← Back to Profile</Text>
+          </TouchableOpacity>
+        </View>
+        <VendorSettings />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
@@ -291,94 +309,117 @@ export default function ProfileScreen() {
         </View>
 
         {profile?.role === 'vendor' && (
-          <View style={styles.infoCard}>
-            <Text style={styles.cardTitle}>Store Information</Text>
+          <>
+            <View style={styles.infoCard}>
+              <Text style={styles.cardTitle}>Store Information</Text>
 
-            <View style={styles.infoItem}>
-              <View style={styles.infoIcon}>
-                <Store size={20} color="#ff8c00" />
+              <View style={styles.infoItem}>
+                <View style={styles.infoIcon}>
+                  <Store size={20} color="#ff8c00" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Business Name</Text>
+                  {isEditing ? (
+                    <TextInput
+                      style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      value={businessName}
+                      onChangeText={setBusinessName}
+                      placeholder="Enter business name"
+                      placeholderTextColor="#9ca3af"
+                    />
+                  ) : (
+                    <Text style={styles.infoValue}>{profile?.business_name || 'Not provided'}</Text>
+                  )}
+                </View>
               </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Business Name</Text>
-                {isEditing ? (
-                  <TextInput
-                    style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-                    value={businessName}
-                    onChangeText={setBusinessName}
-                    placeholder="Enter business name"
-                    placeholderTextColor="#9ca3af"
-                  />
-                ) : (
-                  <Text style={styles.infoValue}>{profile?.business_name || 'Not provided'}</Text>
-                )}
+
+              <View style={styles.infoItem}>
+                <View style={styles.infoIcon}>
+                  <Phone size={20} color="#ff8c00" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Business Phone</Text>
+                  {isEditing ? (
+                    <TextInput
+                      style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      value={businessPhone}
+                      onChangeText={setBusinessPhone}
+                      placeholder="Enter business phone"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="phone-pad"
+                    />
+                  ) : (
+                    <Text style={styles.infoValue}>{profile?.business_phone || 'Not provided'}</Text>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.infoItem}>
+                <View style={styles.infoIcon}>
+                  <MapPin size={20} color="#ff8c00" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Business Address</Text>
+                  {isEditing ? (
+                    <TextInput
+                      style={[styles.input, styles.textArea, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      value={businessAddress}
+                      onChangeText={setBusinessAddress}
+                      placeholder="Enter business address"
+                      placeholderTextColor="#9ca3af"
+                      multiline
+                      numberOfLines={2}
+                    />
+                  ) : (
+                    <Text style={styles.infoValue}>{profile?.business_address || 'Not provided'}</Text>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.infoItem}>
+                <View style={styles.infoIcon}>
+                  <FileText size={20} color="#ff8c00" />
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoLabel}>Business Description</Text>
+                  {isEditing ? (
+                    <TextInput
+                      style={[styles.input, styles.textArea, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      value={businessDescription}
+                      onChangeText={setBusinessDescription}
+                      placeholder="Describe your business"
+                      placeholderTextColor="#9ca3af"
+                      multiline
+                      numberOfLines={3}
+                    />
+                  ) : (
+                    <Text style={styles.infoValue}>{profile?.business_description || 'Not provided'}</Text>
+                  )}
+                </View>
               </View>
             </View>
 
-            <View style={styles.infoItem}>
-              <View style={styles.infoIcon}>
-                <Phone size={20} color="#ff8c00" />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Business Phone</Text>
-                {isEditing ? (
-                  <TextInput
-                    style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-                    value={businessPhone}
-                    onChangeText={setBusinessPhone}
-                    placeholder="Enter business phone"
-                    placeholderTextColor="#9ca3af"
-                    keyboardType="phone-pad"
-                  />
-                ) : (
-                  <Text style={styles.infoValue}>{profile?.business_phone || 'Not provided'}</Text>
-                )}
-              </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Vendor Settings</Text>
+              <TouchableOpacity
+                style={styles.settingsCard}
+                onPress={() => setShowVendorSettings(true)}
+              >
+                <View style={styles.settingsCardContent}>
+                  <View style={styles.settingsIconContainer}>
+                    <Settings size={24} color="#ff8c00" />
+                  </View>
+                  <View style={styles.settingsInfo}>
+                    <Text style={styles.settingsLabel}>Store Settings</Text>
+                    <Text style={styles.settingsDescription}>
+                      Manage delivery, payments, hours & more
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.settingsArrow}>→</Text>
+              </TouchableOpacity>
             </View>
-
-            <View style={styles.infoItem}>
-              <View style={styles.infoIcon}>
-                <MapPin size={20} color="#ff8c00" />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Business Address</Text>
-                {isEditing ? (
-                  <TextInput
-                    style={[styles.input, styles.textArea, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-                    value={businessAddress}
-                    onChangeText={setBusinessAddress}
-                    placeholder="Enter business address"
-                    placeholderTextColor="#9ca3af"
-                    multiline
-                    numberOfLines={2}
-                  />
-                ) : (
-                  <Text style={styles.infoValue}>{profile?.business_address || 'Not provided'}</Text>
-                )}
-              </View>
-            </View>
-
-            <View style={styles.infoItem}>
-              <View style={styles.infoIcon}>
-                <FileText size={20} color="#ff8c00" />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Business Description</Text>
-                {isEditing ? (
-                  <TextInput
-                    style={[styles.input, styles.textArea, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-                    value={businessDescription}
-                    onChangeText={setBusinessDescription}
-                    placeholder="Describe your business"
-                    placeholderTextColor="#9ca3af"
-                    multiline
-                    numberOfLines={3}
-                  />
-                ) : (
-                  <Text style={styles.infoValue}>{profile?.business_description || 'Not provided'}</Text>
-                )}
-              </View>
-            </View>
-          </View>
+          </>
         )}
 
         <View style={styles.section}>
@@ -784,6 +825,60 @@ const styles = StyleSheet.create({
     color: '#1f2937',
   },
   walletArrow: {
+    fontSize: 24,
+    color: '#ff8c00',
+    fontWeight: '600',
+  },
+  settingsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: '#fff7ed',
+    borderWidth: 2,
+    borderColor: '#ffedd5',
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  settingsCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    flex: 1,
+  },
+  settingsIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  settingsInfo: {
+    justifyContent: 'center',
+    flex: 1,
+  },
+  settingsLabel: {
+    fontSize: 16,
+    color: '#92400e',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  settingsDescription: {
+    fontSize: 13,
+    color: '#92400e',
+    opacity: 0.7,
+  },
+  settingsArrow: {
     fontSize: 24,
     color: '#ff8c00',
     fontWeight: '600',
