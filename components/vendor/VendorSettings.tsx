@@ -179,7 +179,38 @@ export default function VendorSettings() {
         .getPublicUrl(fileName);
 
       setStoreBannerUrl(publicUrl);
-      showToast('Banner uploaded successfully', 'success');
+
+      // Save to database immediately
+      if (settings) {
+        const { error: updateError } = await supabase
+          .from('vendor_settings')
+          .update({
+            store_banner_url: publicUrl,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', settings.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new settings with banner
+        const { error: insertError } = await supabase
+          .from('vendor_settings')
+          .insert({
+            vendor_id: vendorId,
+            delivery_radius: parseFloat(deliveryRadius) || 10,
+            minimum_order: parseFloat(minimumOrder) || 0,
+            accepts_online_payment: acceptsOnlinePayment,
+            accepts_cash_on_delivery: acceptsCashOnDelivery,
+            store_banner_url: publicUrl,
+            social_media: {},
+            store_hours: storeHours,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      showToast('Banner uploaded and saved successfully', 'success');
+      await fetchVendorSettings();
     } catch (error) {
       console.error('Error uploading banner:', error);
       showToast('Failed to upload banner', 'error');
