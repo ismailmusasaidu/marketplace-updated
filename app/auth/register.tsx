@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { LinearGradient } from 'expo-linear-gradient';
 import { UserRole } from '@/types/database';
 import { Fonts } from '@/constants/fonts';
 
@@ -102,7 +101,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <LinearGradient colors={['#ff8c00', '#0284c7', '#0369a1']} style={styles.container}>
+    <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <Text style={styles.title}>Create Account</Text>
@@ -151,7 +150,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Full Name *"
-              placeholderTextColor="#86efac"
+              placeholderTextColor="#ffb366"
               value={fullName}
               onChangeText={setFullName}
             />
@@ -159,7 +158,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Email *"
-              placeholderTextColor="#86efac"
+              placeholderTextColor="#ffb366"
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -169,7 +168,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Phone Number"
-              placeholderTextColor="#86efac"
+              placeholderTextColor="#ffb366"
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
@@ -178,7 +177,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Password *"
-              placeholderTextColor="#86efac"
+              placeholderTextColor="#ffb366"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -187,7 +186,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Confirm Password *"
-              placeholderTextColor="#86efac"
+              placeholderTextColor="#ffb366"
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
@@ -200,7 +199,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Business Name *"
-                  placeholderTextColor="#86efac"
+                  placeholderTextColor="#ffb366"
                   value={businessName}
                   onChangeText={setBusinessName}
                 />
@@ -208,7 +207,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   placeholder="Business Description"
-                  placeholderTextColor="#86efac"
+                  placeholderTextColor="#ffb366"
                   value={businessDescription}
                   onChangeText={setBusinessDescription}
                   multiline
@@ -218,7 +217,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Business Address *"
-                  placeholderTextColor="#86efac"
+                  placeholderTextColor="#ffb366"
                   value={businessAddress}
                   onChangeText={setBusinessAddress}
                 />
@@ -226,7 +225,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Business Phone *"
-                  placeholderTextColor="#86efac"
+                  placeholderTextColor="#ffb366"
                   value={businessPhone}
                   onChangeText={setBusinessPhone}
                   keyboardType="phone-pad"
@@ -235,7 +234,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Business License Number"
-                  placeholderTextColor="#86efac"
+                  placeholderTextColor="#ffb366"
                   value={businessLicense}
                   onChangeText={setBusinessLicense}
                 />
@@ -252,7 +251,7 @@ export default function RegisterScreen() {
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="#0369a1" />
+                <ActivityIndicator color="#ffffff" />
               ) : (
                 <Text style={styles.buttonText}>Create Account</Text>
               )}
@@ -269,13 +268,14 @@ export default function RegisterScreen() {
           </View>
         </View>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
   scrollContent: {
     flexGrow: 1,
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 38,
     fontFamily: Fonts.headingBold,
-    color: '#ffffff',
+    color: '#ff8c00',
     marginBottom: 8,
     textAlign: 'center',
     letterSpacing: 1,
@@ -297,15 +297,17 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 17,
     fontFamily: Fonts.medium,
-    color: '#e0f2fe',
+    color: '#ff8c00',
     marginBottom: 36,
     textAlign: 'center',
   },
   form: {
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    backgroundColor: '#ffffff',
     borderRadius: 28,
     padding: 28,
-    shadowColor: '#000',
+    borderWidth: 2,
+    borderColor: '#ff8c00',
+    shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -319,15 +321,17 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 14,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: '#ffffff',
+    borderWidth: 2,
+    borderColor: '#ff8c00',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   accountTypeButtonActive: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#ff8c00',
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,
@@ -335,32 +339,32 @@ const styles = StyleSheet.create({
   accountTypeText: {
     fontSize: 17,
     fontFamily: Fonts.bold,
-    color: '#e0f2fe',
+    color: '#ff8c00',
   },
   accountTypeTextActive: {
-    color: '#0369a1',
+    color: '#ffffff',
   },
   sectionTitle: {
     fontSize: 17,
     fontFamily: Fonts.bold,
-    color: '#ffffff',
+    color: '#ff8c00',
     marginBottom: 12,
     marginTop: 8,
     letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,
     fontSize: 16,
     fontFamily: Fonts.medium,
-    color: '#0369a1',
-    borderWidth: 3,
+    color: '#ff8c00',
+    borderWidth: 2,
     borderColor: '#ff8c00',
     shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 4,
     outlineStyle: 'none',
@@ -371,24 +375,24 @@ const styles = StyleSheet.create({
   },
   note: {
     fontSize: 12,
-    color: '#fef3c7',
+    color: '#ff8c00',
     marginBottom: 16,
     fontStyle: 'italic',
   },
   button: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#ff8c00',
     borderRadius: 16,
     padding: 18,
     alignItems: 'center',
     marginTop: 8,
-    shadowColor: '#000',
+    shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
   },
   buttonText: {
-    color: '#0369a1',
+    color: '#ffffff',
     fontSize: 19,
     fontFamily: Fonts.headingBold,
     letterSpacing: 0.5,
@@ -407,12 +411,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    color: '#e0f2fe',
+    color: '#ff8c00',
     fontSize: 15,
     fontFamily: Fonts.medium,
   },
   link: {
-    color: '#ffffff',
+    color: '#ff8c00',
     fontSize: 15,
     fontFamily: Fonts.bold,
     textDecorationLine: 'underline',
