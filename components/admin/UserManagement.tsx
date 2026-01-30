@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { User, Shield, ShoppingBag, UserCircle, Edit3, Trash2, X, ArrowLeft, Lock, Unlock, Search } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
@@ -63,6 +64,8 @@ export default function UserManagement({ onBack }: UserManagementProps) {
   const [updating, setUpdating] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [userToSuspend, setUserToSuspend] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -236,67 +239,80 @@ export default function UserManagement({ onBack }: UserManagementProps) {
       return;
     }
 
-    const action = user.is_suspended ? 'unsuspend' : 'suspend';
-    const actionTitle = user.is_suspended ? 'Unsuspend' : 'Suspend';
+    if (Platform.OS === 'web') {
+      // Use custom modal on web
+      setUserToSuspend(user);
+      setShowSuspendModal(true);
+    } else {
+      // Use Alert.alert on mobile
+      const action = user.is_suspended ? 'unsuspend' : 'suspend';
+      const actionTitle = user.is_suspended ? 'Unsuspend' : 'Suspend';
 
-    Alert.alert(
-      `${actionTitle} User`,
-      `Are you sure you want to ${action} ${user.full_name}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: actionTitle,
-          style: user.is_suspended ? 'default' : 'destructive',
-          onPress: async () => {
-            try {
-              setActionLoading(user.id);
-
-              const updateData: any = {
-                is_suspended: !user.is_suspended,
-              };
-
-              if (!user.is_suspended) {
-                updateData.suspended_at = new Date().toISOString();
-                updateData.suspended_by = currentUser?.id;
-              } else {
-                updateData.suspended_at = null;
-                updateData.suspended_by = null;
-              }
-
-              console.log('Attempting to suspend/unsuspend user:', user.id);
-              console.log('Update data:', updateData);
-              console.log('Current admin user:', currentUser?.id);
-
-              const { data, error } = await supabase
-                .from('profiles')
-                .update(updateData)
-                .eq('id', user.id)
-                .select();
-
-              console.log('Update response:', { data, error });
-
-              if (error) {
-                console.error('Suspend/Unsuspend error details:', {
-                  message: error.message,
-                  details: error.details,
-                  hint: error.hint,
-                  code: error.code
-                });
-                throw error;
-              }
-
-              Alert.alert('Success', `User ${action}ed successfully`);
-              await fetchUsers();
-            } catch (error: any) {
-              console.error(`Error ${action}ing user:`, error);
-              Alert.alert('Error', error.message || `Failed to ${action} user`);
-            } finally {
-              setActionLoading(null);
-            }
+      Alert.alert(
+        `${actionTitle} User`,
+        `Are you sure you want to ${action} ${user.full_name}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: actionTitle,
+            style: user.is_suspended ? 'default' : 'destructive',
+            onPress: () => performSuspension(user),
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
+  };
+
+  const performSuspension = async (user: UserProfile) => {
+    const action = user.is_suspended ? 'unsuspend' : 'suspend';
+
+    try {
+      setActionLoading(user.id);
+
+      const updateData: any = {
+        is_suspended: !user.is_suspended,
+      };
+
+      if (!user.is_suspended) {
+        updateData.suspended_at = new Date().toISOString();
+        updateData.suspended_by = currentUser?.id;
+      } else {
+        updateData.suspended_at = null;
+        updateData.suspended_by = null;
+      }
+
+      console.log('Attempting to suspend/unsuspend user:', user.id);
+      console.log('Update data:', updateData);
+      console.log('Current admin user:', currentUser?.id);
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', user.id)
+        .select();
+
+      console.log('Update response:', { data, error });
+
+      if (error) {
+        console.error('Suspend/Unsuspend error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        throw error;
+      }
+
+      Alert.alert('Success', `User ${action}ed successfully`);
+      await fetchUsers();
+    } catch (error: any) {
+      console.error(`Error ${action}ing user:`, error);
+      Alert.alert('Error', error.message || `Failed to ${action} user`);
+    } finally {
+      setActionLoading(null);
+      setShowSuspendModal(false);
+      setUserToSuspend(null);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -573,6 +589,62 @@ export default function UserManagement({ onBack }: UserManagementProps) {
                 </TouchableOpacity>
               </View>
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Suspension Confirmation Modal */}
+      <Modal
+        visible={showSuspendModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setShowSuspendModal(false);
+          setUserToSuspend(null);
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmationModal}>
+            <View style={styles.confirmationHeader}>
+              <Text style={styles.confirmationTitle}>
+                {userToSuspend?.is_suspended ? 'Unsuspend User' : 'Suspend User'}
+              </Text>
+            </View>
+
+            <View style={styles.confirmationBody}>
+              <Text style={styles.confirmationMessage}>
+                Are you sure you want to {userToSuspend?.is_suspended ? 'unsuspend' : 'suspend'}{' '}
+                <Text style={styles.confirmationUsername}>{userToSuspend?.full_name}</Text>?
+              </Text>
+            </View>
+
+            <View style={styles.confirmationActions}>
+              <TouchableOpacity
+                style={styles.confirmationCancelButton}
+                onPress={() => {
+                  setShowSuspendModal(false);
+                  setUserToSuspend(null);
+                }}
+              >
+                <Text style={styles.confirmationCancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.confirmationConfirmButton,
+                  userToSuspend?.is_suspended && styles.confirmationUnsuspendButton
+                ]}
+                onPress={() => {
+                  if (userToSuspend) {
+                    performSuspension(userToSuspend);
+                  }
+                }}
+              >
+                <Text style={styles.confirmationConfirmText}>
+                  {userToSuspend?.is_suspended ? 'Unsuspend' : 'Suspend'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -873,6 +945,71 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     fontWeight: '800',
+    color: '#ffffff',
+  },
+  confirmationModal: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    width: '90%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  confirmationHeader: {
+    marginBottom: 16,
+  },
+  confirmationTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  confirmationBody: {
+    marginBottom: 24,
+  },
+  confirmationMessage: {
+    fontSize: 15,
+    color: '#64748b',
+    lineHeight: 22,
+  },
+  confirmationUsername: {
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  confirmationActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  confirmationCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+  },
+  confirmationCancelText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#64748b',
+  },
+  confirmationConfirmButton: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#f59e0b',
+    alignItems: 'center',
+  },
+  confirmationUnsuspendButton: {
+    backgroundColor: '#059669',
+  },
+  confirmationConfirmText: {
+    fontSize: 16,
+    fontWeight: '700',
     color: '#ffffff',
   },
 });
