@@ -35,15 +35,24 @@ interface ProductManagementProps {
   onBack?: () => void;
 }
 
+const PAGE_SIZE = 16;
+
 export default function ProductManagement({ onBack }: ProductManagementProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchProducts();
+    setProducts([]);
+    setFilteredProducts([]);
+    setPage(0);
+    setHasMore(true);
+    fetchProducts(0, true);
 
     const channel = supabase
       .channel('product-management')
@@ -55,7 +64,11 @@ export default function ProductManagement({ onBack }: ProductManagementProps) {
           table: 'products',
         },
         () => {
-          fetchProducts();
+          setProducts([]);
+          setFilteredProducts([]);
+          setPage(0);
+          setHasMore(true);
+          fetchProducts(0, true);
         }
       )
       .subscribe();
@@ -65,27 +78,45 @@ export default function ProductManagement({ onBack }: ProductManagementProps) {
     };
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (pageNum: number = 0, reset: boolean = false) => {
     try {
-      setLoading(true);
+      if (reset) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
 
-      const { data, error } = await supabase
+      const from = pageNum * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      const { data, error, count } = await supabase
         .from('products')
         .select(`
           *,
           vendor:profiles!vendor_id(full_name, email)
-        `)
-        .order('created_at', { ascending: false });
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
 
-      setProducts(data || []);
-      setFilteredProducts(data || []);
+      const newProducts = data || [];
+
+      if (reset) {
+        setProducts(newProducts);
+        setFilteredProducts(newProducts);
+      } else {
+        setProducts((prev) => [...prev, ...newProducts]);
+        setFilteredProducts((prev) => [...prev, ...newProducts]);
+      }
+
+      setHasMore(newProducts.length === PAGE_SIZE && (count ? (from + PAGE_SIZE) < count : true));
     } catch (error) {
       console.error('Error fetching products:', error);
       Alert.alert('Error', 'Failed to fetch products');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -131,7 +162,11 @@ export default function ProductManagement({ onBack }: ProductManagementProps) {
               if (error) throw error;
 
               Alert.alert('Success', 'Product deleted successfully');
-              await fetchProducts();
+              setProducts([]);
+              setFilteredProducts([]);
+              setPage(0);
+              setHasMore(true);
+              await fetchProducts(0, true);
             } catch (error: any) {
               console.error('Error deleting product:', error);
               Alert.alert('Error', error.message || 'Failed to delete product');
@@ -142,6 +177,14 @@ export default function ProductManagement({ onBack }: ProductManagementProps) {
         },
       ]
     );
+  };
+
+  const loadMoreProducts = () => {
+    if (!loadingMore && hasMore && searchQuery.trim() === '') {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchProducts(nextPage, false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -220,6 +263,16 @@ export default function ProductManagement({ onBack }: ProductManagementProps) {
         data={filteredProducts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        onEndReached={loadMoreProducts}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color="#ff8c00" />
+              <Text style={styles.loadingText}>Loading more products...</Text>
+            </View>
+          ) : null
+        }
         renderItem={({ item }) => {
           const isLoading = actionLoading === item.id;
 
@@ -492,5 +545,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#ef4444',
+  },
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '600',
   },
 });

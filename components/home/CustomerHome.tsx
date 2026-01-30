@@ -31,6 +31,8 @@ interface Advert {
   priority: number;
 }
 
+const PAGE_SIZE = 16;
+
 export default function CustomerHome() {
   const { profile } = useAuth();
   const insets = useSafeAreaInsets();
@@ -39,6 +41,9 @@ export default function CustomerHome() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentAdvert, setCurrentAdvert] = useState<Advert | null>(null);
@@ -46,7 +51,6 @@ export default function CustomerHome() {
 
   useEffect(() => {
     fetchCategories();
-    fetchProducts();
     checkAndShowAdvert();
 
     // Subscribe to real-time product updates (ratings, stock, etc.)
@@ -72,6 +76,13 @@ export default function CustomerHome() {
     return () => {
       subscription.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    setProducts([]);
+    setPage(0);
+    setHasMore(true);
+    fetchProducts(0, true);
   }, [selectedCategory]);
 
   const fetchCategories = async () => {
@@ -89,12 +100,20 @@ export default function CustomerHome() {
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (pageNum: number = 0, reset: boolean = false) => {
     try {
-      setLoading(true);
+      if (reset) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const from = pageNum * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
       let query = supabase
         .from('products')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('is_available', true)
         .gt('stock_quantity', 0);
 
@@ -102,14 +121,26 @@ export default function CustomerHome() {
         query = query.eq('category_id', selectedCategory);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
-      setProducts(data || []);
+
+      const newProducts = data || [];
+
+      if (reset) {
+        setProducts(newProducts);
+      } else {
+        setProducts((prev) => [...prev, ...newProducts]);
+      }
+
+      setHasMore(newProducts.length === PAGE_SIZE && (count ? (from + PAGE_SIZE) < count : true));
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -231,6 +262,14 @@ export default function CustomerHome() {
     }
   };
 
+  const loadMoreProducts = () => {
+    if (!loadingMore && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchProducts(nextPage, false);
+    }
+  };
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -296,6 +335,16 @@ export default function CustomerHome() {
           contentContainerStyle={styles.productList}
           showsVerticalScrollIndicator={false}
           columnWrapperStyle={styles.row}
+          onEndReached={loadMoreProducts}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={styles.footerLoader}>
+                <ActivityIndicator size="small" color="#ff8c00" />
+                <Text style={styles.loadingText}>Loading more products...</Text>
+              </View>
+            ) : null
+          }
           renderItem={({ item, index }) => (
             <View style={styles.cardWrapper}>
               <ProductCard
@@ -430,5 +479,16 @@ const styles = StyleSheet.create({
   cardWrapper: {
     flex: 1,
     maxWidth: '50%',
+  },
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '600',
   },
 });
