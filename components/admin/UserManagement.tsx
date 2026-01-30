@@ -603,7 +603,7 @@ export default function UserManagement({ onBack }: UserManagementProps) {
           setUserToSuspend(null);
         }}
       >
-        <View style={styles.modalOverlay}>
+        <View style={styles.confirmationOverlay}>
           <View style={styles.confirmationModal}>
             <View style={styles.confirmationHeader}>
               <Text style={styles.confirmationTitle}>
@@ -946,6 +946,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#ffffff',
+  },
+  confirmationOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   confirmationModal: {
     backgroundColor: '#ffffff',
