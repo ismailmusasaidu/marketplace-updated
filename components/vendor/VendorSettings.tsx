@@ -9,11 +9,13 @@ import {
   ActivityIndicator,
   Switch,
   Platform,
+  Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { Save, X, Store } from 'lucide-react-native';
+import { Save, X, Store, Upload, Image as ImageIcon } from 'lucide-react-native';
 
 interface VendorSettings {
   id: string;
@@ -39,6 +41,7 @@ export default function VendorSettings() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [vendorId, setVendorId] = useState<string | null>(null);
   const [settings, setSettings] = useState<VendorSettings | null>(null);
 
@@ -118,6 +121,70 @@ export default function VendorSettings() {
       showToast('Failed to load settings', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const pickAndUploadBanner = async () => {
+    if (!vendorId) {
+      showToast('Vendor ID not found', 'error');
+      return;
+    }
+
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissionResult.granted) {
+        showToast('Permission to access media library is required', 'warning');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.8,
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
+
+      const image = result.assets[0];
+      setUploading(true);
+
+      const fileExt = image.uri.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${vendorId}/${Date.now()}.${fileExt}`;
+
+      let fileData: Blob | File;
+
+      if (Platform.OS === 'web') {
+        const response = await fetch(image.uri);
+        fileData = await response.blob();
+      } else {
+        const response = await fetch(image.uri);
+        fileData = await response.blob();
+      }
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('vendor-banners')
+        .upload(fileName, fileData, {
+          contentType: `image/${fileExt}`,
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('vendor-banners')
+        .getPublicUrl(fileName);
+
+      setStoreBannerUrl(publicUrl);
+      showToast('Banner uploaded successfully', 'success');
+    } catch (error) {
+      console.error('Error uploading banner:', error);
+      showToast('Failed to upload banner', 'error');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -263,8 +330,50 @@ export default function VendorSettings() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Store Banner</Text>
+
+        {storeBannerUrl ? (
+          <View style={styles.bannerPreview}>
+            <Image
+              source={{ uri: storeBannerUrl }}
+              style={styles.bannerImage}
+              resizeMode="cover"
+            />
+            <TouchableOpacity
+              style={styles.removeBannerButton}
+              onPress={() => setStoreBannerUrl('')}
+            >
+              <X size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.noBannerPreview}>
+            <ImageIcon size={48} color="#d1d5db" />
+            <Text style={styles.noBannerText}>No banner uploaded</Text>
+          </View>
+        )}
+
+        <TouchableOpacity
+          style={[styles.uploadButton, uploading && styles.uploadButtonDisabled]}
+          onPress={pickAndUploadBanner}
+          disabled={uploading}
+        >
+          {uploading ? (
+            <>
+              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.uploadButtonText}>Uploading...</Text>
+            </>
+          ) : (
+            <>
+              <Upload size={20} color="#fff" />
+              <Text style={styles.uploadButtonText}>
+                {storeBannerUrl ? 'Change Banner' : 'Upload Banner'}
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
+
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Banner Image URL</Text>
+          <Text style={styles.label}>Or enter image URL</Text>
           <TextInput
             style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
             value={storeBannerUrl}
@@ -533,5 +642,61 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  bannerPreview: {
+    width: '100%',
+    height: 180,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+    position: 'relative',
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+  },
+  removeBannerButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  noBannerPreview: {
+    width: '100%',
+    height: 180,
+    borderRadius: 12,
+    backgroundColor: '#f9fafb',
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  noBannerText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#9ca3af',
+    fontWeight: '500',
+  },
+  uploadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ff8c00',
+    padding: 14,
+    borderRadius: 12,
+    gap: 8,
+    marginBottom: 16,
+  },
+  uploadButtonDisabled: {
+    opacity: 0.6,
+  },
+  uploadButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

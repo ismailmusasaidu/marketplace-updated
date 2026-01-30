@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Package, DollarSign, ShoppingBag, TrendingUp, AlertCircle, Clock, XCircle, Star } from 'lucide-react-native';
@@ -41,6 +42,7 @@ export default function VendorHome() {
   });
   const [loading, setLoading] = useState(true);
   const [showOrders, setShowOrders] = useState(false);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
 
   const fetchDashboardStats = async (isInitialLoad = false) => {
     if (!profile || !vendorId) return;
@@ -133,8 +135,35 @@ export default function VendorHome() {
     if (profile) {
       console.log('Vendor ID found:', profile.id);
       setVendorId(profile.id);
+      fetchVendorBanner();
     }
   }, [profile]);
+
+  const fetchVendorBanner = async () => {
+    if (!profile) return;
+
+    try {
+      const { data: vendorData } = await supabase
+        .from('vendors')
+        .select('id')
+        .eq('user_id', profile.id)
+        .maybeSingle();
+
+      if (vendorData) {
+        const { data: settingsData } = await supabase
+          .from('vendor_settings')
+          .select('store_banner_url')
+          .eq('vendor_id', vendorData.id)
+          .maybeSingle();
+
+        if (settingsData?.store_banner_url) {
+          setBannerUrl(settingsData.store_banner_url);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching vendor banner:', error);
+    }
+  };
 
   useEffect(() => {
     if (!vendorId) return;
@@ -279,6 +308,16 @@ export default function VendorHome() {
         <Text style={styles.greeting}>Welcome back, {profile?.full_name}!</Text>
         <Text style={styles.subtitle}>Here's your store overview</Text>
       </View>
+
+      {bannerUrl && (
+        <View style={styles.bannerContainer}>
+          <Image
+            source={{ uri: bannerUrl }}
+            style={styles.bannerImage}
+            resizeMode="cover"
+          />
+        </View>
+      )}
 
       <View style={styles.content}>
         <View>
@@ -427,6 +466,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#e0f2fe',
     fontWeight: '500',
+  },
+  bannerContainer: {
+    marginHorizontal: 16,
+    marginTop: -20,
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  bannerImage: {
+    width: '100%',
+    height: 160,
   },
   content: {
     padding: 16,
