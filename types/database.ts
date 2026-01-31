@@ -289,6 +289,10 @@ export interface Advert {
   end_date?: string;
   display_frequency: AdvertDisplayFrequency;
   priority: number;
+  hot_deal_text?: string;
+  featured_text?: string;
+  trending_text?: string;
+  limited_offer_text?: string;
   created_at: string;
   updated_at: string;
 }

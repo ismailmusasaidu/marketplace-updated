@@ -28,6 +28,10 @@ interface Advert {
   end_date?: string;
   display_frequency: 'once' | 'daily' | 'always';
   priority: number;
+  hot_deal_text?: string;
+  featured_text?: string;
+  trending_text?: string;
+  limited_offer_text?: string;
   created_at: string;
 }
 
@@ -49,6 +53,10 @@ export default function AdvertManagement() {
     end_date: '',
     display_frequency: 'daily' as 'once' | 'daily' | 'always',
     priority: 0,
+    hot_deal_text: '',
+    featured_text: '',
+    trending_text: '',
+    limited_offer_text: '',
   });
 
   useEffect(() => {
@@ -85,6 +93,10 @@ export default function AdvertManagement() {
       end_date: '',
       display_frequency: 'daily',
       priority: 0,
+      hot_deal_text: '',
+      featured_text: '',
+      trending_text: '',
+      limited_offer_text: '',
     });
     setShowModal(true);
   };
@@ -102,6 +114,10 @@ export default function AdvertManagement() {
       end_date: advert.end_date || '',
       display_frequency: advert.display_frequency,
       priority: advert.priority,
+      hot_deal_text: advert.hot_deal_text || '',
+      featured_text: advert.featured_text || '',
+      trending_text: advert.trending_text || '',
+      limited_offer_text: advert.limited_offer_text || '',
     });
     setShowModal(true);
   };
@@ -124,6 +140,10 @@ export default function AdvertManagement() {
         end_date: formData.end_date || null,
         display_frequency: formData.display_frequency,
         priority: formData.priority,
+        hot_deal_text: formData.hot_deal_text || null,
+        featured_text: formData.featured_text || null,
+        trending_text: formData.trending_text || null,
+        limited_offer_text: formData.limited_offer_text || null,
       };
 
       if (editingAdvert) {
@@ -318,6 +338,40 @@ export default function AdvertManagement() {
                 onChangeText={(text) => setFormData({ ...formData, action_url: text })}
                 placeholder="https://example.com"
                 autoCapitalize="none"
+              />
+
+              <Text style={[styles.label, styles.sectionLabel]}>Customizable Labels (Optional)</Text>
+
+              <Text style={styles.label}>Hot Deal Badge Text</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.hot_deal_text}
+                onChangeText={(text) => setFormData({ ...formData, hot_deal_text: text })}
+                placeholder="HOT DEAL (default)"
+              />
+
+              <Text style={styles.label}>Featured Badge Text</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.featured_text}
+                onChangeText={(text) => setFormData({ ...formData, featured_text: text })}
+                placeholder="Featured (default)"
+              />
+
+              <Text style={styles.label}>Trending Badge Text</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.trending_text}
+                onChangeText={(text) => setFormData({ ...formData, trending_text: text })}
+                placeholder="Trending Now (default)"
+              />
+
+              <Text style={styles.label}>Limited Offer Text</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.limited_offer_text}
+                onChangeText={(text) => setFormData({ ...formData, limited_offer_text: text })}
+                placeholder="Limited Time Offer (default)"
               />
 
               <Text style={styles.label}>Display Frequency</Text>
@@ -568,6 +622,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
     marginBottom: 8,
+  },
+  sectionLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ff8c00',
+    marginTop: 16,
+    marginBottom: 12,
   },
   input: {
     borderWidth: 1,

@@ -26,6 +26,10 @@ interface Advert {
   image_url?: string;
   action_text?: string;
   action_url?: string;
+  hot_deal_text?: string;
+  featured_text?: string;
+  trending_text?: string;
+  limited_offer_text?: string;
 }
 
 interface AdModalProps {
@@ -181,7 +185,9 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
               style={styles.hotBadgeGradient}
             >
               <Zap size={14} color="#ffffff" fill="#ffffff" />
-              <Text style={styles.hotBadgeText}>HOT DEAL</Text>
+              <Text style={styles.hotBadgeText}>
+                {advert.hot_deal_text || 'HOT DEAL'}
+              </Text>
             </LinearGradient>
           </View>
 
@@ -212,7 +218,9 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
                   <View style={styles.imageBadgeContainer}>
                     <View style={styles.imageBadge}>
                       <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                      <Text style={styles.imageBadgeText}>Featured</Text>
+                      <Text style={styles.imageBadgeText}>
+                        {advert.featured_text || 'Featured'}
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -233,7 +241,9 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
 
                 <View style={styles.trendingBadge}>
                   <TrendingUp size={16} color="#10b981" />
-                  <Text style={styles.trendingText}>Trending Now</Text>
+                  <Text style={styles.trendingText}>
+                    {advert.trending_text || 'Trending Now'}
+                  </Text>
                 </View>
 
                 <Text style={styles.title}>{advert.title}</Text>
@@ -241,7 +251,9 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
 
                 <View style={styles.offerHighlight}>
                   <Gift size={24} color="#ff8c00" />
-                  <Text style={styles.offerText}>Limited Time Offer</Text>
+                  <Text style={styles.offerText}>
+                    {advert.limited_offer_text || 'Limited Time Offer'}
+                  </Text>
                 </View>
 
                 {advert.action_url && (

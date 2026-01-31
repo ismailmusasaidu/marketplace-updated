@@ -30,6 +30,10 @@ interface Advert {
   action_url?: string;
   display_frequency: 'once' | 'daily' | 'always';
   priority: number;
+  hot_deal_text?: string;
+  featured_text?: string;
+  trending_text?: string;
+  limited_offer_text?: string;
 }
 
 const PAGE_SIZE = 16;
