@@ -293,7 +293,11 @@ export default function CustomerHome() {
       </View>
 
       <View style={styles.categoriesWrapper}>
-        <View style={styles.categoriesContent}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContent}
+        >
           <TouchableOpacity
             style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
             onPress={() => setSelectedCategory(null)}
@@ -321,7 +325,7 @@ export default function CustomerHome() {
                 </Text>
               </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       </View>
 
       {loading ? (
@@ -430,12 +434,10 @@ const styles = StyleSheet.create({
     outlineWidth: 0,
   },
   categoriesWrapper: {
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   categoriesContent: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    paddingHorizontal: 20,
     gap: 10,
   },
   categoryChip: {
