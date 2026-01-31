@@ -147,6 +147,7 @@ export default function CustomerHome() {
 
   const checkAndShowAdvert = async () => {
     try {
+      console.log('🔍 Checking for adverts...');
       // Fetch active adverts
       const { data: adverts, error } = await supabase
         .from('adverts')
@@ -154,22 +155,33 @@ export default function CustomerHome() {
         .eq('is_active', true)
         .order('priority', { ascending: false });
 
-      if (error || !adverts || adverts.length === 0) return;
+      console.log('📊 Adverts fetched:', adverts, 'Error:', error);
+
+      if (error || !adverts || adverts.length === 0) {
+        console.log('❌ No adverts to show');
+        return;
+      }
 
       // Get the highest priority advert
       const advert = adverts[0] as Advert;
+      console.log('📢 Selected advert:', advert);
 
       // Check if we should show this advert based on frequency
       const shouldShow = await shouldShowAdvert(advert);
+      console.log('✅ Should show advert:', shouldShow);
 
       if (shouldShow) {
         setCurrentAdvert(advert);
+        console.log('⏰ Setting timeout to show modal...');
         // Delay showing the modal slightly to avoid showing during initial load
-        setTimeout(() => setShowAdModal(true), 1000);
+        setTimeout(() => {
+          console.log('🎬 Showing ad modal now!');
+          setShowAdModal(true);
+        }, 1000);
         await markAdvertAsShown(advert);
       }
     } catch (error) {
-      console.error('Error checking adverts:', error);
+      console.error('❌ Error checking adverts:', error);
     }
   };
 
@@ -208,6 +220,21 @@ export default function CustomerHome() {
   const closeAdModal = () => {
     setShowAdModal(false);
     setCurrentAdvert(null);
+  };
+
+  const forceShowAd = async () => {
+    try {
+      // Clear all advert storage
+      const keys = await AsyncStorage.getAllKeys();
+      const advertKeys = keys.filter(key => key.startsWith('advert_shown_'));
+      await AsyncStorage.multiRemove(advertKeys);
+      console.log('🧹 Cleared ad storage, refreshing...');
+
+      // Re-check adverts
+      checkAndShowAdvert();
+    } catch (error) {
+      console.error('Error clearing ad storage:', error);
+    }
   };
 
   const openProductDetail = (product: Product) => {
@@ -278,8 +305,15 @@ export default function CustomerHome() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-        <Text style={styles.greeting}>Hello, {profile?.full_name || 'Guest'}</Text>
-        <Text style={styles.subtitle}>What would you like to order today?</Text>
+        <View style={styles.headerTop}>
+          <View style={styles.greetingContainer}>
+            <Text style={styles.greeting}>Hello, {profile?.full_name || 'Guest'}</Text>
+            <Text style={styles.subtitle}>What would you like to order today?</Text>
+          </View>
+          <TouchableOpacity style={styles.debugButton} onPress={forceShowAd}>
+            <Text style={styles.debugButtonText}>Test Ad</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.searchContainer}>
           <Search size={20} color="#9ca3af" style={styles.searchIcon} />
@@ -394,6 +428,15 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  greetingContainer: {
+    flex: 1,
+  },
   greeting: {
     fontSize: 28,
     fontFamily: Fonts.headingBold,
@@ -405,7 +448,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: Fonts.medium,
     color: '#e0f2fe',
-    marginBottom: 20,
+  },
+  debugButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  debugButtonText: {
+    fontSize: 12,
+    fontFamily: Fonts.semiBold,
+    color: '#ffffff',
   },
   searchContainer: {
     flexDirection: 'row',
