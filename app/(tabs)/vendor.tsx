@@ -19,6 +19,7 @@ import { Product, Vendor } from '@/types/database';
 import StoreSetup from '@/components/vendor/StoreSetup';
 import AddProduct from '@/components/vendor/AddProduct';
 import EditProduct from '@/components/vendor/EditProduct';
+import { Fonts } from '@/constants/fonts';
 
 export default function VendorScreen() {
   const { profile } = useAuth();
@@ -576,11 +577,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
   },
   subtitle: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#d1fae5',
     marginTop: 4,
   },
@@ -597,7 +599,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
   searchWrapper: {
     flexDirection: 'row',
@@ -623,6 +625,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
+    fontFamily: Fonts.regular,
     color: '#1f2937',
     padding: 0,
   },
@@ -651,7 +654,7 @@ const styles = StyleSheet.create({
   },
   filterLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 8,
   },
@@ -674,12 +677,12 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#6b7280',
-    fontWeight: '500',
   },
   filterChipTextActive: {
+    fontFamily: Fonts.semiBold,
     color: '#ffffff',
-    fontWeight: '600',
   },
   searchResults: {
     flexDirection: 'row',
@@ -690,8 +693,8 @@ const styles = StyleSheet.create({
   },
   searchResultsText: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#6b7280',
-    fontWeight: '500',
   },
   resetButton: {
     paddingHorizontal: 12,
@@ -701,8 +704,8 @@ const styles = StyleSheet.create({
   },
   resetButtonText: {
     fontSize: 13,
+    fontFamily: Fonts.semiBold,
     color: '#ff8c00',
-    fontWeight: '600',
   },
   list: {
     paddingHorizontal: 16,
@@ -727,12 +730,12 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
   },
   productPrice: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: Fonts.bold,
     color: '#ff8c00',
   },
   stockInfo: {
@@ -742,7 +745,7 @@ const styles = StyleSheet.create({
   },
   stockText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: Fonts.medium,
   },
   inStock: {
     color: '#ff8c00',
@@ -752,7 +755,7 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -780,6 +783,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     marginTop: 16,
     textAlign: 'center',
