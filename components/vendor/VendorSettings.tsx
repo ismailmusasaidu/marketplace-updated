@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Save, X, Store, Upload, Image as ImageIcon } from 'lucide-react-native';
+import { Fonts } from '@/constants/fonts';
 
 interface VendorSettings {
   id: string;
@@ -554,7 +555,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: Fonts.headingBold,
     color: '#1f2937',
   },
   section: {
@@ -571,7 +572,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 16,
   },
@@ -580,7 +581,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#374151',
     marginBottom: 8,
   },
@@ -591,6 +592,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
+    fontFamily: Fonts.regular,
     color: '#1f2937',
   },
   switchRow: {
@@ -603,8 +605,8 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: 16,
+    fontFamily: Fonts.medium,
     color: '#374151',
-    fontWeight: '500',
   },
   dayRow: {
     marginBottom: 16,
@@ -622,7 +624,7 @@ const styles = StyleSheet.create({
   },
   dayName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
   },
   closedSwitch: {
@@ -632,6 +634,7 @@ const styles = StyleSheet.create({
   },
   closedLabel: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
   },
   timeRow: {
@@ -643,7 +646,7 @@ const styles = StyleSheet.create({
   },
   timeLabel: {
     fontSize: 12,
-    fontWeight: '500',
+    fontFamily: Fonts.medium,
     color: '#6b7280',
     marginBottom: 6,
   },
@@ -672,7 +675,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   bannerPreview: {
     width: '100%',
@@ -709,8 +712,8 @@ const styles = StyleSheet.create({
   noBannerText: {
     marginTop: 12,
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#9ca3af',
-    fontWeight: '500',
   },
   uploadButton: {
     flexDirection: 'row',
@@ -728,6 +731,6 @@ const styles = StyleSheet.create({
   uploadButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
 });
