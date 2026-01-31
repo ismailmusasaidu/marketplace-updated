@@ -316,6 +316,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    paddingBottom: 20,
   },
   decorativeCornerTopLeft: {
     position: 'absolute',
@@ -436,7 +437,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     position: 'relative',
     width: '100%',
-    height: 300,
+    height: 200,
   },
   image: {
     width: '100%',
@@ -486,8 +487,8 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   content: {
-    padding: 32,
-    paddingTop: 28,
+    padding: 20,
+    paddingTop: 20,
     backgroundColor: '#ffffff',
   },
   sparkleContainer: {
@@ -533,20 +534,20 @@ const styles = StyleSheet.create({
     color: '#059669',
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontFamily: Fonts.headingBold,
     color: '#111827',
-    marginBottom: 14,
+    marginBottom: 12,
     textAlign: 'center',
-    letterSpacing: -0.8,
-    lineHeight: 38,
+    letterSpacing: -0.5,
+    lineHeight: 30,
   },
   description: {
-    fontSize: 17,
+    fontSize: 15,
     fontFamily: Fonts.regular,
     color: '#6b7280',
-    lineHeight: 28,
-    marginBottom: 24,
+    lineHeight: 22,
+    marginBottom: 20,
     textAlign: 'center',
   },
   offerHighlight: {
@@ -592,17 +593,17 @@ const styles = StyleSheet.create({
   },
   actionButtonGradient: {
     flexDirection: 'row',
-    paddingVertical: 20,
-    paddingHorizontal: 36,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: 8,
   },
   actionButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: Fonts.bold,
     color: '#ffffff',
-    letterSpacing: 1,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   actionButtonArrow: {
