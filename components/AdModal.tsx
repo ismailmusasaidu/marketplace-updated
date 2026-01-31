@@ -159,11 +159,6 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
       statusBarTranslucent
     >
       <Animated.View style={[styles.overlay, { opacity: opacityAnim }]}>
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          activeOpacity={1}
-          onPress={onClose}
-        />
         <Animated.View
           style={[
             styles.modalContainer,
