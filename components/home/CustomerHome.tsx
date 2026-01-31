@@ -296,7 +296,7 @@ export default function CustomerHome() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.greetingContainer}>
           <Text style={styles.greeting}>
             Hello, {profile?.full_name?.split(' ')[0] || 'Guest'}
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#ff8c00',
     paddingHorizontal: 20,
-    paddingBottom: 28,
+    paddingBottom: 20,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     shadowColor: '#ff8c00',
@@ -419,17 +419,17 @@ const styles = StyleSheet.create({
   },
   greetingContainer: {
     flex: 1,
-    marginBottom: 20,
+    marginBottom: 14,
   },
   greeting: {
-    fontSize: 28,
+    fontSize: 24,
     fontFamily: Fonts.headingBold,
     color: '#ffffff',
-    marginBottom: 6,
+    marginBottom: 4,
     letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: Fonts.medium,
     color: '#e0f2fe',
   },
