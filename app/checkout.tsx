@@ -18,6 +18,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { BankAccount } from '@/types/database';
+import { Fonts } from '@/constants/fonts';
 
 interface CartItemWithProduct {
   id: string;
@@ -1478,7 +1479,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
     letterSpacing: 0.5,
     flex: 1,
@@ -1492,7 +1493,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 19,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1e293b',
     marginBottom: 14,
     letterSpacing: 0.3,
@@ -1534,12 +1535,13 @@ const styles = StyleSheet.create({
   },
   optionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 2,
   },
   optionDescription: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
   },
   selectedDot: {
@@ -1558,11 +1560,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     fontSize: 16,
+    fontFamily: Fonts.medium,
     color: '#1f2937',
     borderWidth: 2,
     borderColor: '#e2e8f0',
     marginBottom: 16,
-    fontWeight: '500',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -1589,10 +1591,10 @@ const styles = StyleSheet.create({
   addressInput: {
     flex: 1,
     fontSize: 16,
+    fontFamily: Fonts.medium,
     color: '#1f2937',
     minHeight: 80,
     textAlignVertical: 'top',
-    fontWeight: '500',
   },
   geocodingStatus: {
     flexDirection: 'row',
@@ -1605,7 +1607,7 @@ const styles = StyleSheet.create({
   },
   geocodingText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#92400e',
   },
   errorCard: {
@@ -1618,7 +1620,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#991b1b',
   },
   successCard: {
@@ -1632,7 +1634,7 @@ const styles = StyleSheet.create({
   },
   successText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#065f46',
   },
   warningCard: {
@@ -1645,7 +1647,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#9a3412',
   },
   deliveryFeeCard: {
@@ -1661,12 +1663,12 @@ const styles = StyleSheet.create({
   },
   deliveryFeeLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1e40af',
   },
   deliveryFeeValue: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#1e40af',
   },
   summaryCard: {
@@ -1686,22 +1688,24 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     flex: 1,
   },
   summaryPrice: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#1f2937',
-    fontWeight: '500',
   },
   summaryLabel: {
     fontSize: 16,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
   },
   summaryValue: {
     fontSize: 16,
+    fontFamily: Fonts.medium,
     color: '#1f2937',
-    fontWeight: '500',
   },
   divider: {
     height: 1,
@@ -1710,12 +1714,12 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
   },
   totalValue: {
     fontSize: 24,
-    fontWeight: '900',
+    fontFamily: Fonts.headingBold,
     color: '#ff8c00',
     letterSpacing: 0.5,
   },
@@ -1751,7 +1755,7 @@ const styles = StyleSheet.create({
   placeOrderButtonText: {
     color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     letterSpacing: 0.5,
   },
   successContent: {
@@ -1777,13 +1781,14 @@ const styles = StyleSheet.create({
   },
   successTitle: {
     fontSize: 32,
-    fontWeight: '900',
+    fontFamily: Fonts.headingBold,
     color: '#1e293b',
     marginBottom: 12,
     letterSpacing: 0.5,
   },
   successMessage: {
     fontSize: 17,
+    fontFamily: Fonts.regular,
     color: '#64748b',
     textAlign: 'center',
     marginBottom: 32,
@@ -1804,7 +1809,7 @@ const styles = StyleSheet.create({
   },
   orderDetailsTitle: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#1e293b',
     marginBottom: 20,
     letterSpacing: 0.3,
@@ -1818,14 +1823,14 @@ const styles = StyleSheet.create({
   },
   orderDetailLabel: {
     fontSize: 15,
+    fontFamily: Fonts.medium,
     color: '#64748b',
-    fontWeight: '500',
     flex: 1,
   },
   orderDetailValue: {
     fontSize: 15,
+    fontFamily: Fonts.bold,
     color: '#1e293b',
-    fontWeight: '700',
     textAlign: 'right',
     flex: 1,
   },
@@ -1835,8 +1840,8 @@ const styles = StyleSheet.create({
   },
   orderTotalValue: {
     fontSize: 24,
+    fontFamily: Fonts.headingBold,
     color: '#ff8c00',
-    fontWeight: '900',
     letterSpacing: 0.5,
   },
   timelineCard: {
@@ -1853,7 +1858,7 @@ const styles = StyleSheet.create({
   },
   timelineTitle: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#1e293b',
     marginBottom: 24,
     letterSpacing: 0.3,
@@ -1891,14 +1896,14 @@ const styles = StyleSheet.create({
   },
   timelineItemTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1e293b',
     marginBottom: 4,
   },
   timelineItemTime: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#94a3b8',
-    fontWeight: '500',
   },
   buttonContainer: {
     width: '100%',
@@ -1919,7 +1924,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     letterSpacing: 0.5,
   },
   secondaryButton: {
@@ -1933,7 +1938,7 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#ff8c00',
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     letterSpacing: 0.5,
   },
   paymentModal: {
@@ -1963,7 +1968,7 @@ const styles = StyleSheet.create({
   },
   paymentTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: Fonts.heading,
     color: '#1f2937',
   },
   closeButton: {
@@ -1997,12 +2002,13 @@ const styles = StyleSheet.create({
   },
   paymentOptionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
     marginBottom: 4,
   },
   paymentOptionDescription: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
   },
   modalScrollView: {
@@ -2146,7 +2152,7 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   onlinePaymentCard: {
     backgroundColor: '#f0f9ff',
@@ -2266,10 +2272,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     fontSize: 16,
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     borderWidth: 2,
     borderColor: '#e2e8f0',
-    fontWeight: '600',
   },
   applyPromoButton: {
     backgroundColor: '#ff8c00',
@@ -2283,13 +2289,13 @@ const styles = StyleSheet.create({
   applyPromoButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   promoError: {
     color: '#ef4444',
     fontSize: 14,
+    fontFamily: Fonts.medium,
     marginTop: 8,
-    fontWeight: '500',
   },
   appliedPromoContainer: {
     flexDirection: 'row',
@@ -2308,12 +2314,12 @@ const styles = StyleSheet.create({
   },
   appliedPromoText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#166534',
   },
   removePromoButton: {
     color: '#dc2626',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
 });

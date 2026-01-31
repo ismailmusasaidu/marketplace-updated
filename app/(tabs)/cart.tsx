@@ -16,6 +16,7 @@ import { cartEvents } from '@/lib/cartEvents';
 import { router, useFocusEffect } from 'expo-router';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import { Product } from '@/types/database';
+import { Fonts } from '@/constants/fonts';
 
 interface CartItemWithProduct {
   id: string;
@@ -313,15 +314,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
     letterSpacing: 0.5,
   },
   itemCount: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#e0f2fe',
     marginTop: 4,
-    fontWeight: '500',
   },
   list: {
     padding: 16,
@@ -351,14 +352,14 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1e293b',
     letterSpacing: 0.2,
   },
   itemPrice: {
     fontSize: 15,
+    fontFamily: Fonts.bold,
     color: '#ff8c00',
-    fontWeight: '700',
     marginTop: 4,
   },
   quantityContainer: {
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
   },
   quantity: {
     fontSize: 17,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     marginHorizontal: 16,
     color: '#1e293b',
   },
@@ -407,12 +408,12 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1e293b',
   },
   totalAmount: {
     fontSize: 28,
-    fontWeight: '900',
+    fontFamily: Fonts.headingBold,
     color: '#ff8c00',
     letterSpacing: 0.5,
   },
@@ -430,7 +431,7 @@ const styles = StyleSheet.create({
   checkoutButtonText: {
     color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     letterSpacing: 0.5,
   },
   emptyContainer: {
@@ -441,12 +442,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: Fonts.headingBold,
     color: '#1f2937',
     marginTop: 16,
   },
   emptyText: {
     fontSize: 16,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     marginTop: 8,
     textAlign: 'center',
@@ -466,6 +468,6 @@ const styles = StyleSheet.create({
   shopButtonText: {
     color: '#ffffff',
     fontSize: 17,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
 });
