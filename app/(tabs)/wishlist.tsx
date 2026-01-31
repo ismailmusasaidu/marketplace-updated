@@ -14,6 +14,7 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { supabase } from '@/lib/supabase';
 import { Product } from '@/types/database';
 import { cartEvents } from '@/lib/cartEvents';
+import { Fonts } from '@/constants/fonts';
 
 export default function WishlistScreen() {
   const { wishlistItems, removeFromWishlist, loading: wishlistLoading } = useWishlist();
@@ -192,13 +193,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#1e293b',
     letterSpacing: 0.5,
   },
   itemCount: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#64748b',
   },
   scrollView: {
@@ -212,12 +213,13 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#475569',
     marginTop: 20,
   },
   emptySubtext: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#94a3b8',
     marginTop: 8,
     textAlign: 'center',
@@ -248,12 +250,13 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1e293b',
     marginBottom: 4,
   },
   productDescription: {
     fontSize: 13,
+    fontFamily: Fonts.regular,
     color: '#64748b',
     marginBottom: 8,
   },
@@ -265,13 +268,13 @@ const styles = StyleSheet.create({
   },
   price: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#ff8c00',
   },
   unit: {
     fontSize: 12,
+    fontFamily: Fonts.medium,
     color: '#94a3b8',
-    fontWeight: '500',
   },
   actions: {
     flexDirection: 'row',
@@ -290,7 +293,7 @@ const styles = StyleSheet.create({
   addToCartText: {
     color: '#ffffff',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   removeButton: {
     backgroundColor: '#fee2e2',
