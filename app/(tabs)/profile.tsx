@@ -43,7 +43,7 @@ export default function ProfileScreen() {
         .from('profiles')
         .select('wallet_balance')
         .eq('id', profile.id)
-        .single();
+        .maybeSingle();
       if (error) throw error;
       setWalletBalance(data?.wallet_balance || 0);
     } catch (error) {
