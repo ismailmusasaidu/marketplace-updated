@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { Plus, Edit, Trash2, Image as ImageIcon } from 'lucide-react-native';
+import { Plus, Edit, Trash2, Image as ImageIcon, ExternalLink } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/contexts/ToastContext';
 
@@ -208,6 +208,12 @@ export default function AdvertManagement() {
       <View style={styles.advertDetails}>
         <Text style={styles.detailText}>Frequency: {item.display_frequency}</Text>
         <Text style={styles.detailText}>Priority: {item.priority}</Text>
+        {item.action_url && (
+          <View style={styles.linkIndicator}>
+            <ExternalLink size={14} color="#3b82f6" />
+            <Text style={styles.linkText}>Has Link</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.advertActions}>
@@ -297,20 +303,21 @@ export default function AdvertManagement() {
                 placeholder="https://example.com/image.jpg"
               />
 
-              <Text style={styles.label}>Action Button Text</Text>
+              <Text style={styles.label}>Action Button Text (Optional)</Text>
               <TextInput
                 style={styles.input}
                 value={formData.action_text}
                 onChangeText={(text) => setFormData({ ...formData, action_text: text })}
-                placeholder="e.g., Shop Now"
+                placeholder="e.g., Shop Now (defaults to 'Shop Now' if empty)"
               />
 
-              <Text style={styles.label}>Action URL</Text>
+              <Text style={styles.label}>Action URL (Link for the button)</Text>
               <TextInput
                 style={styles.input}
                 value={formData.action_url}
                 onChangeText={(text) => setFormData({ ...formData, action_url: text })}
                 placeholder="https://example.com"
+                autoCapitalize="none"
               />
 
               <Text style={styles.label}>Display Frequency</Text>
@@ -468,14 +475,31 @@ const styles = StyleSheet.create({
   advertDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
     marginBottom: 12,
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
+    gap: 8,
   },
   detailText: {
     fontSize: 14,
     color: '#6b7280',
+  },
+  linkIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#dbeafe',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+  },
+  linkText: {
+    fontSize: 12,
+    color: '#3b82f6',
+    fontWeight: '600',
   },
   advertActions: {
     flexDirection: 'row',

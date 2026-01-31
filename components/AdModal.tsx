@@ -224,7 +224,7 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
               <Text style={styles.offerText}>Limited Time Offer</Text>
             </View>
 
-            {advert.action_text && (
+            {advert.action_url && (
               <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
                 <TouchableOpacity
                   style={styles.actionButton}
@@ -237,7 +237,9 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
                     end={{ x: 1, y: 1 }}
                     style={styles.actionButtonGradient}
                   >
-                    <Text style={styles.actionButtonText}>{advert.action_text}</Text>
+                    <Text style={styles.actionButtonText}>
+                      {advert.action_text || 'Shop Now'}
+                    </Text>
                     <View style={styles.actionButtonArrow}>
                       <Text style={styles.actionButtonArrowText}>→</Text>
                     </View>
