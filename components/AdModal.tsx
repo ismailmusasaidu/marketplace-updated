@@ -203,6 +203,12 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
                     source={{ uri: advert.image_url }}
                     style={styles.image}
                     resizeMode="cover"
+                    onError={(error) => {
+                      console.log('❌ Image failed to load:', error.nativeEvent.error);
+                    }}
+                    onLoad={() => {
+                      console.log('✅ Image loaded successfully');
+                    }}
                   />
                   <LinearGradient
                     colors={['transparent', 'rgba(0,0,0,0.6)']}
@@ -297,6 +303,7 @@ const styles = StyleSheet.create({
     width: '90%',
     maxWidth: 520,
     maxHeight: height * 0.85,
+    minHeight: 400,
     overflow: 'hidden',
     borderWidth: 3,
     borderColor: 'rgba(255, 140, 0, 0.2)',
