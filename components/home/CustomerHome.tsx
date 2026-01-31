@@ -296,7 +296,7 @@ export default function CustomerHome() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <View style={styles.greetingContainer}>
           <Text style={styles.greeting}>
             Hello, {profile?.full_name?.split(' ')[0] || 'Guest'}
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#ff8c00',
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 16,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     shadowColor: '#ff8c00',
@@ -419,17 +419,17 @@ const styles = StyleSheet.create({
   },
   greetingContainer: {
     flex: 1,
-    marginBottom: 14,
+    marginBottom: 10,
   },
   greeting: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: Fonts.headingBold,
     color: '#ffffff',
-    marginBottom: 4,
+    marginBottom: 3,
     letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: Fonts.medium,
     color: '#e0f2fe',
   },
@@ -437,9 +437,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    borderWidth: 3,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    borderWidth: 2,
     borderColor: '#ffffff',
     shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 3 },
@@ -452,8 +452,8 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    padding: 14,
-    fontSize: 16,
+    padding: 10,
+    fontSize: 15,
     color: '#1e293b',
     fontWeight: '600',
     borderWidth: 0,
