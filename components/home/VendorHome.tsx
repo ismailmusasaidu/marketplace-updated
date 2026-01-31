@@ -227,6 +227,56 @@ export default function VendorHome() {
     };
   }, [vendorId]);
 
+  useEffect(() => {
+    if (!profile) return;
+
+    const getVendorIdForSettings = async () => {
+      const { data: vendorData } = await supabase
+        .from('vendors')
+        .select('id')
+        .eq('user_id', profile.id)
+        .maybeSingle();
+
+      return vendorData?.id;
+    };
+
+    const setupSettingsSubscription = async () => {
+      const vendorSettingsId = await getVendorIdForSettings();
+      if (!vendorSettingsId) return;
+
+      const settingsChannel = supabase
+        .channel('vendor-settings-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'vendor_settings',
+            filter: `vendor_id=eq.${vendorSettingsId}`,
+          },
+          (payload) => {
+            console.log('Vendor settings changed, updating banner...');
+            const newBannerUrl = payload.new.store_banner_url;
+            setBannerUrl(newBannerUrl || null);
+          }
+        )
+        .subscribe();
+
+      return settingsChannel;
+    };
+
+    let settingsChannel: any;
+    setupSettingsSubscription().then(channel => {
+      settingsChannel = channel;
+    });
+
+    return () => {
+      if (settingsChannel) {
+        supabase.removeChannel(settingsChannel);
+      }
+    };
+  }, [profile]);
+
   useFocusEffect(
     useCallback(() => {
       if (vendorId) {
