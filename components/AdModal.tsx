@@ -40,8 +40,11 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
   const sparkleAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
+  console.log('🎭 AdModal render - visible:', visible, 'advert:', advert?.title);
+
   useEffect(() => {
     if (visible) {
+      console.log('🎬 AdModal animations starting...');
       Animated.parallel([
         Animated.spring(scaleAnim, {
           toValue: 1,
@@ -93,7 +96,12 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
     }
   }, [visible]);
 
-  if (!advert) return null;
+  if (!advert) {
+    console.log('⚠️ AdModal: No advert provided, returning null');
+    return null;
+  }
+
+  console.log('✅ AdModal: Rendering modal with advert:', advert.title);
 
   const handleAction = async () => {
     if (advert.action_url) {

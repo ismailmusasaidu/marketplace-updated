@@ -218,9 +218,12 @@ export default function CustomerHome() {
   };
 
   const closeAdModal = () => {
+    console.log('🚪 Closing ad modal');
     setShowAdModal(false);
     setCurrentAdvert(null);
   };
+
+  console.log('📺 CustomerHome render - showAdModal:', showAdModal, 'currentAdvert:', currentAdvert?.title);
 
   const forceShowAd = async () => {
     try {
