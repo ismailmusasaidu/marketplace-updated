@@ -16,6 +16,7 @@ import { Wallet, Plus, Minus, ArrowUpRight, ArrowDownRight, Clock, CreditCard, C
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { Fonts } from '@/constants/fonts';
 
 interface Transaction {
   id: string;
@@ -896,12 +897,12 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 16,
+    fontFamily: Fonts.medium,
     color: '#6b7280',
-    fontWeight: '500',
   },
   balanceAmount: {
     fontSize: 36,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#1f2937',
     marginBottom: 20,
   },
@@ -922,7 +923,7 @@ const styles = StyleSheet.create({
   fundButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   withdrawButton: {
     flex: 1,
@@ -939,7 +940,7 @@ const styles = StyleSheet.create({
   withdrawButtonText: {
     color: '#ff8c00',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   transactionsSection: {
     flex: 1,
@@ -947,7 +948,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
     marginBottom: 16,
   },
@@ -981,12 +982,13 @@ const styles = StyleSheet.create({
   },
   transactionDescription: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 4,
   },
   transactionDate: {
     fontSize: 12,
+    fontFamily: Fonts.regular,
     color: '#9ca3af',
   },
   transactionAmount: {
@@ -995,7 +997,7 @@ const styles = StyleSheet.create({
   },
   transactionAmountText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     marginBottom: 4,
   },
   creditAmount: {
@@ -1006,6 +1008,7 @@ const styles = StyleSheet.create({
   },
   balanceAfter: {
     fontSize: 11,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
   },
   emptyState: {
@@ -1015,6 +1018,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
+    fontFamily: Fonts.regular,
     color: '#9ca3af',
     marginTop: 12,
   },
@@ -1034,13 +1038,13 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
     marginBottom: 20,
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#374151',
     marginBottom: 8,
   },
@@ -1050,12 +1054,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 12,
   },
   modalNote: {
     fontSize: 12,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     marginBottom: 24,
   },
@@ -1072,13 +1077,13 @@ const styles = StyleSheet.create({
   },
   balanceInfoLabel: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#166534',
-    fontWeight: '500',
   },
   balanceInfoValue: {
     fontSize: 18,
+    fontFamily: Fonts.headingBold,
     color: '#166534',
-    fontWeight: '800',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -1094,7 +1099,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#6b7280',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   confirmButton: {
     flex: 1,
@@ -1106,14 +1111,14 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   paymentMethodLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 12,
     marginTop: 8,
@@ -1131,7 +1136,7 @@ const styles = StyleSheet.create({
   payOnlineButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   divider: {
     flexDirection: 'row',
@@ -1147,7 +1152,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     color: '#9ca3af',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
   manualFundButton: {
     flexDirection: 'row',
@@ -1164,7 +1169,7 @@ const styles = StyleSheet.create({
   manualFundButtonText: {
     color: '#ff8c00',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   cancelModalButton: {
     backgroundColor: '#f3f4f6',
@@ -1175,7 +1180,7 @@ const styles = StyleSheet.create({
   cancelModalButtonText: {
     color: '#6b7280',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   webViewContainer: {
     flex: 1,
@@ -1192,7 +1197,7 @@ const styles = StyleSheet.create({
   },
   webViewTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#ffffff',
   },
   closeWebViewButton: {
@@ -1204,7 +1209,7 @@ const styles = StyleSheet.create({
   closeWebViewButtonText: {
     color: '#ff8c00',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   webView: {
     flex: 1,
@@ -1220,7 +1225,7 @@ const styles = StyleSheet.create({
   },
   paymentInstructionsTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#166534',
     marginTop: 16,
     marginBottom: 12,
@@ -1228,6 +1233,7 @@ const styles = StyleSheet.create({
   },
   paymentInstructionsText: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#166534',
     textAlign: 'center',
     lineHeight: 20,
@@ -1235,6 +1241,7 @@ const styles = StyleSheet.create({
   },
   nativeOnlyMessage: {
     fontSize: 16,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     textAlign: 'center',
     padding: 40,
@@ -1257,13 +1264,14 @@ const styles = StyleSheet.create({
   },
   noAccountTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
     marginTop: 16,
     marginBottom: 8,
   },
   noAccountText: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     textAlign: 'center',
     lineHeight: 20,
@@ -1281,7 +1289,7 @@ const styles = StyleSheet.create({
   createAccountButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
   virtualAccountCard: {
     backgroundColor: '#ffffff',
@@ -1312,12 +1320,13 @@ const styles = StyleSheet.create({
   },
   bankName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
     marginBottom: 4,
   },
   accountName: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
   },
   accountNumberContainer: {
@@ -1328,6 +1337,7 @@ const styles = StyleSheet.create({
   },
   accountNumberLabel: {
     fontSize: 12,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     marginBottom: 6,
   },
@@ -1338,7 +1348,7 @@ const styles = StyleSheet.create({
   },
   accountNumber: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#1f2937',
     letterSpacing: 1,
   },
@@ -1349,9 +1359,9 @@ const styles = StyleSheet.create({
   },
   tapToViewMore: {
     fontSize: 12,
+    fontFamily: Fonts.semiBold,
     color: '#ff8c00',
     textAlign: 'center',
-    fontWeight: '600',
   },
   virtualAccountDetailsCard: {
     marginBottom: 20,
@@ -1361,6 +1371,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 12,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     marginBottom: 8,
   },
@@ -1374,7 +1385,7 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
     flex: 1,
   },
@@ -1392,12 +1403,13 @@ const styles = StyleSheet.create({
   },
   instructionsTitle: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1e40af',
     marginBottom: 8,
   },
   instructionsText: {
     fontSize: 13,
+    fontFamily: Fonts.regular,
     color: '#1e40af',
     lineHeight: 20,
   },
@@ -1410,6 +1422,6 @@ const styles = StyleSheet.create({
   closeModalButtonText: {
     color: '#6b7280',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
   },
 });
