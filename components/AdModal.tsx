@@ -102,6 +102,9 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
   }
 
   console.log('✅ AdModal: Rendering modal with advert:', advert.title);
+  console.log('📱 Platform:', Platform.OS);
+  console.log('🎨 Opacity animation value:', opacityAnim);
+  console.log('📏 Scale animation value:', scaleAnim);
 
   const handleAction = async () => {
     if (advert.action_url) {
@@ -153,14 +156,19 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
       transparent
       animationType="none"
       onRequestClose={onClose}
+      statusBarTranslucent
     >
       <Animated.View style={[styles.overlay, { opacity: opacityAnim }]}>
+        <TouchableOpacity
+          style={StyleSheet.absoluteFill}
+          activeOpacity={1}
+          onPress={onClose}
+        />
         <Animated.View
           style={[
             styles.modalContainer,
             {
               transform: [{ scale: scaleAnim }],
-              opacity: opacityAnim,
             },
           ]}
         >
@@ -291,14 +299,12 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: '#ffffff',
     borderRadius: 32,
-    width: '100%',
+    width: '90%',
     maxWidth: 520,
     maxHeight: height * 0.85,
     overflow: 'hidden',
     borderWidth: 3,
     borderColor: 'rgba(255, 140, 0, 0.2)',
-    display: 'flex',
-    flexDirection: 'column',
     ...Platform.select({
       ios: {
         shadowColor: '#ff8c00',
