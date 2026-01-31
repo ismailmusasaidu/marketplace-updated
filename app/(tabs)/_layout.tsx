@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CartIconWithBadge from '@/components/CartIconWithBadge';
 import WishlistIconWithBadge from '@/components/WishlistIconWithBadge';
+import { Fonts } from '@/constants/fonts';
 
 export default function TabLayout() {
   const { session, loading, profile } = useAuth();
@@ -49,7 +50,7 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '600',
+          fontFamily: Fonts.semiBold,
           marginBottom: Platform.OS === 'ios' ? 0 : 4,
         },
       }}
