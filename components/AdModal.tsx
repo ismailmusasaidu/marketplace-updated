@@ -179,90 +179,93 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
             </LinearGradient>
           </View>
 
-          <ScrollView
-            style={styles.scrollView}
-            showsVerticalScrollIndicator={false}
-            bounces={true}
-          >
-            {advert.image_url && (
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: advert.image_url }}
-                  style={styles.image}
-                  resizeMode="cover"
-                />
-                <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0.6)']}
-                  style={styles.imageGradient}
-                />
-                <View style={styles.imageBadgeContainer}>
-                  <View style={styles.imageBadge}>
-                    <Star size={14} color="#fbbf24" fill="#fbbf24" />
-                    <Text style={styles.imageBadgeText}>Featured</Text>
+          <View style={styles.scrollWrapper}>
+            <ScrollView
+              style={styles.scrollView}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              bounces={true}
+            >
+              {advert.image_url && (
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: advert.image_url }}
+                    style={styles.image}
+                    resizeMode="cover"
+                  />
+                  <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.6)']}
+                    style={styles.imageGradient}
+                  />
+                  <View style={styles.imageBadgeContainer}>
+                    <View style={styles.imageBadge}>
+                      <Star size={14} color="#fbbf24" fill="#fbbf24" />
+                      <Text style={styles.imageBadgeText}>Featured</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            )}
-
-            <View style={styles.content}>
-              <Animated.View
-                style={[
-                  styles.sparkleContainer,
-                  {
-                    transform: [{ rotate: sparkleRotation }],
-                    opacity: sparkleOpacity,
-                  },
-                ]}
-              >
-                <Sparkles size={28} color="#ff8c00" />
-              </Animated.View>
-
-              <View style={styles.trendingBadge}>
-                <TrendingUp size={16} color="#10b981" />
-                <Text style={styles.trendingText}>Trending Now</Text>
-              </View>
-
-              <Text style={styles.title}>{advert.title}</Text>
-              <Text style={styles.description}>{advert.description}</Text>
-
-              <View style={styles.offerHighlight}>
-                <Gift size={20} color="#ff8c00" />
-                <Text style={styles.offerText}>Limited Time Offer</Text>
-              </View>
-
-              {advert.action_url && (
-                <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-                  <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={handleAction}
-                    activeOpacity={0.8}
-                  >
-                    <LinearGradient
-                      colors={['#ff8c00', '#ff6b00', '#ff5500']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.actionButtonGradient}
-                    >
-                      <Text style={styles.actionButtonText}>
-                        {advert.action_text || 'Shop Now'}
-                      </Text>
-                      <View style={styles.actionButtonArrow}>
-                        <Text style={styles.actionButtonArrowText}>→</Text>
-                      </View>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </Animated.View>
               )}
 
-              <TouchableOpacity
-                style={styles.dismissButton}
-                onPress={onClose}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.dismissButtonText}>Maybe Later</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+              <View style={styles.content}>
+                <Animated.View
+                  style={[
+                    styles.sparkleContainer,
+                    {
+                      transform: [{ rotate: sparkleRotation }],
+                      opacity: sparkleOpacity,
+                    },
+                  ]}
+                >
+                  <Sparkles size={28} color="#ff8c00" />
+                </Animated.View>
+
+                <View style={styles.trendingBadge}>
+                  <TrendingUp size={16} color="#10b981" />
+                  <Text style={styles.trendingText}>Trending Now</Text>
+                </View>
+
+                <Text style={styles.title}>{advert.title}</Text>
+                <Text style={styles.description}>{advert.description}</Text>
+
+                <View style={styles.offerHighlight}>
+                  <Gift size={20} color="#ff8c00" />
+                  <Text style={styles.offerText}>Limited Time Offer</Text>
+                </View>
+
+                {advert.action_url && (
+                  <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={handleAction}
+                      activeOpacity={0.8}
+                    >
+                      <LinearGradient
+                        colors={['#ff8c00', '#ff6b00', '#ff5500']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.actionButtonGradient}
+                      >
+                        <Text style={styles.actionButtonText}>
+                          {advert.action_text || 'Shop Now'}
+                        </Text>
+                        <View style={styles.actionButtonArrow}>
+                          <Text style={styles.actionButtonArrowText}>→</Text>
+                        </View>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </Animated.View>
+                )}
+
+                <TouchableOpacity
+                  style={styles.dismissButton}
+                  onPress={onClose}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.dismissButtonText}>Maybe Later</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
         </Animated.View>
       </Animated.View>
     </Modal>
@@ -304,8 +307,14 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  scrollWrapper: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   decorativeCornerTopLeft: {
     position: 'absolute',
