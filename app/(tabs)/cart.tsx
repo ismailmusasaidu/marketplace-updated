@@ -268,7 +268,7 @@ export default function CartScreen() {
         )}
       />
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>Total</Text>
           <Text style={styles.totalAmount}>₦{calculateTotal().toFixed(2)}</Text>
@@ -392,7 +392,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     backgroundColor: '#ffffff',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
     borderTopWidth: 0,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
