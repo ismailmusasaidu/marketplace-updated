@@ -167,11 +167,6 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
             },
           ]}
         >
-          <View style={styles.decorativeCornerTopLeft} />
-          <View style={styles.decorativeCornerTopRight} />
-          <View style={styles.decorativeCornerBottomLeft} />
-          <View style={styles.decorativeCornerBottomRight} />
-
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <View style={styles.closeButtonInner}>
               <X size={20} color="#ffffff" />
@@ -233,7 +228,7 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
                     },
                   ]}
                 >
-                  <Sparkles size={28} color="#ff8c00" />
+                  <Sparkles size={32} color="#ff8c00" />
                 </Animated.View>
 
                 <View style={styles.trendingBadge}>
@@ -245,7 +240,7 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
                 <Text style={styles.description}>{advert.description}</Text>
 
                 <View style={styles.offerHighlight}>
-                  <Gift size={20} color="#ff8c00" />
+                  <Gift size={24} color="#ff8c00" />
                   <Text style={styles.offerText}>Limited Time Offer</Text>
                 </View>
 
@@ -292,38 +287,15 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   modalContainer: {
     backgroundColor: '#ffffff',
-    borderRadius: 32,
-    width: '90%',
-    maxWidth: 520,
-    maxHeight: height * 0.85,
-    minHeight: 400,
+    width: '100%',
+    height: '100%',
     overflow: 'hidden',
-    borderWidth: 3,
-    borderColor: 'rgba(255, 140, 0, 0.2)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#ff8c00',
-        shadowOffset: { width: 0, height: 25 },
-        shadowOpacity: 0.5,
-        shadowRadius: 40,
-      },
-      android: {
-        elevation: 25,
-      },
-      web: {
-        shadowColor: '#ff8c00',
-        shadowOffset: { width: 0, height: 25 },
-        shadowOpacity: 0.5,
-        shadowRadius: 40,
-      },
-    }),
   },
   scrollWrapper: {
     flex: 1,
@@ -332,7 +304,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   decorativeCornerTopLeft: {
     position: 'absolute',
@@ -384,8 +356,8 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 18,
-    right: 18,
+    top: 50,
+    right: 20,
     zIndex: 10,
   },
   closeButtonInner: {
@@ -414,7 +386,7 @@ const styles = StyleSheet.create({
   },
   hotBadge: {
     position: 'absolute',
-    top: 20,
+    top: 50,
     left: 20,
     zIndex: 10,
     borderRadius: 20,
@@ -453,7 +425,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     position: 'relative',
     width: '100%',
-    height: 200,
+    height: height * 0.45,
   },
   image: {
     width: '100%',
@@ -503,8 +475,8 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   content: {
-    padding: 20,
-    paddingTop: 20,
+    padding: 24,
+    paddingTop: 30,
     backgroundColor: '#ffffff',
   },
   sparkleContainer: {
@@ -550,20 +522,20 @@ const styles = StyleSheet.create({
     color: '#059669',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontFamily: Fonts.headingBold,
     color: '#111827',
-    marginBottom: 12,
+    marginBottom: 14,
     textAlign: 'center',
     letterSpacing: -0.5,
-    lineHeight: 30,
+    lineHeight: 34,
   },
   description: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: Fonts.regular,
     color: '#6b7280',
-    lineHeight: 22,
-    marginBottom: 20,
+    lineHeight: 24,
+    marginBottom: 24,
     textAlign: 'center',
   },
   offerHighlight: {
@@ -571,16 +543,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff7ed',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
     borderRadius: 16,
-    gap: 10,
-    marginBottom: 24,
+    gap: 12,
+    marginBottom: 28,
     borderWidth: 2,
     borderColor: '#fed7aa',
   },
   offerText: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: Fonts.bold,
     color: '#c2410c',
     letterSpacing: 0.3,
@@ -609,14 +581,14 @@ const styles = StyleSheet.create({
   },
   actionButtonGradient: {
     flexDirection: 'row',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 18,
+    paddingHorizontal: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
   },
   actionButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontFamily: Fonts.bold,
     color: '#ffffff',
     letterSpacing: 0.5,
@@ -636,11 +608,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   dismissButton: {
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: 'center',
   },
   dismissButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: Fonts.semiBold,
     color: '#9ca3af',
   },
