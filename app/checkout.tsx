@@ -1013,7 +1013,7 @@ export default function CheckoutScreen() {
         <View style={styles.paymentModal}>
           <View style={[styles.paymentModalContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
             <View style={styles.paymentHeader}>
-              <Text style={styles.paymentTitle}>Select Payment Method</Text>
+              <Text style={styles.paymentTitle}>Payment Method</Text>
               <TouchableOpacity
                 style={styles.closeButtonContainer}
                 onPress={() => setShowPaymentOptions(false)}
