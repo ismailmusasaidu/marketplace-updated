@@ -229,21 +229,6 @@ export default function CustomerHome() {
 
   console.log('📺 CustomerHome render - showAdModal:', showAdModal, 'currentAdvert:', currentAdvert?.title);
 
-  const forceShowAd = async () => {
-    try {
-      // Clear all advert storage
-      const keys = await AsyncStorage.getAllKeys();
-      const advertKeys = keys.filter(key => key.startsWith('advert_shown_'));
-      await AsyncStorage.multiRemove(advertKeys);
-      console.log('🧹 Cleared ad storage, refreshing...');
-
-      // Re-check adverts
-      checkAndShowAdvert();
-    } catch (error) {
-      console.error('Error clearing ad storage:', error);
-    }
-  };
-
   const openProductDetail = (product: Product) => {
     setSelectedProduct(product);
     setModalVisible(true);
@@ -312,14 +297,11 @@ export default function CustomerHome() {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-        <View style={styles.headerTop}>
-          <View style={styles.greetingContainer}>
-            <Text style={styles.greeting}>Hello, {profile?.full_name || 'Guest'}</Text>
-            <Text style={styles.subtitle}>What would you like to order today?</Text>
-          </View>
-          <TouchableOpacity style={styles.debugButton} onPress={forceShowAd}>
-            <Text style={styles.debugButtonText}>Test Ad</Text>
-          </TouchableOpacity>
+        <View style={styles.greetingContainer}>
+          <Text style={styles.greeting}>
+            Hello, {profile?.full_name?.split(' ')[0] || 'Guest'}
+          </Text>
+          <Text style={styles.subtitle}>What would you like to order today?</Text>
         </View>
 
         <View style={styles.searchContainer}>
@@ -435,14 +417,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-  },
   greetingContainer: {
     flex: 1,
+    marginBottom: 20,
   },
   greeting: {
     fontSize: 28,
@@ -455,19 +432,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: Fonts.medium,
     color: '#e0f2fe',
-  },
-  debugButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  debugButtonText: {
-    fontSize: 12,
-    fontFamily: Fonts.semiBold,
-    color: '#ffffff',
   },
   searchContainer: {
     flexDirection: 'row',
