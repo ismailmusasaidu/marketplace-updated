@@ -289,6 +289,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 3,
     borderColor: 'rgba(255, 140, 0, 0.2)',
+    display: 'flex',
+    flexDirection: 'column',
     ...Platform.select({
       ios: {
         shadowColor: '#ff8c00',
@@ -314,7 +316,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
   },
   decorativeCornerTopLeft: {
     position: 'absolute',
