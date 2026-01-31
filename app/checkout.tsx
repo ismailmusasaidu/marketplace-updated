@@ -1014,7 +1014,10 @@ export default function CheckoutScreen() {
           <View style={[styles.paymentModalContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
             <View style={styles.paymentHeader}>
               <Text style={styles.paymentTitle}>Select Payment Method</Text>
-              <TouchableOpacity onPress={() => setShowPaymentOptions(false)}>
+              <TouchableOpacity
+                style={styles.closeButtonContainer}
+                onPress={() => setShowPaymentOptions(false)}
+              >
                 <Text style={styles.closeButton}>✕</Text>
               </TouchableOpacity>
             </View>
@@ -1085,7 +1088,10 @@ export default function CheckoutScreen() {
           <View style={[styles.paymentModalContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
             <View style={styles.paymentHeader}>
               <Text style={styles.paymentTitle}>Bank Transfer Details</Text>
-              <TouchableOpacity onPress={() => setSelectedPaymentMethod(null)}>
+              <TouchableOpacity
+                style={styles.closeButtonContainer}
+                onPress={() => setSelectedPaymentMethod(null)}
+              >
                 <Text style={styles.closeButton}>✕</Text>
               </TouchableOpacity>
             </View>
@@ -1178,7 +1184,10 @@ export default function CheckoutScreen() {
           <View style={[styles.paymentModalContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
             <View style={styles.paymentHeader}>
               <Text style={styles.paymentTitle}>Pay Online with Paystack</Text>
-              <TouchableOpacity onPress={() => setSelectedPaymentMethod(null)}>
+              <TouchableOpacity
+                style={styles.closeButtonContainer}
+                onPress={() => setSelectedPaymentMethod(null)}
+              >
                 <Text style={styles.closeButton}>✕</Text>
               </TouchableOpacity>
             </View>
@@ -1223,7 +1232,10 @@ export default function CheckoutScreen() {
           <View style={[styles.paymentModalContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
             <View style={styles.paymentHeader}>
               <Text style={styles.paymentTitle}>Pay with Wallet</Text>
-              <TouchableOpacity onPress={() => setSelectedPaymentMethod(null)}>
+              <TouchableOpacity
+                style={styles.closeButtonContainer}
+                onPress={() => setSelectedPaymentMethod(null)}
+              >
                 <Text style={styles.closeButton}>✕</Text>
               </TouchableOpacity>
             </View>
@@ -1285,6 +1297,7 @@ export default function CheckoutScreen() {
               <View style={styles.paymentHeader}>
                 <Text style={styles.paymentTitle}>Complete Payment</Text>
                 <TouchableOpacity
+                  style={styles.closeButtonContainer}
                   onPress={() => {
                     setShowPaymentWebView(false);
                     setPaymentUrl('');
@@ -1351,6 +1364,7 @@ export default function CheckoutScreen() {
               <View style={styles.paymentHeader}>
                 <Text style={styles.paymentTitle}>Complete Payment</Text>
                 <TouchableOpacity
+                  style={styles.closeButtonContainer}
                   onPress={() => {
                     setShowPaymentWebView(false);
                     setPaymentUrl('');
@@ -1971,10 +1985,19 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.heading,
     color: '#1f2937',
   },
+  closeButtonContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   closeButton: {
-    fontSize: 28,
+    fontSize: 20,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
-    fontWeight: '300',
+    lineHeight: 20,
   },
   paymentOptions: {
     gap: 12,
