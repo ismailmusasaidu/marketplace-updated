@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { router, useFocusEffect } from 'expo-router';
 import VendorOrderManagement from '@/components/vendor/VendorOrderManagement';
+import { Fonts } from '@/constants/fonts';
 
 interface DashboardStats {
   totalProducts: number;
@@ -376,8 +377,8 @@ export default function VendorHome() {
               <View style={styles.statIconContainer}>
                 <DollarSign size={24} color="#ffffff" />
               </View>
-              <Text style={styles.statValue}>₦{stats.totalRevenue.toFixed(2)}</Text>
-              <Text style={styles.statLabel}>Total Revenue</Text>
+              <Text style={styles.statValuePrimary}>₦{stats.totalRevenue.toFixed(2)}</Text>
+              <Text style={styles.statLabelPrimary}>Total Revenue</Text>
             </View>
 
             <View style={styles.statCard}>
@@ -507,15 +508,15 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 26,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
     marginBottom: 6,
     letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: Fonts.medium,
     color: '#e0f2fe',
-    fontWeight: '500',
   },
   bannerContainer: {
     marginHorizontal: 16,
@@ -584,14 +585,28 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
+    marginBottom: 4,
+  },
+  statValuePrimary: {
+    fontSize: 24,
+    fontFamily: Fonts.bold,
+    color: '#ffffff',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
+    fontFamily: Fonts.medium,
     color: '#6b7280',
     textAlign: 'center',
+  },
+  statLabelPrimary: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#ffffff',
+    textAlign: 'center',
+    opacity: 0.9,
   },
   alertCard: {
     flexDirection: 'row',
@@ -606,12 +621,13 @@ const styles = StyleSheet.create({
   },
   alertTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#92400e',
     marginBottom: 4,
   },
   alertText: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#78350f',
   },
   quickActions: {
@@ -627,7 +643,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 12,
   },
@@ -643,7 +659,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 17,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#0369a1',
     marginLeft: 12,
   },
@@ -659,7 +675,7 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 16,
   },
@@ -672,11 +688,12 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
   },
   summaryValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
   },
   warningText: {
@@ -703,13 +720,14 @@ const styles = StyleSheet.create({
   },
   statusTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: Fonts.headingBold,
     color: '#1f2937',
     textAlign: 'center',
     marginBottom: 16,
   },
   statusText: {
     fontSize: 16,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
     textAlign: 'center',
     marginBottom: 16,
@@ -717,6 +735,7 @@ const styles = StyleSheet.create({
   },
   statusWait: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#f59e0b',
     fontStyle: 'italic',
     marginBottom: 24,
@@ -735,7 +754,7 @@ const styles = StyleSheet.create({
   statusButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
   rejectionBox: {
     backgroundColor: '#fee2e2',
@@ -746,12 +765,13 @@ const styles = StyleSheet.create({
   },
   rejectionTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#991b1b',
     marginBottom: 8,
   },
   rejectionText: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#7f1d1d',
     lineHeight: 20,
   },
