@@ -10,6 +10,7 @@ import {
   Dimensions,
   Animated,
   Platform,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { X, Sparkles, Star, TrendingUp, Gift, Zap } from 'lucide-react-native';
@@ -97,15 +98,34 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
     if (advert.action_url) {
       try {
         let url = advert.action_url.trim();
+
+        if (!url) {
+          Alert.alert('Error', 'No URL provided');
+          return;
+        }
+
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
           url = `https://${url}`;
         }
+
+        const canOpen = await Linking.canOpenURL(url);
+        if (!canOpen) {
+          Alert.alert('Invalid Link', 'This link cannot be opened. Please check the URL.');
+          return;
+        }
+
         await Linking.openURL(url);
-      } catch (error) {
+        onClose();
+      } catch (error: any) {
         console.error('Error opening URL:', error);
+        Alert.alert(
+          'Failed to Open Link',
+          error?.message || 'Unable to open this link. Please try again later.'
+        );
       }
+    } else {
+      onClose();
     }
-    onClose();
   };
 
   const sparkleRotation = sparkleAnim.interpolate({
