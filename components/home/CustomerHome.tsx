@@ -418,8 +418,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   greetingContainer: {
-    flex: 1,
-    marginBottom: 6,
+    marginBottom: 12,
   },
   greeting: {
     fontSize: 22,
