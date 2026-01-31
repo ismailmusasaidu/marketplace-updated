@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: '#6b7280',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
   saveButton: {
     flex: 1,
@@ -647,7 +647,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
   infoCard: {
     backgroundColor: '#ffffff',
@@ -690,18 +690,19 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 12,
+    fontFamily: Fonts.medium,
     color: '#6b7280',
     marginBottom: 2,
   },
   infoValue: {
     fontSize: 16,
+    fontFamily: Fonts.medium,
     color: '#1f2937',
-    fontWeight: '500',
   },
   input: {
     fontSize: 16,
+    fontFamily: Fonts.medium,
     color: '#1f2937',
-    fontWeight: '500',
     backgroundColor: '#f9fafb',
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -741,8 +742,8 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontSize: 16,
+    fontFamily: Fonts.medium,
     color: '#1f2937',
-    fontWeight: '500',
   },
   signOutButton: {
     flexDirection: 'row',
@@ -762,8 +763,8 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     fontSize: 16,
+    fontFamily: Fonts.semiBold,
     color: '#ef4444',
-    fontWeight: '600',
   },
   walletHeader: {
     backgroundColor: '#ff8c00',
@@ -776,7 +777,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
   },
   walletCard: {
     flexDirection: 'row',
@@ -827,8 +828,8 @@ const styles = StyleSheet.create({
   },
   walletArrow: {
     fontSize: 24,
+    fontFamily: Fonts.semiBold,
     color: '#ff8c00',
-    fontWeight: '600',
   },
   settingsCard: {
     flexDirection: 'row',
@@ -876,13 +877,14 @@ const styles = StyleSheet.create({
   },
   settingsDescription: {
     fontSize: 13,
+    fontFamily: Fonts.regular,
     color: '#92400e',
     opacity: 0.7,
   },
   settingsArrow: {
     fontSize: 24,
+    fontFamily: Fonts.semiBold,
     color: '#ff8c00',
-    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
@@ -916,6 +918,7 @@ const styles = StyleSheet.create({
   },
   confirmationMessage: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#64748b',
     textAlign: 'center',
     marginBottom: 24,
@@ -935,7 +938,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#64748b',
   },
   signOutConfirmButton: {
@@ -943,7 +946,7 @@ const styles = StyleSheet.create({
   },
   signOutConfirmButtonText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#ffffff',
   },
 });
