@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   },
   greetingContainer: {
     flex: 1,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   greeting: {
     fontSize: 22,
