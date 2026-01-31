@@ -45,19 +45,19 @@ export default function AdModal({ visible, advert, onClose }: AdModalProps) {
   useEffect(() => {
     if (visible) {
       console.log('🎬 AdModal animations starting...');
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 50,
-          friction: 7,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+
+      // Set initial visible state immediately for Android
+      opacityAnim.setValue(1);
+
+      // Then animate scale
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }).start(() => {
+        console.log('✅ Scale animation completed');
+      });
 
       Animated.loop(
         Animated.sequence([
