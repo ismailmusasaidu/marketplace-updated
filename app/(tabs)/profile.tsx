@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import WalletManagement from '@/components/WalletManagement';
 import VendorSettings from '@/components/vendor/VendorSettings';
 import { useToast } from '@/contexts/ToastContext';
+import { Fonts } from '@/constants/fonts';
 
 export default function ProfileScreen() {
   const { profile, signOut } = useAuth();
@@ -550,7 +551,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 26,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
     marginBottom: 10,
     letterSpacing: 0.5,
@@ -573,7 +574,7 @@ const styles = StyleSheet.create({
   },
   roleText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#ffffff',
   },
   content: {
@@ -661,7 +662,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.bold,
     color: '#1f2937',
     marginBottom: 16,
   },
@@ -726,7 +727,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#1f2937',
     marginBottom: 12,
   },
@@ -815,13 +816,13 @@ const styles = StyleSheet.create({
   },
   walletLabel: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: '#92400e',
-    fontWeight: '500',
     marginBottom: 4,
   },
   walletAmount: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#1f2937',
   },
   walletArrow: {
@@ -869,8 +870,8 @@ const styles = StyleSheet.create({
   },
   settingsLabel: {
     fontSize: 16,
+    fontFamily: Fonts.bold,
     color: '#92400e',
-    fontWeight: '700',
     marginBottom: 4,
   },
   settingsDescription: {
@@ -908,7 +909,7 @@ const styles = StyleSheet.create({
   },
   confirmationTitle: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#1e293b',
     textAlign: 'center',
     marginBottom: 8,

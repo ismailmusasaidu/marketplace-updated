@@ -19,6 +19,7 @@ import { cartEvents } from '@/lib/cartEvents';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import ProductCard from '@/components/ProductCard';
 import AdModal from '@/components/AdModal';
+import { Fonts } from '@/constants/fonts';
 
 interface Advert {
   id: string;
@@ -391,16 +392,16 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 28,
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
     marginBottom: 6,
     letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: Fonts.medium,
     color: '#e0f2fe',
     marginBottom: 20,
-    fontWeight: '500',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -457,7 +458,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: Fonts.semiBold,
     color: '#64748b',
   },
   categoryTextActive: {
@@ -488,7 +489,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 8,
     fontSize: 14,
+    fontFamily: Fonts.semiBold,
     color: '#64748b',
-    fontWeight: '600',
   },
 });
