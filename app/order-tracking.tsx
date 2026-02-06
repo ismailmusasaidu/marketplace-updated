@@ -24,6 +24,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { Order, OrderStatus } from '@/types/database';
 import OrderItemsList from '@/components/OrderItemsList';
+import { Fonts } from '@/constants/fonts';
 
 interface OrderItem {
   id: string;
@@ -447,7 +448,7 @@ export default function OrderTrackingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#faf8f5',
   },
   loadingContainer: {
     flex: 1,
@@ -461,27 +462,25 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#6b7280',
+    fontFamily: Fonts.display,
+    color: '#999',
   },
   statusCard: {
     backgroundColor: '#ffffff',
     margin: 16,
-    borderRadius: 20,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#f0ebe4',
   },
   statusHeader: {
     padding: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#f0ebe4',
   },
   statusHeaderTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#1e293b',
+    fontFamily: Fonts.display,
+    color: '#1a1a1a',
   },
   currentStatusContainer: {
     alignItems: 'center',
@@ -502,8 +501,8 @@ const styles = StyleSheet.create({
   },
   currentStatusText: {
     fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontFamily: Fonts.displayBold,
+    letterSpacing: 0.3,
   },
   header: {
     backgroundColor: '#ff8c00',
@@ -526,15 +525,15 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: Fonts.displayBold,
     color: '#ffffff',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   orderNumber: {
     fontSize: 14,
-    color: '#e0f2fe',
+    fontFamily: Fonts.semiBold,
+    color: 'rgba(255,255,255,0.85)',
     marginTop: 4,
-    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -550,19 +549,16 @@ const styles = StyleSheet.create({
   cancelledText: {
     color: '#dc2626',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: Fonts.semiBold,
     textAlign: 'center',
   },
   trackingContainer: {
     backgroundColor: '#ffffff',
     margin: 16,
     padding: 20,
-    borderRadius: 20,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#f0ebe4',
   },
   stepContainer: {
     flexDirection: 'row',
@@ -576,11 +572,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f8f5f0',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderColor: '#f0ebe4',
   },
   stepIconCompleted: {
     backgroundColor: '#ff8c00',
@@ -598,7 +594,7 @@ const styles = StyleSheet.create({
   stepLine: {
     width: 3,
     height: 40,
-    backgroundColor: '#e2e8f0',
+    backgroundColor: '#f0ebe4',
     marginTop: 4,
   },
   stepLineCompleted: {
@@ -611,56 +607,55 @@ const styles = StyleSheet.create({
   },
   stepLabel: {
     fontSize: 16,
+    fontFamily: Fonts.semiBold,
     color: '#94a3b8',
-    fontWeight: '600',
   },
   stepLabelCompleted: {
-    color: '#1e293b',
+    color: '#1a1a1a',
   },
   stepLabelCurrent: {
     color: '#ff8c00',
-    fontWeight: '800',
+    fontFamily: Fonts.headingBold,
   },
   stepTime: {
     marginTop: 4,
     fontSize: 12,
+    fontFamily: Fonts.medium,
     color: '#64748b',
-    fontWeight: '600',
   },
   currentStepBadge: {
     marginTop: 6,
-    fontSize: 12,
+    fontSize: 11,
+    fontFamily: Fonts.semiBold,
     color: '#ff8c00',
-    fontWeight: '700',
-    backgroundColor: '#e0f2fe',
+    backgroundColor: '#fff7ed',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     alignSelf: 'flex-start',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   card: {
     backgroundColor: '#ffffff',
     marginHorizontal: 16,
     marginBottom: 16,
-    borderRadius: 20,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#f0ebe4',
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#f0ebe4',
     gap: 10,
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: '#1e293b',
+    fontFamily: Fonts.display,
+    color: '#1a1a1a',
   },
   cardContent: {
     padding: 18,
@@ -672,14 +667,14 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
+    fontFamily: Fonts.regular,
+    color: '#999',
     flex: 1,
   },
   infoValue: {
     fontSize: 14,
-    color: '#1f2937',
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
+    color: '#1a1a1a',
     flex: 1,
     textAlign: 'right',
     lineHeight: 20,
@@ -693,8 +688,8 @@ const styles = StyleSheet.create({
   },
   paymentMethod: {
     fontSize: 14,
+    fontFamily: Fonts.semiBold,
     color: '#ff8c00',
-    fontWeight: '700',
   },
   paidBadge: {
     flexDirection: 'row',
@@ -707,24 +702,25 @@ const styles = StyleSheet.create({
   },
   paidText: {
     fontSize: 10,
+    fontFamily: Fonts.semiBold,
     color: '#059669',
-    fontWeight: '700',
   },
   totalRow: {
     marginTop: 8,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: '#f0ebe4',
   },
   totalLabel: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#1f2937',
+    fontFamily: Fonts.display,
+    color: '#1a1a1a',
   },
   totalValue: {
     fontSize: 20,
-    fontWeight: '900',
-    color: '#ff8c00',
+    fontFamily: Fonts.displayBold,
+    color: '#c2410c',
+    letterSpacing: -0.3,
   },
   orderItem: {
     paddingVertical: 12,
@@ -733,8 +729,8 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#1e293b',
+    fontFamily: Fonts.semiBold,
+    color: '#1a1a1a',
     marginBottom: 6,
   },
   itemDetails: {
@@ -743,16 +739,17 @@ const styles = StyleSheet.create({
   },
   itemQuantity: {
     fontSize: 13,
-    color: '#6b7280',
-    fontWeight: '600',
+    fontFamily: Fonts.medium,
+    color: '#999',
   },
   itemPrice: {
     fontSize: 14,
-    color: '#ff8c00',
-    fontWeight: '700',
+    fontFamily: Fonts.display,
+    color: '#c2410c',
   },
   notesText: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#4b5563',
     lineHeight: 20,
   },

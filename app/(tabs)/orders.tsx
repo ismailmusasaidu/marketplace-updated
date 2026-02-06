@@ -443,7 +443,7 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#faf8f5',
   },
   loadingContainer: {
     flex: 1,
@@ -464,14 +464,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontFamily: Fonts.headingBold,
+    fontFamily: Fonts.displayBold,
     color: '#ffffff',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   subtitle: {
     fontSize: 14,
     fontFamily: Fonts.medium,
-    color: '#e0f2fe',
+    color: 'rgba(255,255,255,0.85)',
     marginTop: 4,
   },
   searchContainer: {
@@ -485,12 +485,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: '#f0ebe4',
   },
   searchIcon: {
     marginRight: 8,
@@ -498,7 +493,8 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#1f2937',
+    fontFamily: Fonts.medium,
+    color: '#1a1a1a',
     padding: 0,
     borderWidth: 0,
     outlineWidth: 0,
@@ -515,13 +511,14 @@ const styles = StyleSheet.create({
   },
   emptyResultsTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1f2937',
+    fontFamily: Fonts.displayBold,
+    color: '#1a1a1a',
     marginTop: 16,
   },
   emptyResultsText: {
     fontSize: 14,
-    color: '#6b7280',
+    fontFamily: Fonts.regular,
+    color: '#999',
     marginTop: 8,
     textAlign: 'center',
   },
@@ -539,7 +536,7 @@ const styles = StyleSheet.create({
   },
   clearSearchText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#ffffff',
   },
   list: {
@@ -547,14 +544,11 @@ const styles = StyleSheet.create({
   },
   orderCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
+    borderRadius: 18,
     padding: 18,
     marginBottom: 14,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#f0ebe4',
   },
   orderHeader: {
     flexDirection: 'row',
@@ -563,7 +557,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#f0ebe4',
     gap: 12,
   },
   orderInfo: {
@@ -572,9 +566,9 @@ const styles = StyleSheet.create({
   },
   orderNumber: {
     fontSize: 17,
-    fontFamily: Fonts.headingBold,
-    color: '#1e293b',
-    letterSpacing: 0.3,
+    fontFamily: Fonts.display,
+    color: '#1a1a1a',
+    letterSpacing: 0.2,
     flexShrink: 1,
   },
   orderDate: {
@@ -590,16 +584,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 24,
     gap: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
     flexShrink: 1,
   },
   statusText: {
     fontSize: 13,
-    fontFamily: Fonts.bold,
+    fontFamily: Fonts.semiBold,
     flexShrink: 1,
   },
   orderDetails: {
@@ -641,42 +630,45 @@ const styles = StyleSheet.create({
   },
   paidText: {
     fontSize: 10,
+    fontFamily: Fonts.semiBold,
     color: '#059669',
-    fontWeight: '700',
   },
   totalRow: {
     marginTop: 8,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: '#f0ebe4',
   },
   totalLabel: {
     fontSize: 16,
-    fontFamily: Fonts.semiBold,
-    color: '#1f2937',
+    fontFamily: Fonts.display,
+    color: '#1a1a1a',
   },
   totalValue: {
     fontSize: 20,
-    fontFamily: Fonts.headingBold,
-    color: '#ff8c00',
-    letterSpacing: 0.3,
+    fontFamily: Fonts.displayBold,
+    color: '#c2410c',
+    letterSpacing: -0.3,
   },
   addressContainer: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f8f5f0',
     padding: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: '#f0ebe4',
   },
   addressLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6b7280',
+    fontSize: 11,
+    fontFamily: Fonts.semiBold,
+    color: '#999',
     marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   addressText: {
     fontSize: 14,
-    color: '#1f2937',
+    fontFamily: Fonts.medium,
+    color: '#1a1a1a',
     flexWrap: 'wrap',
   },
   receiptButton: {
@@ -701,12 +693,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: '#f0ebe4',
   },
   reviewSectionTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#1f2937',
+    fontFamily: Fonts.display,
+    color: '#1a1a1a',
     marginBottom: 12,
   },
   reviewItem: {
@@ -715,7 +707,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
     padding: 12,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f8f5f0',
     borderRadius: 10,
   },
   reviewItemInfo: {
@@ -724,13 +716,14 @@ const styles = StyleSheet.create({
   },
   reviewItemName: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontFamily: Fonts.semiBold,
+    color: '#1a1a1a',
     marginBottom: 2,
   },
   reviewItemQuantity: {
     fontSize: 12,
-    color: '#6b7280',
+    fontFamily: Fonts.medium,
+    color: '#999',
   },
   reviewButton: {
     flexDirection: 'row',
@@ -743,7 +736,7 @@ const styles = StyleSheet.create({
   },
   reviewButtonText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#ff8c00',
   },
   reviewedBadge: {
@@ -757,7 +750,7 @@ const styles = StyleSheet.create({
   },
   reviewedText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: '#059669',
   },
   emptyContainer: {
@@ -768,14 +761,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 24,
-    fontFamily: Fonts.headingBold,
-    color: '#1f2937',
+    fontFamily: Fonts.displayBold,
+    color: '#1a1a1a',
     marginTop: 16,
   },
   emptyText: {
     fontSize: 16,
     fontFamily: Fonts.regular,
-    color: '#6b7280',
+    color: '#999',
     marginTop: 8,
     textAlign: 'center',
   },
