@@ -194,7 +194,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         <View style={styles.avatarContainer}>
           <User size={48} color="#ffffff" />
