@@ -1,15 +1,52 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { Link, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowLeft, Mail } from 'lucide-react-native';
+import { ArrowLeft, Mail, KeyRound } from 'lucide-react-native';
+import { Fonts } from '@/constants/fonts';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const iconScale = useRef(new Animated.Value(0.5)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+      Animated.spring(iconScale, {
+        toValue: 1,
+        friction: 5,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleResetPassword = async () => {
     if (!email) {
@@ -43,260 +80,478 @@ export default function ForgotPasswordScreen() {
 
   if (success) {
     return (
-      <LinearGradient
-        colors={['#ff8c00', '#ff6b00', '#ff4500']}
-        style={styles.container}
-      >
-        <View style={styles.content}>
-          <View style={styles.successContainer}>
-            <View style={styles.iconContainer}>
-              <Mail size={64} color="#ffffff" strokeWidth={2} />
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#ff9a1f', '#ff8c00', '#e67a00']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
+        >
+          <View style={styles.decorCircle1} />
+          <View style={styles.decorCircle2} />
+
+          <Animated.View
+            style={[
+              styles.successIconWrap,
+              { transform: [{ scale: iconScale }] },
+            ]}
+          >
+            <View style={styles.successIconCircle}>
+              <Mail size={40} color="#ff8c00" strokeWidth={2} />
+            </View>
+          </Animated.View>
+
+          <Animated.View style={{ opacity: fadeAnim }}>
+            <Text style={styles.headerTitle}>Check Your Email</Text>
+            <Text style={styles.headerSubtitle}>
+              We've sent a password reset link
+            </Text>
+          </Animated.View>
+        </LinearGradient>
+
+        <Animated.View
+          style={[
+            styles.successBody,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <View style={styles.successCard}>
+            <View style={styles.emailSentBadge}>
+              <Mail size={18} color="#ff8c00" strokeWidth={2} />
+              <Text style={styles.emailSentText}>{email}</Text>
             </View>
 
-            <Text style={styles.successTitle}>Check Your Email</Text>
             <Text style={styles.successMessage}>
-              We've sent a password reset link to {email}
+              Please check your inbox and click the reset link to create a new password.
             </Text>
-            <Text style={styles.successSubtext}>
-              Please check your email and click the link to reset your password
+
+            <Text style={styles.successHint}>
+              Didn't receive the email? Check your spam folder or try again.
             </Text>
 
             <TouchableOpacity
-              style={styles.backButton}
+              style={styles.primaryButton}
               onPress={() => router.replace('/auth/login')}
+              activeOpacity={0.85}
             >
-              <Text style={styles.backButtonText}>Back to Sign In</Text>
+              <LinearGradient
+                colors={['#ff9a1f', '#ff7b00']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.primaryButtonGradient}
+              >
+                <Text style={styles.primaryButtonText}>Back to Sign In</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => setSuccess(false)}
+            >
+              <Text style={styles.retryButtonText}>Try a different email</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </LinearGradient>
+        </Animated.View>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#ff8c00', '#ff6b00', '#ff4500']}
-      style={styles.container}
-    >
-      <View style={styles.content}>
-        <TouchableOpacity
-          style={styles.backLink}
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={24} color="#ffffff" strokeWidth={2.5} />
-          <Text style={styles.backLinkText}>Back</Text>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#ff9a1f', '#ff8c00', '#e67a00']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.decorCircle1} />
+        <View style={styles.decorCircle2} />
 
-        <Text style={styles.title}>Reset Password</Text>
-        <Text style={styles.subtitle}>
-          Enter your email address and we'll send you a link to reset your password
-        </Text>
-
-        <View style={styles.form}>
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-
-          <TextInput
-            style={styles.input}
-            placeholder="Email Address"
-            placeholderTextColor="#ffa366"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoFocus
-          />
-
+        <Animated.View style={[styles.headerContent, { opacity: fadeAnim }]}>
           <TouchableOpacity
-            style={styles.button}
-            onPress={handleResetPassword}
-            disabled={loading}
+            style={styles.backButton}
+            onPress={() => router.back()}
           >
-            {loading ? (
-              <ActivityIndicator color="#ff8c00" />
-            ) : (
-              <Text style={styles.buttonText}>Send Reset Link</Text>
-            )}
+            <ArrowLeft size={22} color="#ffffff" strokeWidth={2.5} />
           </TouchableOpacity>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Remember your password? </Text>
-            <Link href="/auth/login" asChild>
-              <TouchableOpacity>
-                <Text style={styles.link}>Sign In</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
-        </View>
-      </View>
-    </LinearGradient>
+          <Animated.View
+            style={[
+              styles.headerIconWrap,
+              { transform: [{ scale: iconScale }] },
+            ]}
+          >
+            <View style={styles.headerIconCircle}>
+              <KeyRound size={32} color="#ff8c00" strokeWidth={2} />
+            </View>
+          </Animated.View>
+
+          <Text style={styles.headerTitle}>Forgot Password?</Text>
+          <Text style={styles.headerSubtitle}>
+            No worries, we'll send you reset instructions
+          </Text>
+        </Animated.View>
+      </LinearGradient>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.formSection}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Animated.View
+            style={[
+              styles.formCard,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+          >
+            {error ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                placeholderTextColor="#b0b0b0"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoFocus
+              />
+            </View>
+
+            <TouchableOpacity
+              style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+              onPress={handleResetPassword}
+              disabled={loading}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={loading ? ['#ccc', '#bbb'] : ['#ff9a1f', '#ff7b00']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.submitGradient}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text style={styles.submitText}>Send Reset Link</Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Remember your password? </Text>
+              <Link href="/auth/login" asChild>
+                <TouchableOpacity>
+                  <Text style={styles.footerLink}>Sign In</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f8f5f0',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  backLink: {
-    flexDirection: 'row',
+  headerGradient: {
+    paddingTop: 56,
+    paddingBottom: 36,
     alignItems: 'center',
-    marginBottom: 24,
-    gap: 8,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  backLinkText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+  decorCircle1: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    top: -60,
+    right: -40,
   },
-  title: {
-    fontSize: 36,
-    fontWeight: '900',
-    color: '#ffffff',
-    marginBottom: 8,
-    textAlign: 'center',
-    letterSpacing: 1,
+  decorCircle2: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    bottom: -30,
+    left: -30,
   },
-  subtitle: {
-    fontSize: 15,
-    color: '#ffe4cc',
-    marginBottom: 36,
-    textAlign: 'center',
-    fontWeight: '500',
-    lineHeight: 22,
-    paddingHorizontal: 16,
+  headerContent: {
+    width: '100%',
+    paddingHorizontal: 24,
+    alignItems: 'center',
   },
-  form: {
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    borderRadius: 28,
-    padding: 28,
+  backButton: {
+    position: 'absolute',
+    left: 24,
+    top: 0,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerIconWrap: {
+    marginBottom: 14,
+  },
+  headerIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontFamily: Fonts.displayBold,
+    color: '#ffffff',
+    textAlign: 'center',
+    letterSpacing: 0.3,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: 'rgba(255, 255, 255, 0.85)',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  formSection: {
+    flex: 1,
+    marginTop: -16,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+  },
+  formCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  errorBox: {
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
+  },
+  errorText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    textAlign: 'center',
+  },
+  inputGroup: {
+    marginBottom: 24,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontFamily: Fonts.semiBold,
+    color: '#444',
+    marginBottom: 8,
+    letterSpacing: 0.3,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 16,
-    fontSize: 16,
-    color: '#cc5500',
-    fontWeight: '600',
-    borderWidth: 3,
-    borderColor: '#ff8c00',
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 14,
+    padding: 16,
+    fontSize: 15,
+    fontFamily: Fonts.regular,
+    color: '#1a1a1a',
+    borderWidth: 1.5,
+    borderColor: '#eee',
     outlineStyle: 'none',
   },
-  button: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 18,
-    alignItems: 'center',
-    marginTop: 8,
-    shadowColor: '#000',
+  submitButton: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 5,
   },
-  buttonText: {
-    color: '#ff8c00',
-    fontSize: 19,
-    fontWeight: '800',
+  submitButtonDisabled: {
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  submitGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderRadius: 14,
+  },
+  submitText: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontFamily: Fonts.headingBold,
     letterSpacing: 0.5,
   },
-  error: {
-    backgroundColor: 'rgba(239, 68, 68, 0.9)',
-    color: '#ffffff',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    textAlign: 'center',
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#eee',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#bbb',
+    fontSize: 13,
+    fontFamily: Fonts.medium,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
   },
   footerText: {
-    color: '#ffe4cc',
-    fontSize: 15,
-    fontWeight: '500',
+    color: '#888',
+    fontSize: 14,
+    fontFamily: Fonts.regular,
   },
-  link: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700',
-    textDecorationLine: 'underline',
+  footerLink: {
+    color: '#ff8c00',
+    fontSize: 14,
+    fontFamily: Fonts.bold,
   },
-  successContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    borderRadius: 28,
-    padding: 40,
+  successBody: {
+    flex: 1,
+    marginTop: -16,
+    paddingHorizontal: 24,
+  },
+  successCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 28,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  successIconWrap: {
+    marginBottom: 14,
+  },
+  successIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 12,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
+  emailSentBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    gap: 8,
+    backgroundColor: '#fff7ed',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
   },
-  successTitle: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#ffffff',
-    marginBottom: 16,
-    textAlign: 'center',
-    letterSpacing: 0.5,
+  emailSentText: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#c2410c',
   },
   successMessage: {
-    fontSize: 16,
-    color: '#ffe4cc',
+    fontSize: 15,
+    fontFamily: Fonts.regular,
+    color: '#555',
     textAlign: 'center',
-    fontWeight: '600',
-    marginBottom: 12,
     lineHeight: 24,
+    marginBottom: 12,
   },
-  successSubtext: {
-    fontSize: 14,
-    color: '#ffe4cc',
+  successHint: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#999',
     textAlign: 'center',
-    fontWeight: '500',
-    lineHeight: 22,
-    marginBottom: 32,
-    paddingHorizontal: 8,
+    lineHeight: 20,
+    marginBottom: 28,
   },
-  backButton: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 18,
+  primaryButton: {
     width: '100%',
-    alignItems: 'center',
-    shadowColor: '#000',
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 5,
+    marginBottom: 12,
   },
-  backButtonText: {
-    color: '#ff8c00',
-    fontSize: 19,
-    fontWeight: '800',
+  primaryButtonGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderRadius: 14,
+  },
+  primaryButtonText: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontFamily: Fonts.headingBold,
     letterSpacing: 0.5,
+  },
+  retryButton: {
+    paddingVertical: 12,
+  },
+  retryButtonText: {
+    color: '#888',
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
   },
 });

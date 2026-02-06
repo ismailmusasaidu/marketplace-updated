@@ -14,6 +14,10 @@ import {
   Poppins_600SemiBold,
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
+import {
+  PlayfairDisplay_700Bold,
+  PlayfairDisplay_800ExtraBold,
+} from '@expo-google-fonts/playfair-display';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
@@ -32,6 +36,8 @@ export default function RootLayout() {
     'Poppins-Medium': Poppins_500Medium,
     'Poppins-SemiBold': Poppins_600SemiBold,
     'Poppins-Bold': Poppins_700Bold,
+    'Playfair-Bold': PlayfairDisplay_700Bold,
+    'Playfair-ExtraBold': PlayfairDisplay_800ExtraBold,
   });
 
   useEffect(() => {

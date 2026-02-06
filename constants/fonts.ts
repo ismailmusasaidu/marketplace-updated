@@ -5,4 +5,6 @@ export const Fonts = {
   bold: 'Inter-Bold',
   heading: 'Poppins-SemiBold',
   headingBold: 'Poppins-Bold',
+  display: 'Playfair-Bold',
+  displayBold: 'Playfair-ExtraBold',
 };
