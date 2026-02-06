@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,12 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search } from 'lucide-react-native';
+import { Search, ShoppingBag } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '@/lib/supabase';
 import { Product, Category } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,12 +55,30 @@ export default function CustomerHome() {
   const [modalVisible, setModalVisible] = useState(false);
   const [currentAdvert, setCurrentAdvert] = useState<Advert | null>(null);
   const [showAdModal, setShowAdModal] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   useEffect(() => {
     fetchCategories();
     checkAndShowAdvert();
 
-    // Subscribe to real-time product updates (ratings, stock, etc.)
     const subscription = supabase
       .channel('products_updates')
       .on(
@@ -151,56 +171,37 @@ export default function CustomerHome() {
 
   const checkAndShowAdvert = async () => {
     try {
-      console.log('🔍 Checking for adverts...');
-      // Fetch active adverts
       const { data: adverts, error } = await supabase
         .from('adverts')
         .select('*')
         .eq('is_active', true)
         .order('priority', { ascending: false });
 
-      console.log('📊 Adverts fetched:', adverts, 'Error:', error);
+      if (error || !adverts || adverts.length === 0) return;
 
-      if (error || !adverts || adverts.length === 0) {
-        console.log('❌ No adverts to show');
-        return;
-      }
-
-      // Get the highest priority advert
       const advert = adverts[0] as Advert;
-      console.log('📢 Selected advert:', advert);
-
-      // Check if we should show this advert based on frequency
       const shouldShow = await shouldShowAdvert(advert);
-      console.log('✅ Should show advert:', shouldShow);
 
       if (shouldShow) {
         setCurrentAdvert(advert);
-        console.log('⏰ Setting timeout to show modal...');
-        // Delay showing the modal slightly to avoid showing during initial load
         setTimeout(() => {
-          console.log('🎬 Showing ad modal now!');
           setShowAdModal(true);
         }, 1000);
         await markAdvertAsShown(advert);
       }
     } catch (error) {
-      console.error('❌ Error checking adverts:', error);
+      console.error('Error checking adverts:', error);
     }
   };
 
   const shouldShowAdvert = async (advert: Advert): Promise<boolean> => {
     const storageKey = `advert_shown_${advert.id}`;
 
-    if (advert.display_frequency === 'always') {
-      return true;
-    }
+    if (advert.display_frequency === 'always') return true;
 
     const lastShownStr = await AsyncStorage.getItem(storageKey);
 
-    if (!lastShownStr && advert.display_frequency === 'once') {
-      return true;
-    }
+    if (!lastShownStr && advert.display_frequency === 'once') return true;
 
     if (advert.display_frequency === 'daily' && lastShownStr) {
       const lastShown = new Date(lastShownStr);
@@ -209,9 +210,7 @@ export default function CustomerHome() {
       return hoursSinceShown >= 24;
     }
 
-    if (!lastShownStr && advert.display_frequency === 'daily') {
-      return true;
-    }
+    if (!lastShownStr && advert.display_frequency === 'daily') return true;
 
     return false;
   };
@@ -222,12 +221,9 @@ export default function CustomerHome() {
   };
 
   const closeAdModal = () => {
-    console.log('🚪 Closing ad modal');
     setShowAdModal(false);
     setCurrentAdvert(null);
   };
-
-  console.log('📺 CustomerHome render - showAdModal:', showAdModal, 'currentAdvert:', currentAdvert?.title);
 
   const openProductDetail = (product: Product) => {
     setSelectedProduct(product);
@@ -240,13 +236,10 @@ export default function CustomerHome() {
   };
 
   const addToCart = async (productId: string, e?: any) => {
-    if (e) {
-      e.stopPropagation();
-    }
+    if (e) e.stopPropagation();
     if (!profile) return;
 
     try {
-      // Check if item already exists in cart
       const { data: existingItem } = await supabase
         .from('carts')
         .select('id, quantity')
@@ -255,15 +248,12 @@ export default function CustomerHome() {
         .maybeSingle();
 
       if (existingItem) {
-        // Update existing item by incrementing quantity
         const { error } = await supabase
           .from('carts')
           .update({ quantity: existingItem.quantity + 1 })
           .eq('id', existingItem.id);
-
         if (error) throw error;
       } else {
-        // Insert new item
         const { error } = await supabase
           .from('carts')
           .insert({
@@ -271,11 +261,9 @@ export default function CustomerHome() {
             product_id: productId,
             quantity: 1,
           });
-
         if (error) throw error;
       }
 
-      // Emit cart event to update badge
       cartEvents.emit();
     } catch (error: any) {
       console.error('Error adding to cart:', error);
@@ -294,26 +282,49 @@ export default function CustomerHome() {
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const firstName = profile?.full_name?.split(' ')[0] || 'Guest';
+
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>
-            Hello, {profile?.full_name?.split(' ')[0] || 'Guest'}
-          </Text>
-          <Text style={styles.subtitle}>What would you like to order today?</Text>
-        </View>
+      <LinearGradient
+        colors={['#ff9a1f', '#ff8c00', '#e67a00']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + 12 }]}
+      >
+        <View style={styles.decorCircle1} />
+        <View style={styles.decorCircle2} />
 
-        <View style={styles.searchContainer}>
-          <Search size={20} color="#9ca3af" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search products..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-      </View>
+        <Animated.View
+          style={[
+            styles.headerInner,
+            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+          ]}
+        >
+          <View style={styles.greetingRow}>
+            <View style={styles.greetingTextWrap}>
+              <Text style={styles.greeting}>Hello, {firstName}</Text>
+              <Text style={styles.subtitle}>What would you like to order today?</Text>
+            </View>
+            <View style={styles.headerLogoIcon}>
+              <ShoppingBag size={22} color="#ff8c00" strokeWidth={2.5} />
+            </View>
+          </View>
+
+          <View style={[styles.searchContainer, searchFocused && styles.searchContainerFocused]}>
+            <Search size={20} color={searchFocused ? '#ff8c00' : '#9ca3af'} strokeWidth={2} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search products..."
+              placeholderTextColor="#b0b0b0"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+            />
+          </View>
+        </Animated.View>
+      </LinearGradient>
 
       <View style={styles.categoriesWrapper}>
         <ScrollView
@@ -324,29 +335,31 @@ export default function CustomerHome() {
           <TouchableOpacity
             style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
             onPress={() => setSelectedCategory(null)}
+            activeOpacity={0.8}
           >
             <Text style={[styles.categoryText, !selectedCategory && styles.categoryTextActive]}>
               All
             </Text>
           </TouchableOpacity>
           {categories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
+            <TouchableOpacity
+              key={category.id}
+              style={[
+                styles.categoryChip,
+                selectedCategory === category.id && styles.categoryChipActive,
+              ]}
+              onPress={() => setSelectedCategory(category.id)}
+              activeOpacity={0.8}
+            >
+              <Text
                 style={[
-                  styles.categoryChip,
-                  selectedCategory === category.id && styles.categoryChipActive,
+                  styles.categoryText,
+                  selectedCategory === category.id && styles.categoryTextActive,
                 ]}
-                onPress={() => setSelectedCategory(category.id)}
               >
-                <Text
-                  style={[
-                    styles.categoryText,
-                    selectedCategory === category.id && styles.categoryTextActive,
-                  ]}
-                >
-                  {category.name}
-                </Text>
-              </TouchableOpacity>
+                {category.name}
+              </Text>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
@@ -354,6 +367,15 @@ export default function CustomerHome() {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#ff8c00" />
+          <Text style={styles.loadingLabel}>Loading products...</Text>
+        </View>
+      ) : filteredProducts.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <ShoppingBag size={48} color="#d4d4d4" strokeWidth={1.5} />
+          <Text style={styles.emptyTitle}>No products found</Text>
+          <Text style={styles.emptySubtitle}>
+            {searchQuery ? 'Try a different search term' : 'Check back later for new arrivals'}
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -369,11 +391,11 @@ export default function CustomerHome() {
             loadingMore ? (
               <View style={styles.footerLoader}>
                 <ActivityIndicator size="small" color="#ff8c00" />
-                <Text style={styles.loadingText}>Loading more products...</Text>
+                <Text style={styles.loadingText}>Loading more...</Text>
               </View>
             ) : null
           }
-          renderItem={({ item, index }) => (
+          renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
               <ProductCard
                 product={item}
@@ -403,90 +425,124 @@ export default function CustomerHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f8f5f0',
   },
   header: {
-    backgroundColor: '#ff8c00',
     paddingHorizontal: 20,
-    paddingBottom: 16,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    paddingBottom: 20,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  greetingContainer: {
-    marginBottom: 12,
+  decorCircle1: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    top: -50,
+    right: -30,
+  },
+  decorCircle2: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    bottom: -20,
+    left: -20,
+  },
+  headerInner: {
+    position: 'relative',
+    zIndex: 1,
+  },
+  greetingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  greetingTextWrap: {
+    flex: 1,
   },
   greeting: {
-    fontSize: 22,
-    fontFamily: Fonts.headingBold,
+    fontSize: 26,
+    fontFamily: Fonts.displayBold,
     color: '#ffffff',
-    marginBottom: 3,
-    letterSpacing: 0.5,
+    marginBottom: 4,
+    letterSpacing: 0.3,
   },
   subtitle: {
-    fontSize: 13,
-    fontFamily: Fonts.medium,
-    color: '#e0f2fe',
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: 'rgba(255, 255, 255, 0.85)',
+  },
+  headerLogoIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    backgroundColor: '#ffffff',
     borderRadius: 14,
     paddingHorizontal: 14,
+    gap: 10,
     borderWidth: 2,
-    borderColor: '#ffffff',
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  searchIcon: {
-    marginRight: 8,
+  searchContainerFocused: {
+    borderColor: '#ffffff',
   },
   searchInput: {
     flex: 1,
-    padding: 10,
+    paddingVertical: 12,
     fontSize: 15,
-    color: '#1e293b',
-    fontWeight: '600',
-    borderWidth: 0,
-    outlineWidth: 0,
+    fontFamily: Fonts.regular,
+    color: '#1a1a1a',
+    outlineStyle: 'none',
   },
   categoriesWrapper: {
-    paddingVertical: 16,
+    paddingVertical: 14,
   },
   categoriesContent: {
     paddingHorizontal: 20,
-    gap: 10,
+    gap: 8,
   },
   categoryChip: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 24,
+    borderRadius: 12,
     backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderWidth: 1.5,
+    borderColor: '#eee',
   },
   categoryChipActive: {
     backgroundColor: '#ff8c00',
+    borderColor: '#ff8c00',
     shadowColor: '#ff8c00',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
     elevation: 4,
   },
   categoryText: {
     fontSize: 14,
     fontFamily: Fonts.semiBold,
-    color: '#64748b',
+    color: '#666',
   },
   categoryTextActive: {
     color: '#ffffff',
@@ -495,6 +551,31 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 12,
+  },
+  loadingLabel: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: '#999',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    gap: 8,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontFamily: Fonts.headingBold,
+    color: '#444',
+    marginTop: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#999',
+    textAlign: 'center',
   },
   productList: {
     padding: 12,
@@ -512,11 +593,11 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
   },
   loadingText: {
-    marginTop: 8,
-    fontSize: 14,
-    fontFamily: Fonts.semiBold,
-    color: '#64748b',
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: '#999',
   },
 });

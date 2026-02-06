@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  Dimensions,
 } from 'react-native';
 import { Star, ShoppingCart, Heart } from 'lucide-react-native';
 import { Product, ProductImage } from '@/types/database';
@@ -29,20 +28,14 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
   useEffect(() => {
     fetchProductImages();
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
 
   useEffect(() => {
-    if (images.length > 1) {
-      startAutoSlide();
-    }
+    if (images.length > 1) startAutoSlide();
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [images]);
 
@@ -58,19 +51,14 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
         console.error('Error fetching product images:', error);
         return;
       }
-      if (data && data.length > 0) {
-        setImages(data);
-      }
+      if (data && data.length > 0) setImages(data);
     } catch (error) {
       console.error('Error fetching product images:', error);
     }
   };
 
   const startAutoSlide = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % images.length);
     }, 2000);
@@ -93,10 +81,8 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
   const currentImageUrl = displayImages[currentImageIndex]?.image_url;
   const isValidUrl = isValidImageUrl(currentImageUrl);
   const fallbackUrl = product.image_url || 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg';
-
   const hasFailed = failedImages.has(currentImageUrl);
   const finalImageUrl = (hasFailed || !isValidUrl) ? fallbackUrl : currentImageUrl;
-
   const inWishlist = isInWishlist(product.id);
 
   const handleWishlistToggle = (e: any) => {
@@ -105,26 +91,25 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
   };
 
   return (
-    <View style={styles.productCard}>
-      <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+    <View style={styles.card}>
+      <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: finalImageUrl }}
             style={styles.productImage}
-            onError={(e) => {
-              console.error('Image load error for:', currentImageUrl);
+            onError={() => {
               setFailedImages(prev => new Set(prev).add(currentImageUrl));
             }}
           />
 
           <TouchableOpacity
-            style={styles.wishlistButton}
+            style={[styles.wishlistButton, inWishlist && styles.wishlistButtonActive]}
             onPress={handleWishlistToggle}
           >
             <Heart
-              size={22}
-              color={inWishlist ? '#ff8c00' : '#ffffff'}
-              fill={inWishlist ? '#ff8c00' : 'none'}
+              size={18}
+              color={inWishlist ? '#ffffff' : '#ffffff'}
+              fill={inWishlist ? '#ffffff' : 'none'}
               strokeWidth={2.5}
             />
           </TouchableOpacity>
@@ -144,24 +129,29 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
           )}
         </View>
 
-        <View style={styles.productInfo}>
+        <View style={styles.infoSection}>
           <Text style={styles.productName} numberOfLines={2}>
             {product.name}
           </Text>
-          <View style={styles.ratingContainer}>
-            <Star size={14} color="#fbbf24" fill="#fbbf24" />
-            <Text style={styles.rating}>{product.rating.toFixed(1)}</Text>
+
+          <View style={styles.ratingRow}>
+            <Star size={13} color="#f59e0b" fill="#f59e0b" />
+            <Text style={styles.ratingText}>{product.rating.toFixed(1)}</Text>
           </View>
-          <View style={styles.productFooter}>
+
+          <View style={styles.footer}>
             <View>
-              <Text style={styles.price}>₦{product.price.toFixed(2)}</Text>
+              <Text style={styles.price}>
+                {'\u20A6'}{product.price.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+              </Text>
               <Text style={styles.unit}>per {product.unit}</Text>
             </View>
             <TouchableOpacity
-              style={styles.addButton}
+              style={styles.cartButton}
               onPress={onAddToCart}
+              activeOpacity={0.8}
             >
-              <ShoppingCart size={18} color="#ffffff" strokeWidth={2.5} />
+              <ShoppingCart size={16} color="#ffffff" strokeWidth={2.5} />
             </TouchableOpacity>
           </View>
         </View>
@@ -171,42 +161,42 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
 }
 
 const styles = StyleSheet.create({
-  productCard: {
+  card: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
+    borderRadius: 18,
     margin: 6,
     overflow: 'hidden',
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f0ebe4',
   },
   imageContainer: {
     width: '100%',
-    height: 180,
+    height: 170,
     overflow: 'hidden',
     position: 'relative',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f5f0ea',
   },
   wishlistButton: {
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 20,
-    padding: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: 10,
+    padding: 7,
     zIndex: 10,
   },
-  imageSlider: {
-    flexDirection: 'row',
-    width: '100%',
-    height: 180,
+  wishlistButtonActive: {
+    backgroundColor: '#ff8c00',
   },
   productImage: {
     width: '100%',
-    height: 180,
-    backgroundColor: '#e2e8f0',
+    height: 170,
+    backgroundColor: '#f0ebe4',
     resizeMode: 'cover',
   },
   dotsContainer: {
@@ -217,73 +207,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   dotActive: {
     backgroundColor: '#ffffff',
-    width: 20,
+    width: 18,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 2,
   },
-  productInfo: {
-    padding: 14,
+  infoSection: {
+    padding: 12,
   },
   productName: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: Fonts.semiBold,
-    color: '#1e293b',
+    color: '#1a1a1a',
     marginBottom: 6,
-    height: 38,
-    letterSpacing: 0.2,
+    height: 36,
+    lineHeight: 18,
+    letterSpacing: 0.1,
   },
-  ratingContainer: {
+  ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
     marginBottom: 10,
-    backgroundColor: '#fef3c7',
+    backgroundColor: '#fef9f0',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 8,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#fde68a',
   },
-  rating: {
-    fontSize: 13,
+  ratingText: {
+    fontSize: 12,
     fontFamily: Fonts.bold,
     color: '#92400e',
-    marginLeft: 4,
   },
-  productFooter: {
+  footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
   },
   price: {
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: Fonts.headingBold,
-    color: '#ff8c00',
-    letterSpacing: 0.3,
+    color: '#1a1a1a',
+    letterSpacing: 0.2,
   },
   unit: {
-    fontSize: 12,
-    fontFamily: Fonts.medium,
-    color: '#94a3b8',
-    marginTop: 2,
+    fontSize: 11,
+    fontFamily: Fonts.regular,
+    color: '#999',
+    marginTop: 1,
   },
-  addButton: {
+  cartButton: {
     backgroundColor: '#ff8c00',
-    borderRadius: 12,
+    borderRadius: 11,
     padding: 10,
     shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
   },
