@@ -1,116 +1,273 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Clock } from 'lucide-react-native';
+import { useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { Clock, CheckCircle, Mail, ShieldCheck } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
+import { Fonts } from '@/constants/fonts';
 
 export default function VendorPendingScreen() {
   const { signOut } = useAuth();
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const iconScale = useRef(new Animated.Value(0.5)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+      Animated.spring(iconScale, {
+        toValue: 1,
+        friction: 5,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
     router.replace('/auth/login');
   };
 
+  const steps = [
+    { icon: CheckCircle, text: 'Our team will review your business information' },
+    { icon: Mail, text: 'We may contact you for additional details' },
+    { icon: Mail, text: "You'll receive an email once approved" },
+    { icon: ShieldCheck, text: 'After approval, access your vendor dashboard' },
+  ];
+
   return (
-    <LinearGradient colors={['#ff8c00', '#e67e00', '#cc7000']} style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <Clock size={64} color="#ffffff" />
-        </View>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#ff9a1f', '#ff8c00', '#e67a00']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.decorCircle1} />
+        <View style={styles.decorCircle2} />
 
-        <Text style={styles.title}>Application Under Review</Text>
-        <Text style={styles.subtitle}>
-          Thank you for registering as a vendor! Your application is currently being reviewed by our
-          admin team.
-        </Text>
+        <Animated.View
+          style={[
+            styles.headerContent,
+            { opacity: fadeAnim },
+          ]}
+        >
+          <Animated.View style={{ transform: [{ scale: iconScale }] }}>
+            <View style={styles.iconCircle}>
+              <Clock size={40} color="#ff8c00" strokeWidth={2} />
+            </View>
+          </Animated.View>
 
-        <View style={styles.infoBox}>
-          <Text style={styles.infoTitle}>What happens next?</Text>
-          <Text style={styles.infoText}>
-            1. Our team will review your business information{'\n'}
-            2. We may contact you for additional details{'\n'}
-            3. You'll receive an email once approved{'\n'}
-            4. After approval, you can access your vendor dashboard
+          <Text style={styles.headerTitle}>Under Review</Text>
+          <Text style={styles.headerSubtitle}>
+            Your vendor application has been submitted
           </Text>
+        </Animated.View>
+      </LinearGradient>
+
+      <Animated.View
+        style={[
+          styles.body,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
+      >
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>What happens next?</Text>
+
+          {steps.map((step, index) => (
+            <View key={index} style={styles.stepRow}>
+              <View style={styles.stepNumber}>
+                <Text style={styles.stepNumberText}>{index + 1}</Text>
+              </View>
+              <Text style={styles.stepText}>{step.text}</Text>
+            </View>
+          ))}
+
+          <View style={styles.timeBadge}>
+            <Clock size={16} color="#92400e" strokeWidth={2} />
+            <Text style={styles.timeBadgeText}>Usually takes 24-48 hours</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.signOutButton}
+            onPress={handleSignOut}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={['#ff9a1f', '#ff7b00']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.signOutGradient}
+            >
+              <Text style={styles.signOutText}>Sign Out</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
-
-        <Text style={styles.waitTime}>This usually takes 24-48 hours</Text>
-
-        <TouchableOpacity style={styles.button} onPress={handleSignOut}>
-          <Text style={styles.buttonText}>Sign Out</Text>
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f8f5f0',
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+  headerGradient: {
+    paddingTop: 72,
+    paddingBottom: 44,
+    alignItems: 'center',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  decorCircle1: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    top: -60,
+    right: -40,
+  },
+  decorCircle2: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    bottom: -30,
+    left: -30,
+  },
+  headerContent: {
     alignItems: 'center',
     paddingHorizontal: 32,
   },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    textAlign: 'center',
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#d1fae5',
-    textAlign: 'center',
-    marginBottom: 32,
-    lineHeight: 24,
-  },
-  infoBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 16,
-    padding: 20,
-    width: '100%',
-    marginBottom: 24,
-  },
-  infoTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  headerTitle: {
+    fontSize: 30,
+    fontFamily: Fonts.displayBold,
     color: '#ffffff',
-    marginBottom: 12,
+    textAlign: 'center',
+    letterSpacing: 0.3,
   },
-  infoText: {
+  headerSubtitle: {
     fontSize: 14,
-    color: '#d1fae5',
-    lineHeight: 22,
+    fontFamily: Fonts.medium,
+    color: 'rgba(255, 255, 255, 0.85)',
+    textAlign: 'center',
+    marginTop: 6,
   },
-  waitTime: {
-    fontSize: 14,
-    color: '#fef3c7',
-    fontStyle: 'italic',
-    marginBottom: 32,
+  body: {
+    flex: 1,
+    marginTop: -20,
+    paddingHorizontal: 24,
   },
-  button: {
+  card: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    paddingHorizontal: 48,
+    borderRadius: 24,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
   },
-  buttonText: {
-    color: '#047857',
-    fontSize: 16,
-    fontWeight: '600',
+  cardTitle: {
+    fontSize: 18,
+    fontFamily: Fonts.headingBold,
+    color: '#1a1a1a',
+    marginBottom: 20,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 14,
+  },
+  stepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#fff7ed',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  stepNumberText: {
+    fontSize: 14,
+    fontFamily: Fonts.bold,
+    color: '#ff8c00',
+  },
+  stepText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#555',
+    lineHeight: 20,
+  },
+  timeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#fff7ed',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    alignSelf: 'center',
+  },
+  timeBadgeText: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#92400e',
+  },
+  signOutButton: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  signOutGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderRadius: 14,
+  },
+  signOutText: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontFamily: Fonts.headingBold,
+    letterSpacing: 0.5,
   },
 });
