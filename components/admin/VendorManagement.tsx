@@ -10,15 +10,46 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
-import { Clock, CheckCircle, XCircle, ChevronRight, ArrowLeft, Search, X } from 'lucide-react-native';
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  ChevronRight,
+  ArrowLeft,
+  Search,
+  X,
+  Store,
+  Mail,
+  Phone,
+  MapPin,
+  FileText,
+  Award,
+  ShoppingBag,
+} from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { Profile } from '@/types/database';
+import { Fonts } from '@/constants/fonts';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface VendorManagementProps {
   onBack?: () => void;
 }
 
+const statusConfig: Record<string, { color: string; bg: string; icon: any; label: string }> = {
+  pending: { color: '#f59e0b', bg: '#fffbeb', icon: Clock, label: 'Pending' },
+  approved: { color: '#059669', bg: '#ecfdf5', icon: CheckCircle, label: 'Approved' },
+  rejected: { color: '#ef4444', bg: '#fef2f2', icon: XCircle, label: 'Rejected' },
+};
+
+const FILTER_TABS = [
+  { key: 'all', label: 'All' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'rejected', label: 'Rejected' },
+];
+
 export default function VendorManagement({ onBack }: VendorManagementProps) {
+  const insets = useSafeAreaInsets();
   const [vendors, setVendors] = useState<Profile[]>([]);
   const [filteredVendors, setFilteredVendors] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,10 +58,36 @@ export default function VendorManagement({ onBack }: VendorManagementProps) {
   const [rejectionReason, setRejectionReason] = useState('');
   const [processing, setProcessing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     fetchVendors();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [searchQuery, activeFilter, vendors]);
+
+  const applyFilters = () => {
+    let result = [...vendors];
+
+    if (activeFilter !== 'all') {
+      result = result.filter((v) => v.vendor_status === activeFilter);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (v) =>
+          (v.business_name || '').toLowerCase().includes(q) ||
+          (v.full_name || '').toLowerCase().includes(q) ||
+          (v.email || '').toLowerCase().includes(q) ||
+          (v.business_address || '').toLowerCase().includes(q)
+      );
+    }
+
+    setFilteredVendors(result);
+  };
 
   const fetchVendors = async () => {
     try {
@@ -43,34 +100,10 @@ export default function VendorManagement({ onBack }: VendorManagementProps) {
 
       if (error) throw error;
       setVendors(data || []);
-      setFilteredVendors(data || []);
     } catch (error) {
       console.error('Error fetching vendors:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    if (query.trim() === '') {
-      setFilteredVendors(vendors);
-    } else {
-      const filtered = vendors.filter((vendor) => {
-        const searchTerm = query.toLowerCase();
-        const businessName = (vendor.business_name || '').toLowerCase();
-        const fullName = (vendor.full_name || '').toLowerCase();
-        const email = (vendor.email || '').toLowerCase();
-        const address = (vendor.business_address || '').toLowerCase();
-        const status = (vendor.vendor_status || '').toLowerCase();
-
-        return businessName.includes(searchTerm) ||
-          fullName.includes(searchTerm) ||
-          email.includes(searchTerm) ||
-          address.includes(searchTerm) ||
-          status.includes(searchTerm);
-      });
-      setFilteredVendors(filtered);
     }
   };
 
@@ -94,9 +127,7 @@ export default function VendorManagement({ onBack }: VendorManagementProps) {
   };
 
   const handleReject = async (vendorId: string) => {
-    if (!rejectionReason.trim()) {
-      return;
-    }
+    if (!rejectionReason.trim()) return;
 
     try {
       setProcessing(true);
@@ -120,30 +151,9 @@ export default function VendorManagement({ onBack }: VendorManagementProps) {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '#f59e0b';
-      case 'approved':
-        return '#ff8c00';
-      case 'rejected':
-        return '#ef4444';
-      default:
-        return '#6b7280';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return Clock;
-      case 'approved':
-        return CheckCircle;
-      case 'rejected':
-        return XCircle;
-      default:
-        return Clock;
-    }
+  const getFilterCount = (key: string) => {
+    if (key === 'all') return vendors.length;
+    return vendors.filter((v) => v.vendor_status === key).length;
   };
 
   if (loading) {
@@ -156,152 +166,242 @@ export default function VendorManagement({ onBack }: VendorManagementProps) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <View style={styles.headerTop}>
           {onBack && (
             <TouchableOpacity style={styles.backButton} onPress={onBack}>
-              <ArrowLeft size={24} color="#ffffff" />
+              <ArrowLeft size={22} color="#ffffff" />
             </TouchableOpacity>
           )}
           <View style={styles.headerTextContainer}>
-            <Text style={styles.title}>Vendor Applications</Text>
-            <Text style={styles.subtitle}>{vendors.length} total vendors</Text>
+            <Text style={styles.title}>Vendors</Text>
+            <Text style={styles.subtitle}>
+              {filteredVendors.length} of {vendors.length} vendors
+            </Text>
           </View>
         </View>
+
         <View style={styles.searchContainer}>
-          <Search size={20} color="#94a3b8" style={styles.searchIcon} />
+          <Search size={18} color="#8b909a" />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search by name, email, address, or status..."
-            placeholderTextColor="#94a3b8"
+            placeholder="Search vendors..."
+            placeholderTextColor="#8b909a"
             value={searchQuery}
-            onChangeText={handleSearch}
+            onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => handleSearch('')}>
-              <X size={20} color="#94a3b8" />
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <X size={18} color="#8b909a" />
             </TouchableOpacity>
           )}
         </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
+          {FILTER_TABS.map((tab) => {
+            const count = getFilterCount(tab.key);
+            const isActive = activeFilter === tab.key;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[styles.filterTab, isActive && styles.filterTabActive]}
+                onPress={() => setActiveFilter(tab.key)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.filterTabText, isActive && styles.filterTabTextActive]}>
+                  {tab.label}
+                </Text>
+                <View style={[styles.filterBadge, isActive && styles.filterBadgeActive]}>
+                  <Text style={[styles.filterBadgeText, isActive && styles.filterBadgeTextActive]}>
+                    {count}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <View style={styles.statsRow}>
+        {(['pending', 'approved', 'rejected'] as const).map((status) => {
+          const config = statusConfig[status];
+          const Icon = config.icon;
+          return (
+            <View key={status} style={[styles.statCard, { backgroundColor: config.bg }]}>
+              <View style={[styles.statIconWrap, { backgroundColor: config.color + '20' }]}>
+                <Icon size={18} color={config.color} />
+              </View>
+              <Text style={[styles.statNumber, { color: config.color }]}>
+                {vendors.filter((v) => v.vendor_status === status).length}
+              </Text>
+              <Text style={styles.statLabel}>{config.label}</Text>
+            </View>
+          );
+        })}
       </View>
 
       <FlatList
         data={filteredVendors}
         keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => {
-          const StatusIcon = getStatusIcon(item.vendor_status);
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <ShoppingBag size={48} color="#d1d5db" />
+            <Text style={styles.emptyTitle}>No vendors found</Text>
+            <Text style={styles.emptySubtitle}>Try a different search or filter</Text>
+          </View>
+        }
+        renderItem={({ item }) => {
+          const config = statusConfig[item.vendor_status] || statusConfig.pending;
+          const StatusIcon = config.icon;
+
           return (
-            <View>
-              <TouchableOpacity
-                style={styles.vendorCard}
-                onPress={() => {
-                  setSelectedVendor(item);
-                  setShowModal(true);
-                }}
-              >
-                <View style={styles.vendorInfo}>
-                  <View style={styles.vendorHeader}>
-                    <Text style={styles.vendorName}>{item.business_name || item.full_name}</Text>
-                    <View
-                      style={[
-                        styles.statusBadge,
-                        { backgroundColor: getStatusColor(item.vendor_status) + '20' },
-                      ]}
-                    >
-                      <StatusIcon size={14} color={getStatusColor(item.vendor_status)} />
-                      <Text
-                        style={[styles.statusText, { color: getStatusColor(item.vendor_status) }]}
-                      >
-                        {item.vendor_status}
-                      </Text>
-                    </View>
+            <TouchableOpacity
+              style={styles.vendorCard}
+              onPress={() => {
+                setSelectedVendor(item);
+                setShowModal(true);
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={styles.cardTop}>
+                <View style={styles.cardNameRow}>
+                  <View style={styles.vendorAvatarWrap}>
+                    <Store size={18} color="#ff8c00" />
                   </View>
-                  <Text style={styles.vendorEmail}>{item.email}</Text>
-                  {item.business_address && (
-                    <Text style={styles.vendorAddress}>{item.business_address}</Text>
-                  )}
+                  <View style={styles.cardNameContent}>
+                    <Text style={styles.vendorName} numberOfLines={1}>
+                      {item.business_name || item.full_name}
+                    </Text>
+                    <Text style={styles.vendorOwner} numberOfLines={1}>
+                      {item.business_name ? item.full_name : ''}
+                    </Text>
+                  </View>
                 </View>
-                <ChevronRight size={20} color="#9ca3af" />
-              </TouchableOpacity>
-            </View>
+                <View style={[styles.statusBadge, { backgroundColor: config.bg }]}>
+                  <StatusIcon size={12} color={config.color} />
+                  <Text style={[styles.statusText, { color: config.color }]}>
+                    {config.label}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.cardDivider} />
+
+              <View style={styles.detailRow}>
+                <View style={styles.detailIconWrap}>
+                  <Mail size={13} color="#8b909a" />
+                </View>
+                <Text style={styles.detailText} numberOfLines={1}>{item.email}</Text>
+              </View>
+
+              {item.business_address && (
+                <View style={styles.detailRow}>
+                  <View style={styles.detailIconWrap}>
+                    <MapPin size={13} color="#8b909a" />
+                  </View>
+                  <Text style={styles.detailText} numberOfLines={1}>{item.business_address}</Text>
+                </View>
+              )}
+
+              {item.business_phone && (
+                <View style={styles.detailRow}>
+                  <View style={styles.detailIconWrap}>
+                    <Phone size={13} color="#8b909a" />
+                  </View>
+                  <Text style={styles.detailText}>{item.business_phone}</Text>
+                </View>
+              )}
+
+              <View style={styles.cardFooter}>
+                <Text style={styles.viewDetailsText}>View Details</Text>
+                <ChevronRight size={16} color="#c4c9d4" />
+              </View>
+            </TouchableOpacity>
           );
         }}
-        contentContainerStyle={styles.list}
       />
 
-      <Modal visible={showModal} animationType="slide" transparent>
+      {/* Vendor Detail Modal */}
+      <Modal visible={showModal} animationType="slide" transparent onRequestClose={() => setShowModal(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
+            <View style={styles.modalHandle} />
+
             {selectedVendor && (
               <>
-                <Text style={styles.modalTitle}>Vendor Details</Text>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Vendor Details</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setShowModal(false);
+                      setSelectedVendor(null);
+                      setRejectionReason('');
+                    }}
+                    style={styles.closeBtn}
+                  >
+                    <X size={22} color="#8b909a" />
+                  </TouchableOpacity>
+                </View>
+
                 <ScrollView
                   style={styles.modalScroll}
                   showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.modalScrollContent}
                 >
-                  <View style={styles.detailSection}>
-                    <Text style={styles.detailLabel}>Business Name</Text>
-                    <Text style={styles.detailValue}>
-                      {selectedVendor.business_name || 'N/A'}
-                    </Text>
+                  <View style={styles.modalVendorHeader}>
+                    <View style={styles.modalAvatarWrap}>
+                      <Store size={24} color="#ff8c00" />
+                    </View>
+                    <View style={styles.modalVendorInfo}>
+                      <Text style={styles.modalVendorName}>
+                        {selectedVendor.business_name || 'N/A'}
+                      </Text>
+                      <Text style={styles.modalVendorOwner}>{selectedVendor.full_name}</Text>
+                    </View>
+                    {(() => {
+                      const config = statusConfig[selectedVendor.vendor_status] || statusConfig.pending;
+                      const Icon = config.icon;
+                      return (
+                        <View style={[styles.modalStatusBadge, { backgroundColor: config.bg }]}>
+                          <Icon size={14} color={config.color} />
+                          <Text style={[styles.modalStatusText, { color: config.color }]}>
+                            {config.label}
+                          </Text>
+                        </View>
+                      );
+                    })()}
                   </View>
 
-                  <View style={styles.detailSection}>
-                    <Text style={styles.detailLabel}>Owner Name</Text>
-                    <Text style={styles.detailValue}>{selectedVendor.full_name}</Text>
-                  </View>
-
-                  <View style={styles.detailSection}>
-                    <Text style={styles.detailLabel}>Email</Text>
-                    <Text style={styles.detailValue}>{selectedVendor.email}</Text>
-                  </View>
-
-                  {selectedVendor.business_phone && (
-                    <View style={styles.detailSection}>
-                      <Text style={styles.detailLabel}>Business Phone</Text>
-                      <Text style={styles.detailValue}>{selectedVendor.business_phone}</Text>
-                    </View>
-                  )}
-
-                  {selectedVendor.business_address && (
-                    <View style={styles.detailSection}>
-                      <Text style={styles.detailLabel}>Business Address</Text>
-                      <Text style={styles.detailValue}>{selectedVendor.business_address}</Text>
-                    </View>
-                  )}
-
-                  {selectedVendor.business_description && (
-                    <View style={styles.detailSection}>
-                      <Text style={styles.detailLabel}>Description</Text>
-                      <Text style={styles.detailValue}>{selectedVendor.business_description}</Text>
-                    </View>
-                  )}
-
-                  {selectedVendor.business_license && (
-                    <View style={styles.detailSection}>
-                      <Text style={styles.detailLabel}>License Number</Text>
-                      <Text style={styles.detailValue}>{selectedVendor.business_license}</Text>
-                    </View>
-                  )}
-
-                  <View style={styles.detailSection}>
-                    <Text style={styles.detailLabel}>Status</Text>
-                    <Text
-                      style={[
-                        styles.detailValue,
-                        { color: getStatusColor(selectedVendor.vendor_status) },
-                      ]}
-                    >
-                      {selectedVendor.vendor_status.toUpperCase()}
-                    </Text>
+                  <View style={styles.detailsCard}>
+                    <DetailItem icon={Mail} label="Email" value={selectedVendor.email} />
+                    {selectedVendor.business_phone && (
+                      <DetailItem icon={Phone} label="Phone" value={selectedVendor.business_phone} />
+                    )}
+                    {selectedVendor.business_address && (
+                      <DetailItem icon={MapPin} label="Address" value={selectedVendor.business_address} />
+                    )}
+                    {selectedVendor.business_description && (
+                      <DetailItem icon={FileText} label="Description" value={selectedVendor.business_description} />
+                    )}
+                    {selectedVendor.business_license && (
+                      <DetailItem icon={Award} label="License" value={selectedVendor.business_license} last />
+                    )}
                   </View>
 
                   {selectedVendor.vendor_status === 'pending' && (
-                    <>
+                    <View style={styles.actionsSection}>
+                      <Text style={styles.actionsSectionLabel}>Review Application</Text>
+
                       <TextInput
                         style={styles.reasonInput}
-                        placeholder="Rejection reason (optional for approval, required for rejection)"
-                        placeholderTextColor="#9ca3af"
+                        placeholder="Rejection reason (required for rejection)"
+                        placeholderTextColor="#8b909a"
                         value={rejectionReason}
                         onChangeText={setRejectionReason}
                         multiline
@@ -310,48 +410,42 @@ export default function VendorManagement({ onBack }: VendorManagementProps) {
 
                       <View style={styles.actionButtons}>
                         <TouchableOpacity
-                          style={[styles.actionButton, styles.approveButton]}
+                          style={styles.approveButton}
                           onPress={() => handleApprove(selectedVendor.id)}
                           disabled={processing}
+                          activeOpacity={0.7}
                         >
                           {processing ? (
-                            <ActivityIndicator color="#ffffff" />
+                            <ActivityIndicator color="#ffffff" size="small" />
                           ) : (
                             <>
-                              <CheckCircle size={20} color="#ffffff" />
-                              <Text style={styles.actionButtonText}>Approve</Text>
+                              <CheckCircle size={18} color="#ffffff" />
+                              <Text style={styles.approveButtonText}>Approve</Text>
                             </>
                           )}
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          style={[styles.actionButton, styles.rejectButton]}
+                          style={[
+                            styles.rejectButton,
+                            !rejectionReason.trim() && styles.rejectButtonDisabled,
+                          ]}
                           onPress={() => handleReject(selectedVendor.id)}
                           disabled={processing || !rejectionReason.trim()}
+                          activeOpacity={0.7}
                         >
                           {processing ? (
-                            <ActivityIndicator color="#ffffff" />
+                            <ActivityIndicator color="#ffffff" size="small" />
                           ) : (
                             <>
-                              <XCircle size={20} color="#ffffff" />
-                              <Text style={styles.actionButtonText}>Reject</Text>
+                              <XCircle size={18} color="#ffffff" />
+                              <Text style={styles.rejectButtonText}>Reject</Text>
                             </>
                           )}
                         </TouchableOpacity>
                       </View>
-                    </>
+                    </View>
                   )}
-
-                  <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={() => {
-                      setShowModal(false);
-                      setSelectedVendor(null);
-                      setRejectionReason('');
-                    }}
-                  >
-                    <Text style={styles.closeButtonText}>Close</Text>
-                  </TouchableOpacity>
                 </ScrollView>
               </>
             )}
@@ -362,111 +456,334 @@ export default function VendorManagement({ onBack }: VendorManagementProps) {
   );
 }
 
+function DetailItem({
+  icon: Icon,
+  label,
+  value,
+  last,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  last?: boolean;
+}) {
+  return (
+    <View style={[detailItemStyles.row, !last && detailItemStyles.rowBorder]}>
+      <View style={detailItemStyles.iconWrap}>
+        <Icon size={16} color="#ff8c00" />
+      </View>
+      <View style={detailItemStyles.content}>
+        <Text style={detailItemStyles.label}>{label}</Text>
+        <Text style={detailItemStyles.value}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
+const detailItemStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    paddingVertical: 14,
+    gap: 12,
+  },
+  rowBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#f0f1f3',
+  },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#fff7ed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  content: {
+    flex: 1,
+  },
+  label: {
+    fontSize: 11,
+    fontFamily: Fonts.medium,
+    color: '#8b909a',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 3,
+  },
+  value: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#1a1d23',
+    lineHeight: 20,
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f8f9fb',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f8f9fb',
   },
+
   header: {
-    backgroundColor: '#ff8c00',
-    paddingTop: 60,
-    paddingBottom: 20,
+    backgroundColor: '#1a1d23',
     paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    marginBottom: 16,
   },
   backButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 140, 0, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTextContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 26,
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#e0f2fe',
-    marginTop: 4,
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#8b909a',
+    marginTop: 2,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    marginTop: 16,
-    gap: 8,
-  },
-  searchIcon: {
-    marginLeft: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    gap: 10,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#1e293b',
+    fontFamily: Fonts.regular,
+    color: '#ffffff',
     paddingVertical: 12,
     outlineStyle: 'none',
   } as any,
+
+  filterRow: {
+    gap: 8,
+    paddingBottom: 2,
+  },
+  filterTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    gap: 6,
+  },
+  filterTabActive: {
+    backgroundColor: '#ff8c00',
+  },
+  filterTabText: {
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: '#8b909a',
+  },
+  filterTabTextActive: {
+    color: '#ffffff',
+  },
+  filterBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+    minWidth: 22,
+    alignItems: 'center',
+  },
+  filterBadgeActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  filterBadgeText: {
+    fontFamily: Fonts.groteskMedium,
+    fontSize: 11,
+    color: '#8b909a',
+  },
+  filterBadgeTextActive: {
+    color: '#ffffff',
+  },
+
+  statsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 10,
+  },
+  statCard: {
+    flex: 1,
+    borderRadius: 14,
+    padding: 14,
+    alignItems: 'center',
+    gap: 6,
+  },
+  statIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 22,
+    fontFamily: Fonts.groteskBold,
+    letterSpacing: -0.3,
+  },
+  statLabel: {
+    fontSize: 11,
+    fontFamily: Fonts.medium,
+    color: '#6b7280',
+  },
+
   list: {
     padding: 16,
+    paddingBottom: 32,
   },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    gap: 8,
+  },
+  emptyTitle: {
+    fontFamily: Fonts.heading,
+    fontSize: 17,
+    color: '#6b7280',
+    marginTop: 8,
+  },
+  emptySubtitle: {
+    fontFamily: Fonts.regular,
+    fontSize: 13,
+    color: '#9ca3af',
+  },
+
   vendorCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 18,
+    padding: 18,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+  },
+  cardNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  vendorInfo: {
     flex: 1,
+    gap: 12,
+    marginRight: 10,
   },
-  vendorHeader: {
-    flexDirection: 'row',
+  vendorAvatarWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#fff7ed',
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+  },
+  cardNameContent: {
+    flex: 1,
   },
   vendorName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    flex: 1,
+    fontSize: 15,
+    fontFamily: Fonts.semiBold,
+    color: '#1a1d23',
+    marginBottom: 2,
+  },
+  vendorOwner: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: '#8b909a',
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    gap: 5,
+    flexShrink: 0,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
+    fontSize: 11,
+    fontFamily: Fonts.semiBold,
   },
-  vendorEmail: {
-    fontSize: 14,
+  cardDivider: {
+    height: 1,
+    backgroundColor: '#f0f1f3',
+    marginBottom: 10,
+  },
+
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    gap: 8,
+  },
+  detailIconWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 7,
+    backgroundColor: '#f8f9fb',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailText: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
     color: '#6b7280',
-    marginBottom: 4,
+    flex: 1,
   },
-  vendorAddress: {
+
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: 8,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f1f3',
+    gap: 4,
+  },
+  viewDetailsText: {
+    fontFamily: Fonts.medium,
     fontSize: 12,
-    color: '#9ca3af',
+    color: '#8b909a',
   },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -474,82 +791,161 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#ffffff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
     maxHeight: '85%',
     flexShrink: 1,
+  },
+  modalHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#e5e7eb',
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: Fonts.headingBold,
+    color: '#1a1d23',
+  },
+  closeBtn: {
+    padding: 4,
   },
   modalScroll: {
     flexGrow: 0,
     flexShrink: 1,
   },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 24,
+  modalScrollContent: {
+    paddingBottom: 20,
   },
-  detailSection: {
+
+  modalVendorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fb',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    gap: 12,
+  },
+  modalAvatarWrap: {
+    width: 50,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: '#fff7ed',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalVendorInfo: {
+    flex: 1,
+  },
+  modalVendorName: {
+    fontSize: 16,
+    fontFamily: Fonts.semiBold,
+    color: '#1a1d23',
+    marginBottom: 2,
+  },
+  modalVendorOwner: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#8b909a',
+  },
+  modalStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    gap: 5,
+  },
+  modalStatusText: {
+    fontSize: 11,
+    fontFamily: Fonts.semiBold,
+  },
+
+  detailsCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#f0f1f3',
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
-  detailLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6b7280',
-    marginBottom: 4,
-    textTransform: 'uppercase',
+
+  actionsSection: {
+    marginTop: 4,
   },
-  detailValue: {
-    fontSize: 16,
-    color: '#1f2937',
+  actionsSectionLabel: {
+    fontFamily: Fonts.heading,
+    fontSize: 14,
+    color: '#8b909a',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 12,
   },
   reasonInput: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
+    backgroundColor: '#f8f9fb',
+    borderRadius: 14,
     padding: 14,
     fontSize: 14,
-    color: '#1f2937',
-    marginBottom: 16,
+    fontFamily: Fonts.regular,
+    color: '#1a1d23',
+    marginBottom: 14,
     minHeight: 80,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#f0f1f3',
   },
   actionButtons: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 16,
   },
-  actionButton: {
+  approveButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     gap: 8,
-  },
-  approveButton: {
     backgroundColor: '#ff8c00',
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  approveButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontFamily: Fonts.semiBold,
   },
   rejectButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 14,
+    gap: 8,
     backgroundColor: '#ef4444',
   },
-  actionButtonText: {
+  rejectButtonDisabled: {
+    opacity: 0.5,
+  },
+  rejectButtonText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  closeButton: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  closeButtonText: {
-    color: '#1f2937',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontFamily: Fonts.semiBold,
   },
 });
