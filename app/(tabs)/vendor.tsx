@@ -181,7 +181,7 @@ export default function VendorScreen() {
   if (loading || loadingVendorData) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0d9488" />
+        <ActivityIndicator size="large" color="#ff8c00" />
       </View>
     );
   }
@@ -302,7 +302,7 @@ export default function VendorScreen() {
           onPress={() => setShowFilters(!showFilters)}
           activeOpacity={0.7}
         >
-          <SlidersHorizontal size={18} color={showFilters ? '#ffffff' : '#0d9488'} />
+          <SlidersHorizontal size={18} color={showFilters ? '#ffffff' : '#ff8c00'} />
         </TouchableOpacity>
       </View>
 
@@ -422,7 +422,7 @@ export default function VendorScreen() {
                 onPress={() => setEditingProduct(item)}
                 activeOpacity={0.7}
               >
-                <Edit size={16} color="#0d9488" />
+                <Edit size={16} color="#ff8c00" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.cardAction}
@@ -442,16 +442,16 @@ export default function VendorScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
   },
   header: {
-    backgroundColor: '#0f1f1c',
+    backgroundColor: '#2d1f12',
     paddingHorizontal: 20,
     paddingBottom: 22,
   },
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#0d9488',
+    backgroundColor: '#ff8c00',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -521,8 +521,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterToggleActive: {
-    backgroundColor: '#0d9488',
-    borderColor: '#0d9488',
+    backgroundColor: '#ff8c00',
+    borderColor: '#ff8c00',
   },
   filtersPanel: {
     backgroundColor: '#ffffff',
@@ -555,11 +555,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
   },
   filterChipActive: {
-    backgroundColor: '#0f1f1c',
-    borderColor: '#0f1f1c',
+    backgroundColor: '#2d1f12',
+    borderColor: '#2d1f12',
   },
   filterChipText: {
     fontSize: 13,
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   resetText: {
     fontSize: 12,
     fontFamily: Fonts.dmSansSemiBold,
-    color: '#0d9488',
+    color: '#ff8c00',
   },
   list: {
     paddingHorizontal: 16,
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#f1f5f3',
+    borderColor: '#f0ebe4',
     alignItems: 'center',
   },
   productImage: {
@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 17,
     fontFamily: Fonts.dmSansBold,
-    color: '#0d9488',
+    color: '#ff8c00',
     marginBottom: 6,
   },
   productMeta: {
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   dotActive: {
-    backgroundColor: '#0d9488',
+    backgroundColor: '#ff8c00',
   },
   dotInactive: {
     backgroundColor: '#d1d5db',
@@ -671,7 +671,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.dmSansMedium,
   },
   labelActive: {
-    color: '#0d9488',
+    color: '#ff8c00',
   },
   labelInactive: {
     color: '#94a3b8',

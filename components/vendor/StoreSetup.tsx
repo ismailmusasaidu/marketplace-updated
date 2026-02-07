@@ -173,7 +173,7 @@ export default function StoreSetup({ onComplete }: StoreSetupProps) {
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View style={styles.cardIconWrap}>
-              <StepIcon size={24} color="#0d9488" />
+              <StepIcon size={24} color="#ff8c00" />
             </View>
             <View>
               <Text style={styles.cardTitle}>
@@ -315,8 +315,8 @@ export default function StoreSetup({ onComplete }: StoreSetupProps) {
                 <Switch
                   value={settingsData.acceptsOnlinePayment}
                   onValueChange={(value) => setSettingsData({ ...settingsData, acceptsOnlinePayment: value })}
-                  trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
-                  thumbColor={settingsData.acceptsOnlinePayment ? '#0d9488' : '#f8faf9'}
+                  trackColor={{ false: '#e2e8f0', true: '#fed7aa' }}
+                  thumbColor={settingsData.acceptsOnlinePayment ? '#ff8c00' : '#f8f5f0'}
                 />
               </View>
               <View style={styles.switchCard}>
@@ -327,8 +327,8 @@ export default function StoreSetup({ onComplete }: StoreSetupProps) {
                 <Switch
                   value={settingsData.acceptsCashOnDelivery}
                   onValueChange={(value) => setSettingsData({ ...settingsData, acceptsCashOnDelivery: value })}
-                  trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
-                  thumbColor={settingsData.acceptsCashOnDelivery ? '#0d9488' : '#f8faf9'}
+                  trackColor={{ false: '#e2e8f0', true: '#fed7aa' }}
+                  thumbColor={settingsData.acceptsCashOnDelivery ? '#ff8c00' : '#f8f5f0'}
                 />
               </View>
             </View>
@@ -385,10 +385,10 @@ export default function StoreSetup({ onComplete }: StoreSetupProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
   },
   header: {
-    backgroundColor: '#0f1f1c',
+    backgroundColor: '#2d1f12',
     paddingHorizontal: 20,
     paddingBottom: 28,
   },
@@ -424,10 +424,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stepDotActive: {
-    backgroundColor: '#0d9488',
+    backgroundColor: '#ff8c00',
   },
   stepDotDone: {
-    backgroundColor: '#059669',
+    backgroundColor: '#e67a00',
   },
   stepNum: {
     fontSize: 13,
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   stepLabelActive: {
-    color: '#0f1f1c',
+    color: '#1a1a1a',
   },
   stepLine: {
     width: 24,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   stepLineActive: {
-    backgroundColor: '#0d9488',
+    backgroundColor: '#ff8c00',
   },
   body: {
     paddingHorizontal: 16,
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 22,
     borderWidth: 1,
-    borderColor: '#f1f5f3',
+    borderColor: '#f0ebe4',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -475,14 +475,14 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 16,
-    backgroundColor: '#f0fdfa',
+    backgroundColor: '#fff7ed',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardTitle: {
     fontSize: 18,
     fontFamily: Fonts.dmSansBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     letterSpacing: -0.2,
   },
   cardSub: {
@@ -508,14 +508,14 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
     borderWidth: 1,
     borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 14,
     fontSize: 15,
     fontFamily: Fonts.dmSans,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
   },
   textArea: {
     height: 80,
@@ -529,12 +529,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#f1f5f3',
+    borderColor: '#f0ebe4',
   },
   switchContent: {
     flex: 1,
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   switchTitle: {
     fontSize: 15,
     fontFamily: Fonts.dmSansSemiBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     marginBottom: 3,
   },
   switchDesc: {
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0d9488',
+    backgroundColor: '#ff8c00',
     borderRadius: 14,
     paddingVertical: 16,
     gap: 8,
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0f1f1c',
+    backgroundColor: '#2d1f12',
     borderRadius: 14,
     paddingVertical: 16,
     gap: 8,

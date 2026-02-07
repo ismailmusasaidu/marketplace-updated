@@ -301,7 +301,7 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
           activeOpacity={0.7}
         >
           <Text style={styles.updateStatusText}>Update Status</Text>
-          <ChevronRight size={16} color="#1c1917" />
+          <ChevronRight size={16} color="#1a1a1a" />
         </TouchableOpacity>
       </Pressable>
     );
@@ -310,7 +310,7 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1c1917" />
+        <ActivityIndicator size="large" color="#1a1a1a" />
       </View>
     );
   }
@@ -421,7 +421,7 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
                       <StatusIcon size={18} color={statusColors[option.value]} />
                     </View>
                     <Text style={[styles.statusOptionText, isSelected && styles.statusOptionTextActive]}>{option.label}</Text>
-                    {isSelected && <CheckCircle size={18} color="#1c1917" />}
+                    {isSelected && <CheckCircle size={18} color="#1a1a1a" />}
                   </TouchableOpacity>
                 );
               })}
@@ -429,7 +429,7 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
 
             {updatingStatus && (
               <View style={styles.updatingOverlay}>
-                <ActivityIndicator size="large" color="#1c1917" />
+                <ActivityIndicator size="large" color="#1a1a1a" />
               </View>
             )}
           </Pressable>
@@ -456,7 +456,7 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
                   }}
                   activeOpacity={0.7}
                 >
-                  <Receipt size={18} color="#1c1917" />
+                  <Receipt size={18} color="#1a1a1a" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setSelectedOrder(null)}>
                   <X size={22} color="#78716c" />
@@ -600,10 +600,10 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#f8f5f0',
   },
   header: {
-    backgroundColor: '#1c1917',
+    backgroundColor: '#2d1f12',
     paddingHorizontal: 20,
     paddingBottom: 20,
     flexDirection: 'row',
@@ -653,13 +653,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#ede8e0',
   },
   searchInput: {
     flex: 1,
     fontSize: 15,
     fontFamily: Fonts.grotesk,
-    color: '#1c1917',
+    color: '#1a1a1a',
     marginLeft: 10,
     padding: 0,
   },
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#f8f5f0',
   },
   emptyContainer: {
     flex: 1,
@@ -682,9 +682,9 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#faf8f5',
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#ede8e0',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingVertical: 10,
     paddingHorizontal: 24,
-    backgroundColor: '#1c1917',
+    backgroundColor: '#2d1f12',
     borderRadius: 10,
   },
   clearSearchText: {
@@ -722,10 +722,10 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#ede8e0',
   },
   orderCardPressed: {
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#faf8f5',
   },
   orderCardTop: {
     marginBottom: 12,
@@ -739,7 +739,7 @@ const styles = StyleSheet.create({
   orderId: {
     fontSize: 16,
     fontFamily: Fonts.groteskBold,
-    color: '#1c1917',
+    color: '#1a1a1a',
     letterSpacing: -0.3,
   },
   statusBadge: {
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
   },
   orderCardDivider: {
     height: 1,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#f8f5f0',
     marginBottom: 12,
   },
   orderCardBottom: {
@@ -789,7 +789,7 @@ const styles = StyleSheet.create({
   metaValue: {
     fontSize: 16,
     fontFamily: Fonts.groteskBold,
-    color: '#1c1917',
+    color: '#1a1a1a',
   },
   metaValueSmall: {
     fontSize: 13,
@@ -801,16 +801,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#faf8f5',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#ede8e0',
     gap: 6,
   },
   updateStatusText: {
     fontSize: 14,
     fontFamily: Fonts.groteskSemiBold,
-    color: '#1c1917',
+    color: '#1a1a1a',
   },
   modalOverlay: {
     flex: 1,
@@ -845,7 +845,7 @@ const styles = StyleSheet.create({
   statusModalTitle: {
     fontSize: 20,
     fontFamily: Fonts.groteskBold,
-    color: '#1c1917',
+    color: '#1a1a1a',
   },
   statusList: {
     padding: 16,
@@ -856,13 +856,13 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 14,
     marginBottom: 8,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#faf8f5',
     borderWidth: 1,
-    borderColor: '#f5f5f4',
+    borderColor: '#f0ebe4',
   },
   statusOptionActive: {
-    borderColor: '#1c1917',
-    backgroundColor: '#fafaf9',
+    borderColor: '#2d1f12',
+    backgroundColor: '#faf8f5',
   },
   statusOptionIcon: {
     width: 36,
@@ -880,7 +880,7 @@ const styles = StyleSheet.create({
   },
   statusOptionTextActive: {
     fontFamily: Fonts.groteskBold,
-    color: '#1c1917',
+    color: '#1a1a1a',
   },
   updatingOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -909,7 +909,7 @@ const styles = StyleSheet.create({
   detailsTitle: {
     fontSize: 20,
     fontFamily: Fonts.groteskBold,
-    color: '#1c1917',
+    color: '#1a1a1a',
   },
   detailsHeaderActions: {
     flexDirection: 'row',
@@ -920,9 +920,9 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#faf8f5',
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#ede8e0',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -946,11 +946,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   detailCard: {
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#faf8f5',
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#f5f5f4',
+    borderColor: '#f0ebe4',
   },
   detailRow: {
     flexDirection: 'row',
@@ -966,7 +966,7 @@ const styles = StyleSheet.create({
   detailValue: {
     fontSize: 14,
     fontFamily: Fonts.groteskMedium,
-    color: '#1c1917',
+    color: '#1a1a1a',
   },
   detailValueAccent: {
     fontSize: 14,
@@ -988,7 +988,7 @@ const styles = StyleSheet.create({
     color: '#059669',
   },
   markPaidBtn: {
-    backgroundColor: '#1c1917',
+    backgroundColor: '#2d1f12',
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 10,
@@ -1000,7 +1000,7 @@ const styles = StyleSheet.create({
   },
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#ede8e0',
     marginTop: 6,
     paddingTop: 12,
   },
@@ -1012,6 +1012,6 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 20,
     fontFamily: Fonts.groteskBold,
-    color: '#1c1917',
+    color: '#1a1a1a',
   },
 });

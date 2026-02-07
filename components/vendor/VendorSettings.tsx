@@ -295,7 +295,7 @@ export default function VendorSettings() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0d9488" />
+        <ActivityIndicator size="large" color="#ff8c00" />
       </View>
     );
   }
@@ -306,7 +306,7 @@ export default function VendorSettings() {
         <View style={styles.headerContent}>
           <View style={styles.headerIconContainer}>
             <View style={styles.headerIconWrap}>
-              <Store size={26} color="#0d9488" strokeWidth={2.5} />
+              <Store size={26} color="#ff8c00" strokeWidth={2.5} />
             </View>
           </View>
           <View style={styles.headerTextContainer}>
@@ -319,7 +319,7 @@ export default function VendorSettings() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionIconWrap}>
-            <Truck size={18} color="#0d9488" strokeWidth={2.2} />
+            <Truck size={18} color="#ff8c00" strokeWidth={2.2} />
           </View>
           <View style={styles.sectionTitleContainer}>
             <Text style={styles.sectionTitle}>Delivery Settings</Text>
@@ -369,7 +369,7 @@ export default function VendorSettings() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionIconWrap}>
-            <CreditCard size={18} color="#0d9488" strokeWidth={2.2} />
+            <CreditCard size={18} color="#ff8c00" strokeWidth={2.2} />
           </View>
           <View style={styles.sectionTitleContainer}>
             <Text style={styles.sectionTitle}>Payment Methods</Text>
@@ -385,8 +385,8 @@ export default function VendorSettings() {
             <Switch
               value={acceptsOnlinePayment}
               onValueChange={setAcceptsOnlinePayment}
-              trackColor={{ false: '#e2e8f0', true: '#5eead4' }}
-              thumbColor={acceptsOnlinePayment ? '#0d9488' : '#cbd5e1'}
+              trackColor={{ false: '#e2e8f0', true: '#fed7aa' }}
+              thumbColor={acceptsOnlinePayment ? '#ff8c00' : '#cbd5e1'}
               ios_backgroundColor="#e2e8f0"
             />
           </View>
@@ -398,8 +398,8 @@ export default function VendorSettings() {
             <Switch
               value={acceptsCashOnDelivery}
               onValueChange={setAcceptsCashOnDelivery}
-              trackColor={{ false: '#e2e8f0', true: '#5eead4' }}
-              thumbColor={acceptsCashOnDelivery ? '#0d9488' : '#cbd5e1'}
+              trackColor={{ false: '#e2e8f0', true: '#fed7aa' }}
+              thumbColor={acceptsCashOnDelivery ? '#ff8c00' : '#cbd5e1'}
               ios_backgroundColor="#e2e8f0"
             />
           </View>
@@ -409,7 +409,7 @@ export default function VendorSettings() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionIconWrap}>
-            <ImageIcon size={18} color="#0d9488" strokeWidth={2.2} />
+            <ImageIcon size={18} color="#ff8c00" strokeWidth={2.2} />
           </View>
           <View style={styles.sectionTitleContainer}>
             <Text style={styles.sectionTitle}>Store Banner</Text>
@@ -488,7 +488,7 @@ export default function VendorSettings() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionIconWrap}>
-            <Clock size={18} color="#0d9488" strokeWidth={2.2} />
+            <Clock size={18} color="#ff8c00" strokeWidth={2.2} />
           </View>
           <View style={styles.sectionTitleContainer}>
             <Text style={styles.sectionTitle}>Store Hours</Text>
@@ -505,8 +505,8 @@ export default function VendorSettings() {
                   <Switch
                     value={storeHours[day]?.closed || false}
                     onValueChange={(value) => updateStoreHours(day, 'closed', value)}
-                    trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
-                    thumbColor={storeHours[day]?.closed ? '#0d9488' : '#f8faf9'}
+                    trackColor={{ false: '#e2e8f0', true: '#fed7aa' }}
+                    thumbColor={storeHours[day]?.closed ? '#ff8c00' : '#f8f5f0'}
                   />
                 </View>
               </View>
@@ -542,7 +542,7 @@ export default function VendorSettings() {
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionIconWrap}>
-            <Share2 size={18} color="#0d9488" strokeWidth={2.2} />
+            <Share2 size={18} color="#ff8c00" strokeWidth={2.2} />
           </View>
           <View style={styles.sectionTitleContainer}>
             <Text style={styles.sectionTitle}>Social Media</Text>
@@ -626,13 +626,13 @@ export default function VendorSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f8f5f0',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f8f5f0',
   },
   header: {
     backgroundColor: '#ffffff',
@@ -647,7 +647,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   headerIconContainer: {
-    shadowColor: '#0d9488',
+    shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -657,11 +657,11 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 16,
-    backgroundColor: '#f0fdfa',
+    backgroundColor: '#fff7ed',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#ccfbf1',
+    borderColor: '#ffedd5',
   },
   headerTextContainer: {
     flex: 1,
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontFamily: Fonts.display,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     letterSpacing: -0.5,
     marginBottom: 4,
   },
@@ -694,11 +694,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#f0fdfa',
+    backgroundColor: '#fff7ed',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#ccfbf1',
+    borderColor: '#ffedd5',
   },
   sectionTitleContainer: {
     flex: 1,
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontFamily: Fonts.dmSansBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     letterSpacing: -0.3,
     marginBottom: 2,
   },
@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontFamily: Fonts.dmSansSemiBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     letterSpacing: -0.1,
   },
   input: {
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 15,
     fontFamily: Fonts.dmSans,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
   },
   inputWithUnit: {
     flexDirection: 'row',
@@ -803,7 +803,7 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 15,
     fontFamily: Fonts.dmSansSemiBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     marginBottom: 4,
     letterSpacing: -0.1,
   },
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
   dayName: {
     fontSize: 15,
     fontFamily: Fonts.dmSansSemiBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     letterSpacing: -0.1,
   },
   closedSwitch: {
@@ -888,7 +888,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: 'rgba(15,31,28,0.85)',
+    backgroundColor: 'rgba(45,31,18,0.85)',
     borderRadius: 10,
     width: 36,
     height: 36,
@@ -913,7 +913,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#f8f5f0',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -933,13 +933,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0f1f1c',
+    backgroundColor: '#2d1f12',
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 14,
     gap: 10,
     marginBottom: 20,
-    shadowColor: '#0f1f1c',
+    shadowColor: '#2d1f12',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -979,12 +979,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0d9488',
+    backgroundColor: '#ff8c00',
     paddingVertical: 18,
     paddingHorizontal: 32,
     borderRadius: 16,
     gap: 12,
-    shadowColor: '#0d9488',
+    shadowColor: '#ff8c00',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 12,

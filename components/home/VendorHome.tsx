@@ -333,7 +333,7 @@ export default function VendorHome() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0d9488" />
+        <ActivityIndicator size="large" color="#ff8c00" />
       </View>
     );
   }
@@ -349,7 +349,7 @@ export default function VendorHome() {
             <Text style={styles.subtitle}>Here's your store at a glance</Text>
           </View>
           <View style={styles.headerBadge}>
-            <BarChart3 size={20} color="#0d9488" />
+            <BarChart3 size={20} color="#ff8c00" />
           </View>
         </View>
       </View>
@@ -420,7 +420,7 @@ export default function VendorHome() {
           </View>
           <View style={styles.ratingCard}>
             <View style={styles.ratingTop}>
-              <Star size={18} color="#0d9488" />
+              <Star size={18} color="#ff8c00" />
               <Text style={styles.ratingValue}>{stats.totalReviews}</Text>
             </View>
             <Text style={styles.ratingLabel}>Reviews</Text>
@@ -505,16 +505,16 @@ export default function VendorHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
   },
   header: {
-    backgroundColor: '#0f1f1c',
+    backgroundColor: '#2d1f12',
     paddingHorizontal: 20,
     paddingBottom: 28,
   },
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: 'rgba(13, 148, 136, 0.15)',
+    backgroundColor: 'rgba(255, 140, 0, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   revenueCard: {
-    backgroundColor: '#0f1f1c',
+    backgroundColor: '#2d1f12',
     borderRadius: 20,
     padding: 22,
     marginBottom: 16,
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#0d9488',
+    backgroundColor: '#ff8c00',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   revenueMetaText: {
     fontSize: 13,
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#f1f5f3',
+    borderColor: '#f0ebe4',
   },
   metricIconWrap: {
     width: 40,
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 22,
     fontFamily: Fonts.dmSansBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     marginBottom: 2,
   },
   metricLabel: {
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#f1f5f3',
+    borderColor: '#f0ebe4',
   },
   ratingTop: {
     flexDirection: 'row',
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
   ratingValue: {
     fontSize: 20,
     fontFamily: Fonts.dmSansBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
   },
   ratingLabel: {
     fontSize: 12,
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 17,
     fontFamily: Fonts.dmSansBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     marginBottom: 12,
     letterSpacing: -0.2,
   },
@@ -721,7 +721,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#f1f5f3',
+    borderColor: '#f0ebe4',
   },
   actionIconWrap: {
     width: 42,
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
   actionTitle: {
     fontSize: 15,
     fontFamily: Fonts.dmSansBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     marginBottom: 2,
   },
   actionSub: {
@@ -752,12 +752,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#f1f5f3',
+    borderColor: '#f0ebe4',
   },
   summaryTitle: {
     fontSize: 16,
     fontFamily: Fonts.dmSansBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     marginBottom: 16,
     letterSpacing: -0.2,
   },
@@ -769,7 +769,7 @@ const styles = StyleSheet.create({
   },
   summaryDivider: {
     height: 1,
-    backgroundColor: '#f1f5f3',
+    backgroundColor: '#f0ebe4',
   },
   summaryLabel: {
     fontSize: 14,
@@ -779,14 +779,14 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 15,
     fontFamily: Fonts.dmSansSemiBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
   },
   warnValue: {
     color: '#d97706',
   },
   statusContainer: {
     flex: 1,
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f8f5f0',
     alignItems: 'center',
     padding: 32,
   },
@@ -805,7 +805,7 @@ const styles = StyleSheet.create({
   statusTitle: {
     fontSize: 22,
     fontFamily: Fonts.dmSansBold,
-    color: '#0f1f1c',
+    color: '#1a1a1a',
     textAlign: 'center',
     marginBottom: 12,
     letterSpacing: -0.3,
@@ -835,7 +835,7 @@ const styles = StyleSheet.create({
     color: '#92400e',
   },
   statusButton: {
-    backgroundColor: '#0f1f1c',
+    backgroundColor: '#2d1f12',
     borderRadius: 14,
     paddingVertical: 16,
     paddingHorizontal: 48,
