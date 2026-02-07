@@ -21,6 +21,7 @@ import { cartEvents } from '@/lib/cartEvents';
 import ProductDetailModal from '@/components/ProductDetailModal';
 import ProductCard from '@/components/ProductCard';
 import AdModal from '@/components/AdModal';
+import PromoBannerSlider from '@/components/PromoBannerSlider';
 import { Fonts } from '@/constants/fonts';
 
 interface Advert {
@@ -387,6 +388,7 @@ export default function CustomerHome() {
           columnWrapperStyle={styles.row}
           onEndReached={loadMoreProducts}
           onEndReachedThreshold={0.5}
+          ListHeaderComponent={<PromoBannerSlider />}
           ListFooterComponent={
             loadingMore ? (
               <View style={styles.footerLoader}>
