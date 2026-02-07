@@ -10,12 +10,14 @@ import {
   ScrollView,
   TextInput,
   Platform,
+  Pressable,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Package, Clock, CheckCircle, Truck, XCircle, Edit3, X, ArrowLeft, ShoppingBag, Search, Receipt } from 'lucide-react-native';
+import { Package, Clock, CheckCircle, Truck, XCircle, ArrowLeft, ShoppingBag, Search, Receipt, X, ChevronRight, User, MapPin, CreditCard, Calendar } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { Order, OrderStatus, OrderItem, Product } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
+import { Fonts } from '@/constants/fonts';
 import OrderReceipt from '@/components/OrderReceipt';
 
 const statusIcons: Record<OrderStatus, any> = {
@@ -30,12 +32,22 @@ const statusIcons: Record<OrderStatus, any> = {
 
 const statusColors: Record<OrderStatus, string> = {
   pending: '#f59e0b',
-  confirmed: '#ff8c00',
-  preparing: '#ff8c00',
-  ready_for_pickup: '#ff8c00',
-  out_for_delivery: '#ff8c00',
+  confirmed: '#3b82f6',
+  preparing: '#8b5cf6',
+  ready_for_pickup: '#06b6d4',
+  out_for_delivery: '#f97316',
   delivered: '#059669',
   cancelled: '#ef4444',
+};
+
+const statusBgColors: Record<OrderStatus, string> = {
+  pending: '#fef3c7',
+  confirmed: '#dbeafe',
+  preparing: '#ede9fe',
+  ready_for_pickup: '#cffafe',
+  out_for_delivery: '#ffedd5',
+  delivered: '#d1fae5',
+  cancelled: '#fee2e2',
 };
 
 const statusOptions: { value: OrderStatus; label: string }[] = [
@@ -80,7 +92,7 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
 
   useEffect(() => {
     if (profile) {
-      fetchVendorId();
+      setVendorId(profile.id);
     }
   }, [profile]);
 
@@ -110,13 +122,6 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
     }
   }, [vendorId]);
 
-  const fetchVendorId = async () => {
-    if (!profile) return;
-
-    // vendor_id in orders references profile.id, not vendors.id
-    setVendorId(profile.id);
-  };
-
   const fetchOrders = async () => {
     if (!vendorId) return;
 
@@ -137,10 +142,7 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
         .eq('vendor_id', vendorId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (!data) {
         setOrders([]);
@@ -172,7 +174,6 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
 
       setShowStatusModal(false);
       setSelectedOrder(null);
-
       await fetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -189,7 +190,6 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
         .eq('id', orderId);
 
       if (error) throw error;
-
       await fetchOrders();
 
       if (selectedOrder && selectedOrder.id === orderId) {
@@ -220,7 +220,6 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
-      year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -252,107 +251,122 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
   const renderOrderItem = ({ item }: { item: OrderWithCustomer }) => {
     const StatusIcon = statusIcons[item.status];
     const statusColor = statusColors[item.status];
+    const statusBg = statusBgColors[item.status];
 
     return (
-      <TouchableOpacity
-        style={styles.orderCard}
+      <Pressable
+        style={({ pressed }) => [styles.orderCard, pressed && styles.orderCardPressed]}
         onPress={() => setSelectedOrder(item)}
-        activeOpacity={0.7}
       >
-        <View style={styles.orderHeader}>
-          <View style={styles.orderInfo}>
+        <View style={styles.orderCardTop}>
+          <View style={styles.orderIdRow}>
             <Text style={styles.orderId}>#{item.id.slice(0, 8)}</Text>
-            <Text style={styles.customerName}>{item.customer.full_name}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
+              <StatusIcon size={13} color={statusColor} />
+              <Text style={[styles.statusText, { color: statusColor }]}>
+                {item.status.replace(/_/g, ' ')}
+              </Text>
+            </View>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
-            <StatusIcon size={16} color={statusColor} />
-            <Text style={[styles.statusText, { color: statusColor }]}>
-              {item.status.replace('_', ' ')}
-            </Text>
+          <View style={styles.customerRow}>
+            <User size={14} color="#78716c" />
+            <Text style={styles.customerName}>{item.customer.full_name}</Text>
           </View>
         </View>
 
-        <View style={styles.orderDetails}>
-          <View style={styles.orderRow}>
-            <Text style={styles.label}>Total:</Text>
-            <Text style={styles.value}>₦{parseFloat(item.total.toString()).toFixed(2)}</Text>
+        <View style={styles.orderCardDivider} />
+
+        <View style={styles.orderCardBottom}>
+          <View style={styles.orderMetaItem}>
+            <Text style={styles.metaLabel}>Total</Text>
+            <Text style={styles.metaValue}>{'\u20A6'}{parseFloat(item.total.toString()).toLocaleString()}</Text>
           </View>
-          <View style={styles.orderRow}>
-            <Text style={styles.label}>Delivery:</Text>
-            <Text style={styles.value}>{item.delivery_type || 'N/A'}</Text>
+          <View style={styles.orderMetaItem}>
+            <Text style={styles.metaLabel}>Delivery</Text>
+            <Text style={styles.metaValueSmall}>{item.delivery_type || 'N/A'}</Text>
           </View>
-          <View style={styles.orderRow}>
-            <Text style={styles.label}>Date:</Text>
-            <Text style={styles.value}>{formatDate(item.created_at)}</Text>
+          <View style={styles.orderMetaItem}>
+            <Text style={styles.metaLabel}>Date</Text>
+            <Text style={styles.metaValueSmall}>{formatDate(item.created_at)}</Text>
           </View>
         </View>
 
         <TouchableOpacity
-          style={styles.updateButton}
+          style={styles.updateStatusBtn}
           onPress={(e) => {
             e.stopPropagation();
             setSelectedOrder(item);
             setShowStatusModal(true);
           }}
+          activeOpacity={0.7}
         >
-          <Edit3 size={16} color="#ff8c00" />
-          <Text style={styles.updateButtonText}>Update Status</Text>
+          <Text style={styles.updateStatusText}>Update Status</Text>
+          <ChevronRight size={16} color="#1c1917" />
         </TouchableOpacity>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ff8c00" />
+        <ActivityIndicator size="large" color="#1c1917" />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         {onBack && (
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <ArrowLeft size={24} color="#1f2937" />
+          <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
+            <ArrowLeft size={22} color="#fafaf9" />
           </TouchableOpacity>
         )}
-        <Text style={styles.title}>My Orders</Text>
+        <View style={styles.headerTitleWrap}>
+          <Text style={styles.headerTitle}>Orders</Text>
+          {orders.length > 0 && (
+            <View style={styles.orderCountBadge}>
+              <Text style={styles.orderCountText}>{orders.length}</Text>
+            </View>
+          )}
+        </View>
       </View>
 
-      <View style={styles.searchContainer}>
-        <Search size={20} color="#6b7280" style={styles.searchIcon} />
-        <TextInput
-          style={[styles.searchInput, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-          placeholder="Search by order ID, customer, status, or total..."
-          placeholderTextColor="#9ca3af"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity
-            onPress={() => setSearchQuery('')}
-            style={styles.clearButton}
-          >
-            <X size={18} color="#6b7280" />
-          </TouchableOpacity>
-        )}
+      <View style={styles.searchWrap}>
+        <View style={styles.searchContainer}>
+          <Search size={18} color="#a8a29e" />
+          <TextInput
+            style={[styles.searchInput, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+            placeholder="Search orders..."
+            placeholderTextColor="#a8a29e"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearBtn}>
+              <X size={16} color="#78716c" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {orders.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Package size={64} color="#9ca3af" />
-          <Text style={styles.emptyText}>No orders yet</Text>
+          <View style={styles.emptyIconWrap}>
+            <Package size={48} color="#d6d3d1" />
+          </View>
+          <Text style={styles.emptyTitle}>No orders yet</Text>
+          <Text style={styles.emptySubtitle}>Orders from customers will appear here</Text>
         </View>
       ) : filteredOrders.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Search size={64} color="#9ca3af" />
-          <Text style={styles.emptyText}>No orders match your search</Text>
-          <TouchableOpacity
-            style={styles.clearSearchButton}
-            onPress={() => setSearchQuery('')}
-          >
+          <View style={styles.emptyIconWrap}>
+            <Search size={48} color="#d6d3d1" />
+          </View>
+          <Text style={styles.emptyTitle}>No results</Text>
+          <Text style={styles.emptySubtitle}>Try a different search term</Text>
+          <TouchableOpacity style={styles.clearSearchBtn} onPress={() => setSearchQuery('')}>
             <Text style={styles.clearSearchText}>Clear Search</Text>
           </TouchableOpacity>
         </View>
@@ -366,6 +380,7 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
         />
       )}
 
+      {/* Status Update Modal */}
       <Modal
         visible={showStatusModal}
         transparent
@@ -375,19 +390,17 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
           setSelectedOrder(null);
         }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Update Order Status</Text>
-              <TouchableOpacity onPress={() => {
-                setShowStatusModal(false);
-                setSelectedOrder(null);
-              }}>
-                <X size={24} color="#6b7280" />
+        <Pressable style={styles.modalOverlay} onPress={() => { setShowStatusModal(false); setSelectedOrder(null); }}>
+          <Pressable style={styles.statusModalContent} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalHandle} />
+            <View style={styles.statusModalHeader}>
+              <Text style={styles.statusModalTitle}>Update Status</Text>
+              <TouchableOpacity onPress={() => { setShowStatusModal(false); setSelectedOrder(null); }}>
+                <X size={22} color="#78716c" />
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.statusList}>
+            <ScrollView style={styles.statusList} showsVerticalScrollIndicator={false}>
               {statusOptions.map((option) => {
                 const StatusIcon = statusIcons[option.value];
                 const isSelected = selectedOrder?.status === option.value;
@@ -395,19 +408,20 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
                 return (
                   <TouchableOpacity
                     key={option.value}
-                    style={[styles.statusOption, isSelected && styles.statusOptionSelected]}
+                    style={[styles.statusOption, isSelected && styles.statusOptionActive]}
                     onPress={() => {
                       if (selectedOrder) {
                         updateOrderStatus(selectedOrder.id, option.value);
                       }
                     }}
                     disabled={updatingStatus}
+                    activeOpacity={0.7}
                   >
-                    <View style={styles.statusOptionContent}>
-                      <StatusIcon size={20} color={statusColors[option.value]} />
-                      <Text style={styles.statusOptionText}>{option.label}</Text>
+                    <View style={[styles.statusOptionIcon, { backgroundColor: statusBgColors[option.value] }]}>
+                      <StatusIcon size={18} color={statusColors[option.value]} />
                     </View>
-                    {isSelected && <CheckCircle size={20} color="#ff8c00" />}
+                    <Text style={[styles.statusOptionText, isSelected && styles.statusOptionTextActive]}>{option.label}</Text>
+                    {isSelected && <CheckCircle size={18} color="#1c1917" />}
                   </TouchableOpacity>
                 );
               })}
@@ -415,152 +429,158 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
 
             {updatingStatus && (
               <View style={styles.updatingOverlay}>
-                <ActivityIndicator size="large" color="#ff8c00" />
+                <ActivityIndicator size="large" color="#1c1917" />
               </View>
             )}
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
 
+      {/* Order Details Modal */}
       <Modal
         visible={!!selectedOrder && !showStatusModal}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setSelectedOrder(null)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.detailsModal}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Order Details</Text>
-              <View style={styles.modalHeaderActions}>
+        <Pressable style={styles.modalOverlay} onPress={() => setSelectedOrder(null)}>
+          <Pressable style={styles.detailsModalContent} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalHandle} />
+            <View style={styles.detailsHeader}>
+              <Text style={styles.detailsTitle}>Order Details</Text>
+              <View style={styles.detailsHeaderActions}>
                 <TouchableOpacity
-                  style={styles.receiptButton}
+                  style={styles.receiptBtn}
                   onPress={() => {
-                    if (selectedOrder) {
-                      handleViewReceipt(selectedOrder);
-                    }
+                    if (selectedOrder) handleViewReceipt(selectedOrder);
                   }}
+                  activeOpacity={0.7}
                 >
-                  <Receipt size={20} color="#ff8c00" />
+                  <Receipt size={18} color="#1c1917" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setSelectedOrder(null)}>
-                  <X size={24} color="#6b7280" />
+                  <X size={22} color="#78716c" />
                 </TouchableOpacity>
               </View>
             </View>
 
             {selectedOrder && (
-              <ScrollView style={styles.detailsContent}>
+              <ScrollView style={styles.detailsBody} showsVerticalScrollIndicator={false}>
                 <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Order Information</Text>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Order ID:</Text>
-                    <Text style={styles.detailValue}>#{selectedOrder.id.slice(0, 8)}</Text>
+                  <View style={styles.detailSectionHeader}>
+                    <Package size={16} color="#78716c" />
+                    <Text style={styles.detailSectionTitle}>Order Info</Text>
                   </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Status:</Text>
-                    <View
-                      style={[
-                        styles.statusBadge,
-                        { backgroundColor: statusColors[selectedOrder.status] + '20' },
-                      ]}
-                    >
-                      {(() => {
-                        const StatusIcon = statusIcons[selectedOrder.status];
-                        return <StatusIcon size={16} color={statusColors[selectedOrder.status]} />;
-                      })()}
-                      <Text
-                        style={[
-                          styles.statusText,
-                          { color: statusColors[selectedOrder.status] },
-                        ]}
-                      >
-                        {selectedOrder.status.replace('_', ' ')}
+                  <View style={styles.detailCard}>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Order ID</Text>
+                      <Text style={styles.detailValue}>#{selectedOrder.id.slice(0, 8)}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Status</Text>
+                      <View style={[styles.statusBadge, { backgroundColor: statusBgColors[selectedOrder.status] }]}>
+                        {(() => {
+                          const Icon = statusIcons[selectedOrder.status];
+                          return <Icon size={13} color={statusColors[selectedOrder.status]} />;
+                        })()}
+                        <Text style={[styles.statusText, { color: statusColors[selectedOrder.status] }]}>
+                          {selectedOrder.status.replace(/_/g, ' ')}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Date</Text>
+                      <Text style={styles.detailValue}>{formatDate(selectedOrder.created_at)}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.detailSection}>
+                  <View style={styles.detailSectionHeader}>
+                    <User size={16} color="#78716c" />
+                    <Text style={styles.detailSectionTitle}>Customer</Text>
+                  </View>
+                  <View style={styles.detailCard}>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Name</Text>
+                      <Text style={styles.detailValue}>{selectedOrder.customer.full_name}</Text>
+                    </View>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Email</Text>
+                      <Text style={styles.detailValue}>{selectedOrder.customer.email}</Text>
+                    </View>
+                    {selectedOrder.customer.phone && (
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Phone</Text>
+                        <Text style={styles.detailValue}>{selectedOrder.customer.phone}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                <View style={styles.detailSection}>
+                  <View style={styles.detailSectionHeader}>
+                    <MapPin size={16} color="#78716c" />
+                    <Text style={styles.detailSectionTitle}>Delivery</Text>
+                  </View>
+                  <View style={styles.detailCard}>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Type</Text>
+                      <Text style={styles.detailValue}>{selectedOrder.delivery_type || 'N/A'}</Text>
+                    </View>
+                    {selectedOrder.delivery_address && selectedOrder.delivery_address !== 'N/A' && (
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Address</Text>
+                        <Text style={[styles.detailValue, { maxWidth: '60%', textAlign: 'right' }]}>{selectedOrder.delivery_address}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                <View style={styles.detailSection}>
+                  <View style={styles.detailSectionHeader}>
+                    <CreditCard size={16} color="#78716c" />
+                    <Text style={styles.detailSectionTitle}>Payment</Text>
+                  </View>
+                  <View style={styles.detailCard}>
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Method</Text>
+                      <Text style={styles.detailValueAccent}>
+                        {selectedOrder.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' :
+                         selectedOrder.payment_method === 'wallet' ? 'Wallet' :
+                         selectedOrder.payment_method === 'online' ? 'Online Payment' :
+                         'Bank Transfer'}
                       </Text>
                     </View>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Date:</Text>
-                    <Text style={styles.detailValue}>{formatDate(selectedOrder.created_at)}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Customer Information</Text>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Name:</Text>
-                    <Text style={styles.detailValue}>{selectedOrder.customer.full_name}</Text>
-                  </View>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Email:</Text>
-                    <Text style={styles.detailValue}>{selectedOrder.customer.email}</Text>
-                  </View>
-                  {selectedOrder.customer.phone && (
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Phone:</Text>
-                      <Text style={styles.detailValue}>{selectedOrder.customer.phone}</Text>
+                    {selectedOrder.payment_method === 'transfer' && (
+                      <View style={styles.detailRow}>
+                        <Text style={styles.detailLabel}>Status</Text>
+                        {selectedOrder.payment_status === 'completed' ? (
+                          <View style={styles.paidBadge}>
+                            <CheckCircle size={13} color="#059669" />
+                            <Text style={styles.paidText}>Paid</Text>
+                          </View>
+                        ) : (
+                          <TouchableOpacity
+                            style={styles.markPaidBtn}
+                            onPress={() => markAsPaid(selectedOrder.id)}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.markPaidText}>Mark as Paid</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    )}
+                    <View style={[styles.detailRow, styles.totalRow]}>
+                      <Text style={styles.totalLabel}>Total</Text>
+                      <Text style={styles.totalValue}>{'\u20A6'}{parseFloat(selectedOrder.total.toString()).toLocaleString()}</Text>
                     </View>
-                  )}
-                </View>
-
-                <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Delivery Information</Text>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Type:</Text>
-                    <Text style={styles.detailValue}>{selectedOrder.delivery_type || 'N/A'}</Text>
-                  </View>
-                  {selectedOrder.delivery_address && selectedOrder.delivery_address !== 'N/A' && (
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Delivery Info:</Text>
-                      <Text style={[styles.detailValue, { lineHeight: 20 }]}>{selectedOrder.delivery_address}</Text>
-                    </View>
-                  )}
-                </View>
-
-                <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>Payment</Text>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Method:</Text>
-                    <Text style={[styles.detailValue, styles.paymentMethod]}>
-                      {selectedOrder.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' :
-                       selectedOrder.payment_method === 'wallet' ? 'Wallet' :
-                       selectedOrder.payment_method === 'online' ? 'Online Payment' :
-                       'Bank Transfer'}
-                    </Text>
-                  </View>
-                  {selectedOrder.payment_method === 'transfer' && (
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Status:</Text>
-                      {selectedOrder.payment_status === 'completed' ? (
-                        <View style={styles.paidBadge}>
-                          <CheckCircle size={14} color="#059669" />
-                          <Text style={styles.paidText}>Paid</Text>
-                        </View>
-                      ) : (
-                        <TouchableOpacity
-                          style={styles.markPaidButton}
-                          onPress={() => {
-                            if (selectedOrder) {
-                              markAsPaid(selectedOrder.id);
-                            }
-                          }}
-                        >
-                          <Text style={styles.markPaidText}>Mark as Paid</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  )}
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Total:</Text>
-                    <Text style={[styles.detailValue, styles.totalAmount]}>
-                      ₦{parseFloat(selectedOrder.total.toString()).toFixed(2)}
-                    </Text>
                   </View>
                 </View>
               </ScrollView>
             )}
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
 
       <OrderReceipt
@@ -580,66 +600,77 @@ export default function VendorOrderManagement({ onBack }: VendorOrderManagementP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f5f5f4',
   },
   header: {
+    backgroundColor: '#1c1917',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
   backButton: {
-    marginRight: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1f2937',
+  headerTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontFamily: Fonts.groteskBold,
+    color: '#fafaf9',
+    letterSpacing: -0.5,
+  },
+  orderCountBadge: {
+    backgroundColor: '#ff8c00',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  orderCountText: {
+    fontSize: 13,
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#fff',
+  },
+  searchWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  searchIcon: {
-    marginRight: 8,
+    borderColor: '#e7e5e4',
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
-    color: '#1f2937',
+    fontSize: 15,
+    fontFamily: Fonts.grotesk,
+    color: '#1c1917',
+    marginLeft: 10,
     padding: 0,
   },
-  clearButton: {
+  clearBtn: {
     padding: 4,
-    marginLeft: 8,
-  },
-  clearSearchButton: {
-    marginTop: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#ff8c00',
-    borderRadius: 8,
-  },
-  clearSearchText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f5f5f4',
   },
   emptyContainer: {
     flex: 1,
@@ -647,197 +678,299 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
   },
-  emptyText: {
+  emptyIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#fafaf9',
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyTitle: {
     fontSize: 18,
-    color: '#9ca3af',
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#44403c',
+    marginBottom: 4,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    fontFamily: Fonts.grotesk,
+    color: '#a8a29e',
+  },
+  clearSearchBtn: {
     marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    backgroundColor: '#1c1917',
+    borderRadius: 10,
+  },
+  clearSearchText: {
+    fontSize: 14,
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#fff',
   },
   listContent: {
     padding: 16,
+    paddingBottom: 32,
   },
   orderCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#e7e5e4',
   },
-  orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+  orderCardPressed: {
+    backgroundColor: '#fafaf9',
+  },
+  orderCardTop: {
     marginBottom: 12,
   },
-  orderInfo: {
-    flex: 1,
+  orderIdRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   orderId: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  customerName: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontFamily: Fonts.groteskBold,
+    color: '#1c1917',
+    letterSpacing: -0.3,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 20,
-    gap: 6,
+    gap: 5,
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: Fonts.groteskSemiBold,
     textTransform: 'capitalize',
   },
-  orderDetails: {
-    gap: 8,
+  customerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  customerName: {
+    fontSize: 14,
+    fontFamily: Fonts.groteskMedium,
+    color: '#78716c',
+  },
+  orderCardDivider: {
+    height: 1,
+    backgroundColor: '#f5f5f4',
     marginBottom: 12,
   },
-  orderRow: {
+  orderCardBottom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 14,
   },
-  label: {
-    fontSize: 14,
-    color: '#6b7280',
+  orderMetaItem: {
+    alignItems: 'flex-start',
   },
-  value: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#1f2937',
+  metaLabel: {
+    fontSize: 11,
+    fontFamily: Fonts.groteskMedium,
+    color: '#a8a29e',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
-  updateButton: {
+  metaValue: {
+    fontSize: 16,
+    fontFamily: Fonts.groteskBold,
+    color: '#1c1917',
+  },
+  metaValueSmall: {
+    fontSize: 13,
+    fontFamily: Fonts.groteskMedium,
+    color: '#44403c',
+  },
+  updateStatusBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: '#eff6ff',
-    borderRadius: 8,
-    gap: 8,
+    backgroundColor: '#fafaf9',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
+    gap: 6,
   },
-  updateButtonText: {
+  updateStatusText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#ff8c00',
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#1c1917',
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+  modalHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#d6d3d1',
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  statusModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingBottom: 40,
     maxHeight: '60%',
   },
-  detailsModal: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 40,
-    maxHeight: '80%',
-  },
-  modalHeader: {
+  statusModalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#f5f5f4',
   },
-  modalTitle: {
+  statusModalTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1f2937',
-  },
-  modalHeaderActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  receiptButton: {
-    backgroundColor: '#fff7ed',
-    padding: 10,
-    borderRadius: 8,
+    fontFamily: Fonts.groteskBold,
+    color: '#1c1917',
   },
   statusList: {
-    padding: 20,
+    padding: 16,
   },
   statusOption: {
     flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 8,
+    backgroundColor: '#fafaf9',
+    borderWidth: 1,
+    borderColor: '#f5f5f4',
+  },
+  statusOptionActive: {
+    borderColor: '#1c1917',
+    backgroundColor: '#fafaf9',
+  },
+  statusOptionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  statusOptionText: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: Fonts.groteskMedium,
+    color: '#44403c',
+  },
+  statusOptionTextActive: {
+    fontFamily: Fonts.groteskBold,
+    color: '#1c1917',
+  },
+  updatingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  detailsModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+    maxHeight: '85%',
+  },
+  detailsHeader: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    marginBottom: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f4',
   },
-  statusOptionSelected: {
-    borderColor: '#ff8c00',
-    backgroundColor: '#eff6ff',
+  detailsTitle: {
+    fontSize: 20,
+    fontFamily: Fonts.groteskBold,
+    color: '#1c1917',
   },
-  statusOptionContent: {
+  detailsHeaderActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  statusOptionText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1f2937',
-  },
-  updatingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    justifyContent: 'center',
+  receiptBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#fafaf9',
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  detailsContent: {
-    padding: 20,
+  detailsBody: {
+    padding: 16,
   },
   detailSection: {
-    marginBottom: 24,
+    marginBottom: 20,
+  },
+  detailSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
   },
   detailSectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 12,
+    fontSize: 13,
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#78716c',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  detailCard: {
+    backgroundColor: '#fafaf9',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#f5f5f4',
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    paddingVertical: 8,
   },
   detailLabel: {
     fontSize: 14,
-    color: '#6b7280',
+    fontFamily: Fonts.grotesk,
+    color: '#a8a29e',
   },
   detailValue: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#1f2937',
-    maxWidth: '60%',
-    textAlign: 'right',
+    fontFamily: Fonts.groteskMedium,
+    color: '#1c1917',
   },
-  paymentMethod: {
+  detailValueAccent: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.groteskSemiBold,
     color: '#ff8c00',
   },
   paidBadge: {
@@ -845,29 +978,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#d1fae5',
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: 12,
     gap: 4,
   },
   paidText: {
     fontSize: 12,
+    fontFamily: Fonts.groteskSemiBold,
     color: '#059669',
-    fontWeight: '700',
   },
-  markPaidButton: {
-    backgroundColor: '#ff8c00',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+  markPaidBtn: {
+    backgroundColor: '#1c1917',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
   },
   markPaidText: {
-    fontSize: 12,
-    color: '#ffffff',
-    fontWeight: '700',
+    fontSize: 13,
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#fff',
   },
-  totalAmount: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#ff8c00',
+  totalRow: {
+    borderTopWidth: 1,
+    borderTopColor: '#e7e5e4',
+    marginTop: 6,
+    paddingTop: 12,
+  },
+  totalLabel: {
+    fontSize: 15,
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#44403c',
+  },
+  totalValue: {
+    fontSize: 20,
+    fontFamily: Fonts.groteskBold,
+    color: '#1c1917',
   },
 });

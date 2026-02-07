@@ -15,10 +15,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { Save, X, Store, Upload, Image as ImageIcon } from 'lucide-react-native';
+import { Save, Store, Upload, Image as ImageIcon, X, CreditCard, Clock, Share2, Truck } from 'lucide-react-native';
 import { Fonts } from '@/constants/fonts';
 
-interface VendorSettings {
+interface VendorSettingsData {
   id: string;
   vendor_id: string;
   delivery_radius: number;
@@ -44,7 +44,7 @@ export default function VendorSettings() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [vendorId, setVendorId] = useState<string | null>(null);
-  const [settings, setSettings] = useState<VendorSettings | null>(null);
+  const [settings, setSettings] = useState<VendorSettingsData | null>(null);
 
   const [deliveryRadius, setDeliveryRadius] = useState('10');
   const [minimumOrder, setMinimumOrder] = useState('0');
@@ -181,7 +181,6 @@ export default function VendorSettings() {
 
       setStoreBannerUrl(publicUrl);
 
-      // Save to database immediately
       if (settings) {
         const { error: updateError } = await supabase
           .from('vendor_settings')
@@ -193,7 +192,6 @@ export default function VendorSettings() {
 
         if (updateError) throw updateError;
       } else {
-        // Create new settings with banner
         const { error: insertError } = await supabase
           .from('vendor_settings')
           .insert({
@@ -296,7 +294,7 @@ export default function VendorSettings() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ff8c00" />
+        <ActivityIndicator size="large" color="#1c1917" />
       </View>
     );
   }
@@ -304,226 +302,251 @@ export default function VendorSettings() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Store size={28} color="#ff8c00" />
+        <View style={styles.headerIconWrap}>
+          <Store size={22} color="#ff8c00" />
+        </View>
         <Text style={styles.headerTitle}>Store Settings</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Delivery Settings</Text>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Delivery Radius (km)</Text>
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-            value={deliveryRadius}
-            onChangeText={setDeliveryRadius}
-            keyboardType="decimal-pad"
-            placeholder="10"
-            placeholderTextColor="#9ca3af"
-          />
+      <View style={styles.sectionGroup}>
+        <View style={styles.sectionHeader}>
+          <Truck size={18} color="#78716c" />
+          <Text style={styles.sectionTitle}>Delivery Settings</Text>
         </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Minimum Order Amount (₦)</Text>
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-            value={minimumOrder}
-            onChangeText={setMinimumOrder}
-            keyboardType="decimal-pad"
-            placeholder="0"
-            placeholderTextColor="#9ca3af"
-          />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Payment Methods</Text>
-
-        <View style={styles.switchRow}>
-          <Text style={styles.switchLabel}>Accept Online Payment</Text>
-          <Switch
-            value={acceptsOnlinePayment}
-            onValueChange={setAcceptsOnlinePayment}
-            trackColor={{ false: '#d1d5db', true: '#ffb366' }}
-            thumbColor={acceptsOnlinePayment ? '#ff8c00' : '#f3f4f6'}
-          />
-        </View>
-
-        <View style={styles.switchRow}>
-          <Text style={styles.switchLabel}>Accept Cash on Delivery</Text>
-          <Switch
-            value={acceptsCashOnDelivery}
-            onValueChange={setAcceptsCashOnDelivery}
-            trackColor={{ false: '#d1d5db', true: '#ffb366' }}
-            thumbColor={acceptsCashOnDelivery ? '#ff8c00' : '#f3f4f6'}
-          />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Store Banner</Text>
-
-        {storeBannerUrl ? (
-          <View style={styles.bannerPreview}>
-            <Image
-              source={{ uri: storeBannerUrl }}
-              style={styles.bannerImage}
-              resizeMode="cover"
+        <View style={styles.sectionCard}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Delivery Radius (km)</Text>
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+              value={deliveryRadius}
+              onChangeText={setDeliveryRadius}
+              keyboardType="decimal-pad"
+              placeholder="10"
+              placeholderTextColor="#a8a29e"
             />
-            <TouchableOpacity
-              style={styles.removeBannerButton}
-              onPress={() => setStoreBannerUrl('')}
-            >
-              <X size={16} color="#fff" />
-            </TouchableOpacity>
           </View>
-        ) : (
-          <View style={styles.noBannerPreview}>
-            <ImageIcon size={48} color="#d1d5db" />
-            <Text style={styles.noBannerText}>No banner uploaded</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Minimum Order Amount ({'\u20A6'})</Text>
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+              value={minimumOrder}
+              onChangeText={setMinimumOrder}
+              keyboardType="decimal-pad"
+              placeholder="0"
+              placeholderTextColor="#a8a29e"
+            />
           </View>
-        )}
-
-        <TouchableOpacity
-          style={[styles.uploadButton, uploading && styles.uploadButtonDisabled]}
-          onPress={pickAndUploadBanner}
-          disabled={uploading}
-        >
-          {uploading ? (
-            <>
-              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.uploadButtonText}>Uploading...</Text>
-            </>
-          ) : (
-            <>
-              <Upload size={20} color="#fff" />
-              <Text style={styles.uploadButtonText}>
-                {storeBannerUrl ? 'Change Banner' : 'Upload Banner'}
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Or enter image URL</Text>
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-            value={storeBannerUrl}
-            onChangeText={setStoreBannerUrl}
-            placeholder="https://example.com/banner.jpg"
-            placeholderTextColor="#9ca3af"
-            autoCapitalize="none"
-          />
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Store Hours</Text>
-        {DAYS.map(day => (
-          <View key={day} style={styles.dayRow}>
-            <View style={styles.dayHeader}>
-              <Text style={styles.dayName}>{day}</Text>
-              <View style={styles.closedSwitch}>
-                <Text style={styles.closedLabel}>Closed</Text>
-                <Switch
-                  value={storeHours[day]?.closed || false}
-                  onValueChange={(value) => updateStoreHours(day, 'closed', value)}
-                  trackColor={{ false: '#d1d5db', true: '#ffb366' }}
-                  thumbColor={storeHours[day]?.closed ? '#ff8c00' : '#f3f4f6'}
-                />
-              </View>
+      <View style={styles.sectionGroup}>
+        <View style={styles.sectionHeader}>
+          <CreditCard size={18} color="#78716c" />
+          <Text style={styles.sectionTitle}>Payment Methods</Text>
+        </View>
+        <View style={styles.sectionCard}>
+          <View style={styles.switchRow}>
+            <Text style={styles.switchLabel}>Accept Online Payment</Text>
+            <Switch
+              value={acceptsOnlinePayment}
+              onValueChange={setAcceptsOnlinePayment}
+              trackColor={{ false: '#d6d3d1', true: '#fed7aa' }}
+              thumbColor={acceptsOnlinePayment ? '#ff8c00' : '#fafaf9'}
+            />
+          </View>
+
+          <View style={[styles.switchRow, { borderBottomWidth: 0 }]}>
+            <Text style={styles.switchLabel}>Accept Cash on Delivery</Text>
+            <Switch
+              value={acceptsCashOnDelivery}
+              onValueChange={setAcceptsCashOnDelivery}
+              trackColor={{ false: '#d6d3d1', true: '#fed7aa' }}
+              thumbColor={acceptsCashOnDelivery ? '#ff8c00' : '#fafaf9'}
+            />
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.sectionGroup}>
+        <View style={styles.sectionHeader}>
+          <ImageIcon size={18} color="#78716c" />
+          <Text style={styles.sectionTitle}>Store Banner</Text>
+        </View>
+        <View style={styles.sectionCard}>
+          {storeBannerUrl ? (
+            <View style={styles.bannerPreview}>
+              <Image
+                source={{ uri: storeBannerUrl }}
+                style={styles.bannerImage}
+                resizeMode="cover"
+              />
+              <TouchableOpacity
+                style={styles.removeBannerBtn}
+                onPress={() => setStoreBannerUrl('')}
+              >
+                <X size={14} color="#fff" />
+              </TouchableOpacity>
             </View>
-            {!storeHours[day]?.closed && (
-              <View style={styles.timeRow}>
-                <View style={styles.timeInput}>
-                  <Text style={styles.timeLabel}>Open</Text>
-                  <TextInput
-                    style={[styles.input, styles.timeField, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-                    value={storeHours[day]?.open || '09:00'}
-                    onChangeText={(value) => updateStoreHours(day, 'open', value)}
-                    placeholder="09:00"
-                    placeholderTextColor="#9ca3af"
-                  />
-                </View>
-                <View style={styles.timeInput}>
-                  <Text style={styles.timeLabel}>Close</Text>
-                  <TextInput
-                    style={[styles.input, styles.timeField, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-                    value={storeHours[day]?.close || '17:00'}
-                    onChangeText={(value) => updateStoreHours(day, 'close', value)}
-                    placeholder="17:00"
-                    placeholderTextColor="#9ca3af"
+          ) : (
+            <View style={styles.noBannerPreview}>
+              <ImageIcon size={40} color="#d6d3d1" />
+              <Text style={styles.noBannerText}>No banner uploaded</Text>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={[styles.uploadBtn, uploading && { opacity: 0.6 }]}
+            onPress={pickAndUploadBanner}
+            disabled={uploading}
+            activeOpacity={0.7}
+          >
+            {uploading ? (
+              <>
+                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.uploadBtnText}>Uploading...</Text>
+              </>
+            ) : (
+              <>
+                <Upload size={18} color="#fff" />
+                <Text style={styles.uploadBtnText}>
+                  {storeBannerUrl ? 'Change Banner' : 'Upload Banner'}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <View style={[styles.inputGroup, { marginBottom: 0 }]}>
+            <Text style={styles.label}>Or enter image URL</Text>
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+              value={storeBannerUrl}
+              onChangeText={setStoreBannerUrl}
+              placeholder="https://example.com/banner.jpg"
+              placeholderTextColor="#a8a29e"
+              autoCapitalize="none"
+            />
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.sectionGroup}>
+        <View style={styles.sectionHeader}>
+          <Clock size={18} color="#78716c" />
+          <Text style={styles.sectionTitle}>Store Hours</Text>
+        </View>
+        <View style={styles.sectionCard}>
+          {DAYS.map((day, index) => (
+            <View key={day} style={[styles.dayRow, index === DAYS.length - 1 && { marginBottom: 0 }]}>
+              <View style={styles.dayHeader}>
+                <Text style={styles.dayName}>{day}</Text>
+                <View style={styles.closedSwitch}>
+                  <Text style={styles.closedLabel}>Closed</Text>
+                  <Switch
+                    value={storeHours[day]?.closed || false}
+                    onValueChange={(value) => updateStoreHours(day, 'closed', value)}
+                    trackColor={{ false: '#d6d3d1', true: '#fed7aa' }}
+                    thumbColor={storeHours[day]?.closed ? '#ff8c00' : '#fafaf9'}
                   />
                 </View>
               </View>
-            )}
-          </View>
-        ))}
+              {!storeHours[day]?.closed && (
+                <View style={styles.timeRow}>
+                  <View style={styles.timeInput}>
+                    <Text style={styles.timeLabel}>Open</Text>
+                    <TextInput
+                      style={[styles.input, styles.timeField, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      value={storeHours[day]?.open || '09:00'}
+                      onChangeText={(value) => updateStoreHours(day, 'open', value)}
+                      placeholder="09:00"
+                      placeholderTextColor="#a8a29e"
+                    />
+                  </View>
+                  <View style={styles.timeInput}>
+                    <Text style={styles.timeLabel}>Close</Text>
+                    <TextInput
+                      style={[styles.input, styles.timeField, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      value={storeHours[day]?.close || '17:00'}
+                      onChangeText={(value) => updateStoreHours(day, 'close', value)}
+                      placeholder="17:00"
+                      placeholderTextColor="#a8a29e"
+                    />
+                  </View>
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Social Media</Text>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Facebook</Text>
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-            value={facebook}
-            onChangeText={setFacebook}
-            placeholder="https://facebook.com/yourstore"
-            placeholderTextColor="#9ca3af"
-            autoCapitalize="none"
-          />
+      <View style={styles.sectionGroup}>
+        <View style={styles.sectionHeader}>
+          <Share2 size={18} color="#78716c" />
+          <Text style={styles.sectionTitle}>Social Media</Text>
         </View>
+        <View style={styles.sectionCard}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Facebook</Text>
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+              value={facebook}
+              onChangeText={setFacebook}
+              placeholder="https://facebook.com/yourstore"
+              placeholderTextColor="#a8a29e"
+              autoCapitalize="none"
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Instagram</Text>
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-            value={instagram}
-            onChangeText={setInstagram}
-            placeholder="https://instagram.com/yourstore"
-            placeholderTextColor="#9ca3af"
-            autoCapitalize="none"
-          />
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Instagram</Text>
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+              value={instagram}
+              onChangeText={setInstagram}
+              placeholder="https://instagram.com/yourstore"
+              placeholderTextColor="#a8a29e"
+              autoCapitalize="none"
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Twitter</Text>
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-            value={twitter}
-            onChangeText={setTwitter}
-            placeholder="https://twitter.com/yourstore"
-            placeholderTextColor="#9ca3af"
-            autoCapitalize="none"
-          />
-        </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Twitter</Text>
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+              value={twitter}
+              onChangeText={setTwitter}
+              placeholder="https://twitter.com/yourstore"
+              placeholderTextColor="#a8a29e"
+              autoCapitalize="none"
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>WhatsApp</Text>
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-            value={whatsapp}
-            onChangeText={setWhatsapp}
-            placeholder="+234XXXXXXXXXX"
-            placeholderTextColor="#9ca3af"
-            keyboardType="phone-pad"
-          />
+          <View style={[styles.inputGroup, { marginBottom: 0 }]}>
+            <Text style={styles.label}>WhatsApp</Text>
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+              value={whatsapp}
+              onChangeText={setWhatsapp}
+              placeholder="+234XXXXXXXXXX"
+              placeholderTextColor="#a8a29e"
+              keyboardType="phone-pad"
+            />
+          </View>
         </View>
       </View>
 
       <TouchableOpacity
-        style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+        style={[styles.saveBtn, saving && { opacity: 0.6 }]}
         onPress={handleSave}
         disabled={saving}
+        activeOpacity={0.7}
       >
         {saving ? (
-          <ActivityIndicator size="small" color="#ffffff" />
+          <ActivityIndicator size="small" color="#fff" />
         ) : (
           <>
-            <Save size={20} color="#ffffff" />
-            <Text style={styles.saveButtonText}>Save Settings</Text>
+            <Save size={18} color="#fff" />
+            <Text style={styles.saveBtnText}>Save Settings</Text>
           </>
         )}
       </TouchableOpacity>
@@ -536,96 +559,110 @@ export default function VendorSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f5f5f4',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f5f5f4',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  headerIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#fff7ed',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 24,
-    fontFamily: Fonts.headingBold,
-    color: '#1f2937',
+    fontFamily: Fonts.groteskBold,
+    color: '#1c1917',
+    letterSpacing: -0.5,
   },
-  section: {
-    backgroundColor: '#ffffff',
-    marginTop: 16,
+  sectionGroup: {
     marginHorizontal: 16,
-    padding: 20,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    marginBottom: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+    paddingLeft: 4,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.semiBold,
-    color: '#1f2937',
-    marginBottom: 16,
+    fontSize: 15,
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#78716c',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  sectionCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
   },
   inputGroup: {
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
-    fontFamily: Fonts.semiBold,
-    color: '#374151',
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#44403c',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#fafaf9',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#e7e5e4',
     borderRadius: 12,
     padding: 14,
-    fontSize: 16,
-    fontFamily: Fonts.regular,
-    color: '#1f2937',
+    fontSize: 15,
+    fontFamily: Fonts.grotesk,
+    color: '#1c1917',
   },
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#f5f5f4',
   },
   switchLabel: {
-    fontSize: 16,
-    fontFamily: Fonts.medium,
-    color: '#374151',
+    fontSize: 15,
+    fontFamily: Fonts.groteskMedium,
+    color: '#44403c',
   },
   dayRow: {
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: '#f9fafb',
+    marginBottom: 14,
+    padding: 14,
+    backgroundColor: '#fafaf9',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#f5f5f4',
   },
   dayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   dayName: {
-    fontSize: 16,
-    fontFamily: Fonts.semiBold,
-    color: '#1f2937',
+    fontSize: 15,
+    fontFamily: Fonts.groteskSemiBold,
+    color: '#1c1917',
   },
   closedSwitch: {
     flexDirection: 'row',
@@ -633,104 +670,96 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   closedLabel: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: '#6b7280',
+    fontSize: 13,
+    fontFamily: Fonts.grotesk,
+    color: '#78716c',
   },
   timeRow: {
     flexDirection: 'row',
     gap: 12,
+    marginTop: 8,
   },
   timeInput: {
     flex: 1,
   },
   timeLabel: {
     fontSize: 12,
-    fontFamily: Fonts.medium,
-    color: '#6b7280',
+    fontFamily: Fonts.groteskMedium,
+    color: '#a8a29e',
     marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   timeField: {
     padding: 10,
   },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ff8c00',
-    marginHorizontal: 16,
-    marginTop: 24,
-    padding: 16,
-    borderRadius: 12,
-    gap: 8,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontFamily: Fonts.bold,
-  },
   bannerPreview: {
     width: '100%',
-    height: 180,
+    height: 170,
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 14,
     position: 'relative',
   },
   bannerImage: {
     width: '100%',
     height: '100%',
   },
-  removeBannerButton: {
+  removeBannerBtn: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 20,
-    padding: 8,
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(28,25,23,0.7)',
+    borderRadius: 16,
+    padding: 6,
   },
   noBannerPreview: {
     width: '100%',
-    height: 180,
+    height: 150,
     borderRadius: 12,
-    backgroundColor: '#f9fafb',
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
+    backgroundColor: '#fafaf9',
+    borderWidth: 1.5,
+    borderColor: '#e7e5e4',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   noBannerText: {
-    marginTop: 12,
+    marginTop: 10,
     fontSize: 14,
-    fontFamily: Fonts.medium,
-    color: '#9ca3af',
+    fontFamily: Fonts.groteskMedium,
+    color: '#a8a29e',
   },
-  uploadButton: {
+  uploadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ff8c00',
+    backgroundColor: '#1c1917',
     padding: 14,
     borderRadius: 12,
     gap: 8,
     marginBottom: 16,
   },
-  uploadButtonDisabled: {
-    opacity: 0.6,
+  uploadBtnText: {
+    color: '#fff',
+    fontSize: 15,
+    fontFamily: Fonts.groteskSemiBold,
   },
-  uploadButtonText: {
-    color: '#ffffff',
+  saveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1c1917',
+    marginHorizontal: 16,
+    marginTop: 4,
+    padding: 16,
+    borderRadius: 14,
+    gap: 8,
+  },
+  saveBtnText: {
+    color: '#fff',
     fontSize: 16,
-    fontFamily: Fonts.semiBold,
+    fontFamily: Fonts.groteskBold,
   },
 });

@@ -7,4 +7,8 @@ export const Fonts = {
   headingBold: 'Poppins-Bold',
   display: 'Playfair-Bold',
   displayBold: 'Playfair-ExtraBold',
+  grotesk: 'SpaceGrotesk-Regular',
+  groteskMedium: 'SpaceGrotesk-Medium',
+  groteskSemiBold: 'SpaceGrotesk-SemiBold',
+  groteskBold: 'SpaceGrotesk-Bold',
 };
