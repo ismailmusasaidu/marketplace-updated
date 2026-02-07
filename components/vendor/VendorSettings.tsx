@@ -10,12 +10,13 @@ import {
   Switch,
   Platform,
   Image,
+  Animated,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { Save, Store, Upload, Image as ImageIcon, X, CreditCard, Clock, Share2, Truck } from 'lucide-react-native';
+import { Save, Store, Upload, Image as ImageIcon, X, CreditCard, Clock, Share2, Truck, MapPin, DollarSign } from 'lucide-react-native';
 import { Fonts } from '@/constants/fonts';
 
 interface VendorSettingsData {
@@ -302,65 +303,104 @@ export default function VendorSettings() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <View style={styles.headerIconWrap}>
-          <Store size={22} color="#0d9488" />
+        <View style={styles.headerContent}>
+          <View style={styles.headerIconContainer}>
+            <View style={styles.headerIconWrap}>
+              <Store size={26} color="#0d9488" strokeWidth={2.5} />
+            </View>
+          </View>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>Store Profile</Text>
+            <Text style={styles.headerSubtitle}>Manage your store settings and preferences</Text>
+          </View>
         </View>
-        <Text style={styles.headerTitle}>Store Settings</Text>
       </View>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Truck size={16} color="#64748b" />
-          <Text style={styles.sectionTitle}>Delivery Settings</Text>
+          <View style={styles.sectionIconWrap}>
+            <Truck size={18} color="#0d9488" strokeWidth={2.2} />
+          </View>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.sectionTitle}>Delivery Settings</Text>
+            <Text style={styles.sectionDescription}>Configure delivery area and requirements</Text>
+          </View>
         </View>
         <View style={styles.sectionCard}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Delivery Radius (km)</Text>
-            <TextInput
-              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-              value={deliveryRadius}
-              onChangeText={setDeliveryRadius}
-              keyboardType="decimal-pad"
-              placeholder="10"
-              placeholderTextColor="#94a3b8"
-            />
+            <View style={styles.labelRow}>
+              <MapPin size={14} color="#64748b" />
+              <Text style={styles.label}>Delivery Radius</Text>
+            </View>
+            <View style={styles.inputWithUnit}>
+              <TextInput
+                style={[styles.input, styles.inputWithUnitField, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                value={deliveryRadius}
+                onChangeText={setDeliveryRadius}
+                keyboardType="decimal-pad"
+                placeholder="10"
+                placeholderTextColor="#94a3b8"
+              />
+              <Text style={styles.inputUnit}>km</Text>
+            </View>
+            <Text style={styles.helperText}>Maximum distance for order delivery from your store</Text>
           </View>
           <View style={[styles.inputGroup, { marginBottom: 0 }]}>
-            <Text style={styles.label}>Minimum Order Amount ({'\u20A6'})</Text>
-            <TextInput
-              style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
-              value={minimumOrder}
-              onChangeText={setMinimumOrder}
-              keyboardType="decimal-pad"
-              placeholder="0"
-              placeholderTextColor="#94a3b8"
-            />
+            <View style={styles.labelRow}>
+              <DollarSign size={14} color="#64748b" />
+              <Text style={styles.label}>Minimum Order Amount</Text>
+            </View>
+            <View style={styles.inputWithUnit}>
+              <Text style={styles.inputPrefix}>{'\u20A6'}</Text>
+              <TextInput
+                style={[styles.input, styles.inputWithPrefix, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                value={minimumOrder}
+                onChangeText={setMinimumOrder}
+                keyboardType="decimal-pad"
+                placeholder="0"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+            <Text style={styles.helperText}>Minimum cart value required for checkout</Text>
           </View>
         </View>
       </View>
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <CreditCard size={16} color="#64748b" />
-          <Text style={styles.sectionTitle}>Payment Methods</Text>
+          <View style={styles.sectionIconWrap}>
+            <CreditCard size={18} color="#0d9488" strokeWidth={2.2} />
+          </View>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.sectionTitle}>Payment Methods</Text>
+            <Text style={styles.sectionDescription}>Choose accepted payment options</Text>
+          </View>
         </View>
         <View style={styles.sectionCard}>
           <View style={styles.switchRow}>
-            <Text style={styles.switchLabel}>Accept Online Payment</Text>
+            <View style={styles.switchContent}>
+              <Text style={styles.switchLabel}>Online Payment</Text>
+              <Text style={styles.switchDescription}>Accept digital payments via Paystack</Text>
+            </View>
             <Switch
               value={acceptsOnlinePayment}
               onValueChange={setAcceptsOnlinePayment}
-              trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
-              thumbColor={acceptsOnlinePayment ? '#0d9488' : '#f8faf9'}
+              trackColor={{ false: '#e2e8f0', true: '#5eead4' }}
+              thumbColor={acceptsOnlinePayment ? '#0d9488' : '#cbd5e1'}
+              ios_backgroundColor="#e2e8f0"
             />
           </View>
           <View style={[styles.switchRow, { borderBottomWidth: 0 }]}>
-            <Text style={styles.switchLabel}>Accept Cash on Delivery</Text>
+            <View style={styles.switchContent}>
+              <Text style={styles.switchLabel}>Cash on Delivery</Text>
+              <Text style={styles.switchDescription}>Accept cash when order is delivered</Text>
+            </View>
             <Switch
               value={acceptsCashOnDelivery}
               onValueChange={setAcceptsCashOnDelivery}
-              trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
-              thumbColor={acceptsCashOnDelivery ? '#0d9488' : '#f8faf9'}
+              trackColor={{ false: '#e2e8f0', true: '#5eead4' }}
+              thumbColor={acceptsCashOnDelivery ? '#0d9488' : '#cbd5e1'}
+              ios_backgroundColor="#e2e8f0"
             />
           </View>
         </View>
@@ -368,8 +408,13 @@ export default function VendorSettings() {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <ImageIcon size={16} color="#64748b" />
-          <Text style={styles.sectionTitle}>Store Banner</Text>
+          <View style={styles.sectionIconWrap}>
+            <ImageIcon size={18} color="#0d9488" strokeWidth={2.2} />
+          </View>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.sectionTitle}>Store Banner</Text>
+            <Text style={styles.sectionDescription}>Add a visual banner to your storefront</Text>
+          </View>
         </View>
         <View style={styles.sectionCard}>
           {storeBannerUrl ? (
@@ -379,34 +424,40 @@ export default function VendorSettings() {
                 style={styles.bannerImage}
                 resizeMode="cover"
               />
-              <TouchableOpacity
-                style={styles.removeBannerBtn}
-                onPress={() => setStoreBannerUrl('')}
-              >
-                <X size={14} color="#fff" />
-              </TouchableOpacity>
+              <View style={styles.bannerOverlay}>
+                <TouchableOpacity
+                  style={styles.removeBannerBtn}
+                  onPress={() => setStoreBannerUrl('')}
+                  activeOpacity={0.8}
+                >
+                  <X size={16} color="#fff" strokeWidth={2.5} />
+                </TouchableOpacity>
+              </View>
             </View>
           ) : (
             <View style={styles.noBannerPreview}>
-              <ImageIcon size={36} color="#d1d5db" />
-              <Text style={styles.noBannerText}>No banner uploaded</Text>
+              <View style={styles.noBannerIconWrap}>
+                <ImageIcon size={40} color="#cbd5e1" strokeWidth={1.5} />
+              </View>
+              <Text style={styles.noBannerText}>No banner uploaded yet</Text>
+              <Text style={styles.noBannerSubtext}>Recommended size: 1200 × 600 pixels</Text>
             </View>
           )}
 
           <TouchableOpacity
-            style={[styles.uploadBtn, uploading && { opacity: 0.6 }]}
+            style={[styles.uploadBtn, uploading && styles.uploadBtnDisabled]}
             onPress={pickAndUploadBanner}
             disabled={uploading}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
             {uploading ? (
               <>
-                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.uploadBtnText}>Uploading...</Text>
+                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 10 }} />
+                <Text style={styles.uploadBtnText}>Uploading Banner...</Text>
               </>
             ) : (
               <>
-                <Upload size={16} color="#fff" />
+                <Upload size={18} color="#fff" strokeWidth={2.5} />
                 <Text style={styles.uploadBtnText}>
                   {storeBannerUrl ? 'Change Banner' : 'Upload Banner'}
                 </Text>
@@ -414,8 +465,14 @@ export default function VendorSettings() {
             )}
           </TouchableOpacity>
 
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.divider} />
+          </View>
+
           <View style={[styles.inputGroup, { marginBottom: 0 }]}>
-            <Text style={styles.label}>Or enter image URL</Text>
+            <Text style={styles.label}>Enter Image URL</Text>
             <TextInput
               style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
               value={storeBannerUrl}
@@ -430,8 +487,13 @@ export default function VendorSettings() {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Clock size={16} color="#64748b" />
-          <Text style={styles.sectionTitle}>Store Hours</Text>
+          <View style={styles.sectionIconWrap}>
+            <Clock size={18} color="#0d9488" strokeWidth={2.2} />
+          </View>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.sectionTitle}>Store Hours</Text>
+            <Text style={styles.sectionDescription}>Set your weekly operating schedule</Text>
+          </View>
         </View>
         <View style={styles.sectionCard}>
           {DAYS.map((day, index) => (
@@ -479,8 +541,13 @@ export default function VendorSettings() {
 
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Share2 size={16} color="#64748b" />
-          <Text style={styles.sectionTitle}>Social Media</Text>
+          <View style={styles.sectionIconWrap}>
+            <Share2 size={18} color="#0d9488" strokeWidth={2.2} />
+          </View>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.sectionTitle}>Social Media</Text>
+            <Text style={styles.sectionDescription}>Connect your social media accounts</Text>
+          </View>
         </View>
         <View style={styles.sectionCard}>
           <View style={styles.inputGroup}>
@@ -530,21 +597,26 @@ export default function VendorSettings() {
         </View>
       </View>
 
-      <TouchableOpacity
-        style={[styles.saveBtn, saving && { opacity: 0.6 }]}
-        onPress={handleSave}
-        disabled={saving}
-        activeOpacity={0.7}
-      >
-        {saving ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <>
-            <Save size={18} color="#fff" />
-            <Text style={styles.saveBtnText}>Save Settings</Text>
-          </>
-        )}
-      </TouchableOpacity>
+      <View style={styles.saveButtonContainer}>
+        <TouchableOpacity
+          style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
+          onPress={handleSave}
+          disabled={saving}
+          activeOpacity={0.85}
+        >
+          {saving ? (
+            <>
+              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 10 }} />
+              <Text style={styles.saveBtnText}>Saving Changes...</Text>
+            </>
+          ) : (
+            <>
+              <Save size={20} color="#fff" strokeWidth={2.5} />
+              <Text style={styles.saveBtnText}>Save All Changes</Text>
+            </>
+          )}
+        </TouchableOpacity>
+      </View>
 
       <View style={{ height: 40 }} />
     </ScrollView>
@@ -554,99 +626,200 @@ export default function VendorSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f1f5f9',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8faf9',
+    backgroundColor: '#f1f5f9',
   },
   header: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
+    gap: 16,
+  },
+  headerIconContainer: {
+    shadowColor: '#0d9488',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   headerIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     backgroundColor: '#f0fdfa',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ccfbf1',
+  },
+  headerTextContainer: {
+    flex: 1,
   },
   headerTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.dmSansBold,
+    fontSize: 28,
+    fontFamily: Fonts.display,
     color: '#0f1f1c',
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontFamily: Fonts.dmSans,
+    color: '#64748b',
+    lineHeight: 20,
   },
   section: {
-    marginHorizontal: 16,
-    marginBottom: 20,
+    marginTop: 24,
+    marginHorizontal: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  sectionIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#f0fdfa',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-    paddingLeft: 4,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ccfbf1',
+  },
+  sectionTitleContainer: {
+    flex: 1,
+    paddingTop: 2,
   },
   sectionTitle: {
+    fontSize: 18,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  sectionDescription: {
     fontSize: 13,
-    fontFamily: Fonts.dmSansSemiBold,
+    fontFamily: Fonts.dmSans,
     color: '#64748b',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    lineHeight: 18,
   },
   sectionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 18,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 22,
     borderWidth: 1,
-    borderColor: '#f1f5f3',
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 1,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
   },
   label: {
     fontSize: 14,
     fontFamily: Fonts.dmSansSemiBold,
-    color: '#334155',
-    marginBottom: 8,
+    color: '#0f1f1c',
+    letterSpacing: -0.1,
   },
   input: {
-    backgroundColor: '#f8faf9',
-    borderWidth: 1,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 14,
+    padding: 16,
     fontSize: 15,
     fontFamily: Fonts.dmSans,
     color: '#0f1f1c',
+  },
+  inputWithUnit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  inputWithUnitField: {
+    flex: 1,
+    paddingRight: 50,
+  },
+  inputUnit: {
+    position: 'absolute',
+    right: 18,
+    fontSize: 15,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#64748b',
+  },
+  inputPrefix: {
+    position: 'absolute',
+    left: 18,
+    fontSize: 16,
+    fontFamily: Fonts.dmSansBold,
+    color: '#64748b',
+    zIndex: 1,
+  },
+  inputWithPrefix: {
+    paddingLeft: 36,
+  },
+  helperText: {
+    fontSize: 12,
+    fontFamily: Fonts.dmSans,
+    color: '#94a3b8',
+    marginTop: 8,
+    lineHeight: 16,
   },
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f3',
+    borderBottomColor: '#f1f5f9',
+  },
+  switchContent: {
+    flex: 1,
+    marginRight: 16,
   },
   switchLabel: {
     fontSize: 15,
-    fontFamily: Fonts.dmSansMedium,
-    color: '#334155',
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#0f1f1c',
+    marginBottom: 4,
+    letterSpacing: -0.1,
+  },
+  switchDescription: {
+    fontSize: 13,
+    fontFamily: Fonts.dmSans,
+    color: '#64748b',
+    lineHeight: 18,
   },
   dayRow: {
-    marginBottom: 14,
-    padding: 14,
-    backgroundColor: '#f8faf9',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#f1f5f3',
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
   },
   dayHeader: {
     flexDirection: 'row',
@@ -658,6 +831,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: Fonts.dmSansSemiBold,
     color: '#0f1f1c',
+    letterSpacing: -0.1,
   },
   closedSwitch: {
     flexDirection: 'row',
@@ -666,64 +840,93 @@ const styles = StyleSheet.create({
   },
   closedLabel: {
     fontSize: 13,
-    fontFamily: Fonts.dmSans,
+    fontFamily: Fonts.dmSansMedium,
     color: '#64748b',
   },
   timeRow: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 8,
+    marginTop: 10,
   },
   timeInput: {
     flex: 1,
   },
   timeLabel: {
     fontSize: 11,
-    fontFamily: Fonts.dmSansMedium,
-    color: '#94a3b8',
-    marginBottom: 6,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#64748b',
+    marginBottom: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.6,
   },
   timeField: {
-    padding: 10,
+    padding: 12,
   },
   bannerPreview: {
     width: '100%',
-    height: 170,
-    borderRadius: 12,
+    height: 200,
+    borderRadius: 16,
     overflow: 'hidden',
-    marginBottom: 14,
+    marginBottom: 16,
     position: 'relative',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   bannerImage: {
     width: '100%',
     height: '100%',
   },
+  bannerOverlay: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    left: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0)',
+  },
   removeBannerBtn: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(15,31,28,0.7)',
-    borderRadius: 16,
-    padding: 6,
+    top: 12,
+    right: 12,
+    backgroundColor: 'rgba(15,31,28,0.85)',
+    borderRadius: 10,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   noBannerPreview: {
     width: '100%',
-    height: 150,
-    borderRadius: 12,
-    backgroundColor: '#f8faf9',
-    borderWidth: 1.5,
+    height: 180,
+    borderRadius: 16,
+    backgroundColor: '#f8fafc',
+    borderWidth: 2,
     borderColor: '#e2e8f0',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
+  },
+  noBannerIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   noBannerText: {
-    marginTop: 10,
-    fontSize: 14,
-    fontFamily: Fonts.dmSansMedium,
+    fontSize: 15,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#475569',
+    marginBottom: 4,
+  },
+  noBannerSubtext: {
+    fontSize: 12,
+    fontFamily: Fonts.dmSans,
     color: '#94a3b8',
   },
   uploadBtn: {
@@ -731,30 +934,69 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#0f1f1c',
-    padding: 14,
-    borderRadius: 12,
-    gap: 8,
-    marginBottom: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 14,
+    gap: 10,
+    marginBottom: 20,
+    shadowColor: '#0f1f1c',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  uploadBtnDisabled: {
+    opacity: 0.6,
   },
   uploadBtnText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 15,
+    fontFamily: Fonts.dmSansBold,
+    letterSpacing: 0.2,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+    gap: 12,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e2e8f0',
+  },
+  dividerText: {
+    fontSize: 11,
     fontFamily: Fonts.dmSansSemiBold,
+    color: '#94a3b8',
+    letterSpacing: 0.8,
+  },
+  saveButtonContainer: {
+    marginTop: 32,
+    marginHorizontal: 20,
   },
   saveBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#0d9488',
-    marginHorizontal: 16,
-    marginTop: 4,
-    padding: 16,
-    borderRadius: 14,
-    gap: 8,
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    gap: 12,
+    shadowColor: '#0d9488',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  saveBtnDisabled: {
+    opacity: 0.6,
   },
   saveBtnText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#ffffff',
+    fontSize: 17,
     fontFamily: Fonts.dmSansBold,
+    letterSpacing: 0.3,
   },
 });
