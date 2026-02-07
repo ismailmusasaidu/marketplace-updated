@@ -8,18 +8,20 @@ import {
   ScrollView,
   Switch,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import {
   Store,
   MapPin,
-  DollarSign,
-  Clock,
   CreditCard,
   Check,
   ArrowRight,
+  ArrowLeft,
 } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Fonts } from '@/constants/fonts';
 
 interface StoreSetupProps {
   onComplete: () => void;
@@ -27,6 +29,7 @@ interface StoreSetupProps {
 
 export default function StoreSetup({ onComplete }: StoreSetupProps) {
   const { profile } = useAuth();
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,6 +53,7 @@ export default function StoreSetup({ onComplete }: StoreSetupProps) {
   });
 
   const totalSteps = 3;
+  const stepTitles = ['Store Info', 'Delivery', 'Payments'];
 
   const handleStoreInfoSubmit = () => {
     if (!storeData.businessName || !storeData.address) {
@@ -74,7 +78,7 @@ export default function StoreSetup({ onComplete }: StoreSetupProps) {
       setLoading(true);
       setError('');
 
-      const { data: vendorData, error: vendorCheckError } = await supabase
+      const { data: vendorData } = await supabase
         .from('vendors')
         .select('id')
         .eq('user_id', profile?.id)
@@ -135,318 +139,245 @@ export default function StoreSetup({ onComplete }: StoreSetupProps) {
     }
   };
 
-  const renderStepIndicator = () => (
-    <View style={styles.stepIndicator}>
-      {[1, 2, 3].map((s) => (
-        <View key={s} style={styles.stepItem}>
-          <View
-            style={[
-              styles.stepCircle,
-              step >= s && styles.stepCircleActive,
-              step > s && styles.stepCircleComplete,
-            ]}
-          >
-            {step > s ? (
-              <Check size={16} color="#ffffff" />
-            ) : (
-              <Text
-                style={[styles.stepNumber, step >= s && styles.stepNumberActive]}
-              >
-                {s}
-              </Text>
-            )}
-          </View>
-          {s < 3 && (
-            <View
-              style={[styles.stepLine, step > s && styles.stepLineActive]}
-            />
-          )}
-        </View>
-      ))}
-    </View>
-  );
-
-  const renderStep1 = () => (
-    <View style={styles.stepContent}>
-      <View style={styles.iconContainer}>
-        <Store size={48} color="#ff8c00" />
-      </View>
-      <Text style={styles.stepTitle}>Store Information</Text>
-      <Text style={styles.stepDescription}>
-        Tell us about your business
-      </Text>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Business Name *</Text>
-        <TextInput
-          style={styles.input}
-          value={storeData.businessName}
-          onChangeText={(text) =>
-            setStoreData({ ...storeData, businessName: text })
-          }
-          placeholder="Enter your business name"
-          placeholderTextColor="#9ca3af"
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          value={storeData.description}
-          onChangeText={(text) =>
-            setStoreData({ ...storeData, description: text })
-          }
-          placeholder="Describe your business"
-          placeholderTextColor="#9ca3af"
-          multiline
-          numberOfLines={3}
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Business Address *</Text>
-        <TextInput
-          style={styles.input}
-          value={storeData.address}
-          onChangeText={(text) =>
-            setStoreData({ ...storeData, address: text })
-          }
-          placeholder="Street address"
-          placeholderTextColor="#9ca3af"
-        />
-      </View>
-
-      <View style={styles.row}>
-        <View style={[styles.inputGroup, styles.flex1]}>
-          <Text style={styles.label}>City</Text>
-          <TextInput
-            style={styles.input}
-            value={storeData.city}
-            onChangeText={(text) =>
-              setStoreData({ ...storeData, city: text })
-            }
-            placeholder="City"
-            placeholderTextColor="#9ca3af"
-          />
-        </View>
-        <View style={[styles.inputGroup, styles.flex1]}>
-          <Text style={styles.label}>State</Text>
-          <TextInput
-            style={styles.input}
-            value={storeData.state}
-            onChangeText={(text) =>
-              setStoreData({ ...storeData, state: text })
-            }
-            placeholder="State"
-            placeholderTextColor="#9ca3af"
-          />
-        </View>
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Postal Code</Text>
-        <TextInput
-          style={styles.input}
-          value={storeData.postalCode}
-          onChangeText={(text) =>
-            setStoreData({ ...storeData, postalCode: text })
-          }
-          placeholder="Postal code"
-          placeholderTextColor="#9ca3af"
-          keyboardType="numeric"
-        />
-      </View>
-
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
-      <TouchableOpacity
-        style={styles.nextButton}
-        onPress={handleStoreInfoSubmit}
-      >
-        <Text style={styles.nextButtonText}>Continue</Text>
-        <ArrowRight size={20} color="#ffffff" />
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderStep2 = () => (
-    <View style={styles.stepContent}>
-      <View style={styles.iconContainer}>
-        <MapPin size={48} color="#ff8c00" />
-      </View>
-      <Text style={styles.stepTitle}>Delivery & Pricing</Text>
-      <Text style={styles.stepDescription}>
-        Configure your delivery options
-      </Text>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Delivery Radius (km) *</Text>
-        <TextInput
-          style={styles.input}
-          value={settingsData.deliveryRadius}
-          onChangeText={(text) =>
-            setSettingsData({ ...settingsData, deliveryRadius: text })
-          }
-          placeholder="10"
-          placeholderTextColor="#9ca3af"
-          keyboardType="decimal-pad"
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Minimum Order Amount ($) *</Text>
-        <TextInput
-          style={styles.input}
-          value={settingsData.minimumOrder}
-          onChangeText={(text) =>
-            setSettingsData({ ...settingsData, minimumOrder: text })
-          }
-          placeholder="0"
-          placeholderTextColor="#9ca3af"
-          keyboardType="decimal-pad"
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Store Hours</Text>
-        <View style={styles.row}>
-          <View style={[styles.flex1, { marginRight: 8 }]}>
-            <Text style={styles.subLabel}>Opening Time</Text>
-            <TextInput
-              style={styles.input}
-              value={settingsData.openingTime}
-              onChangeText={(text) =>
-                setSettingsData({ ...settingsData, openingTime: text })
-              }
-              placeholder="09:00"
-              placeholderTextColor="#9ca3af"
-            />
-          </View>
-          <View style={styles.flex1}>
-            <Text style={styles.subLabel}>Closing Time</Text>
-            <TextInput
-              style={styles.input}
-              value={settingsData.closingTime}
-              onChangeText={(text) =>
-                setSettingsData({ ...settingsData, closingTime: text })
-              }
-              placeholder="18:00"
-              placeholderTextColor="#9ca3af"
-            />
-          </View>
-        </View>
-      </View>
-
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setStep(1)}
-        >
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.nextButton}
-          onPress={handleSettingsSubmit}
-        >
-          <Text style={styles.nextButtonText}>Continue</Text>
-          <ArrowRight size={20} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  const renderStep3 = () => (
-    <View style={styles.stepContent}>
-      <View style={styles.iconContainer}>
-        <CreditCard size={48} color="#ff8c00" />
-      </View>
-      <Text style={styles.stepTitle}>Payment Options</Text>
-      <Text style={styles.stepDescription}>
-        Choose how customers can pay
-      </Text>
-
-      <View style={styles.switchGroup}>
-        <View style={styles.switchRow}>
-          <View style={styles.switchInfo}>
-            <Text style={styles.switchLabel}>Accept Online Payment</Text>
-            <Text style={styles.switchDescription}>
-              Credit/Debit cards, digital wallets
-            </Text>
-          </View>
-          <Switch
-            value={settingsData.acceptsOnlinePayment}
-            onValueChange={(value) =>
-              setSettingsData({ ...settingsData, acceptsOnlinePayment: value })
-            }
-            trackColor={{ false: '#d1d5db', true: '#ff8c00' }}
-            thumbColor="#ffffff"
-          />
-        </View>
-
-        <View style={styles.switchRow}>
-          <View style={styles.switchInfo}>
-            <Text style={styles.switchLabel}>Cash on Delivery</Text>
-            <Text style={styles.switchDescription}>
-              Accept cash when order is delivered
-            </Text>
-          </View>
-          <Switch
-            value={settingsData.acceptsCashOnDelivery}
-            onValueChange={(value) =>
-              setSettingsData({ ...settingsData, acceptsCashOnDelivery: value })
-            }
-            trackColor={{ false: '#d1d5db', true: '#ff8c00' }}
-            thumbColor="#ffffff"
-          />
-        </View>
-      </View>
-
-      {error && <Text style={styles.errorText}>{error}</Text>}
-
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setStep(2)}
-        >
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.completeButton, loading && styles.buttonDisabled]}
-          onPress={handleFinalSubmit}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <>
-              <Check size={20} color="#ffffff" />
-              <Text style={styles.completeButtonText}>Complete Setup</Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const StepIcon = step === 1 ? Store : step === 2 ? MapPin : CreditCard;
+  const stepDescriptions = [
+    'Tell us about your business',
+    'Configure your delivery options',
+    'Choose how customers can pay',
+  ];
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Get Started</Text>
-        <Text style={styles.subtitle}>
-          Step {step} of {totalSteps}
-        </Text>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <Text style={styles.headerTitle}>Set Up Your Store</Text>
+        <Text style={styles.headerSub}>Step {step} of {totalSteps}</Text>
       </View>
 
-      {renderStepIndicator()}
-
-      <View style={styles.content}>
-        {step === 1 && renderStep1()}
-        {step === 2 && renderStep2()}
-        {step === 3 && renderStep3()}
+      <View style={styles.stepBar}>
+        {[1, 2, 3].map((s) => (
+          <View key={s} style={styles.stepItem}>
+            <View style={[styles.stepDot, step >= s && styles.stepDotActive, step > s && styles.stepDotDone]}>
+              {step > s ? (
+                <Check size={12} color="#ffffff" />
+              ) : (
+                <Text style={[styles.stepNum, step >= s && styles.stepNumActive]}>{s}</Text>
+              )}
+            </View>
+            <Text style={[styles.stepLabel, step >= s && styles.stepLabelActive]}>{stepTitles[s - 1]}</Text>
+            {s < 3 && <View style={[styles.stepLine, step > s && styles.stepLineActive]} />}
+          </View>
+        ))}
       </View>
+
+      <View style={styles.body}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardIconWrap}>
+              <StepIcon size={24} color="#0d9488" />
+            </View>
+            <View>
+              <Text style={styles.cardTitle}>
+                {step === 1 ? 'Store Information' : step === 2 ? 'Delivery & Pricing' : 'Payment Options'}
+              </Text>
+              <Text style={styles.cardSub}>{stepDescriptions[step - 1]}</Text>
+            </View>
+          </View>
+
+          {step === 1 && (
+            <View style={styles.form}>
+              <View style={styles.field}>
+                <Text style={styles.label}>Business Name *</Text>
+                <TextInput
+                  style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                  value={storeData.businessName}
+                  onChangeText={(text) => setStoreData({ ...storeData, businessName: text })}
+                  placeholder="Enter your business name"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Description</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                  value={storeData.description}
+                  onChangeText={(text) => setStoreData({ ...storeData, description: text })}
+                  placeholder="Describe your business"
+                  placeholderTextColor="#94a3b8"
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Business Address *</Text>
+                <TextInput
+                  style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                  value={storeData.address}
+                  onChangeText={(text) => setStoreData({ ...storeData, address: text })}
+                  placeholder="Street address"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+              <View style={styles.row}>
+                <View style={[styles.field, { flex: 1 }]}>
+                  <Text style={styles.label}>City</Text>
+                  <TextInput
+                    style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                    value={storeData.city}
+                    onChangeText={(text) => setStoreData({ ...storeData, city: text })}
+                    placeholder="City"
+                    placeholderTextColor="#94a3b8"
+                  />
+                </View>
+                <View style={[styles.field, { flex: 1 }]}>
+                  <Text style={styles.label}>State</Text>
+                  <TextInput
+                    style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                    value={storeData.state}
+                    onChangeText={(text) => setStoreData({ ...storeData, state: text })}
+                    placeholder="State"
+                    placeholderTextColor="#94a3b8"
+                  />
+                </View>
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Postal Code</Text>
+                <TextInput
+                  style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                  value={storeData.postalCode}
+                  onChangeText={(text) => setStoreData({ ...storeData, postalCode: text })}
+                  placeholder="Postal code"
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          )}
+
+          {step === 2 && (
+            <View style={styles.form}>
+              <View style={styles.field}>
+                <Text style={styles.label}>Delivery Radius (km) *</Text>
+                <TextInput
+                  style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                  value={settingsData.deliveryRadius}
+                  onChangeText={(text) => setSettingsData({ ...settingsData, deliveryRadius: text })}
+                  placeholder="10"
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="decimal-pad"
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Minimum Order Amount ({'\u20A6'}) *</Text>
+                <TextInput
+                  style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                  value={settingsData.minimumOrder}
+                  onChangeText={(text) => setSettingsData({ ...settingsData, minimumOrder: text })}
+                  placeholder="0"
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="decimal-pad"
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.label}>Store Hours</Text>
+                <View style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.subLabel}>Opening</Text>
+                    <TextInput
+                      style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      value={settingsData.openingTime}
+                      onChangeText={(text) => setSettingsData({ ...settingsData, openingTime: text })}
+                      placeholder="09:00"
+                      placeholderTextColor="#94a3b8"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.subLabel}>Closing</Text>
+                    <TextInput
+                      style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      value={settingsData.closingTime}
+                      onChangeText={(text) => setSettingsData({ ...settingsData, closingTime: text })}
+                      placeholder="18:00"
+                      placeholderTextColor="#94a3b8"
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {step === 3 && (
+            <View style={styles.form}>
+              <View style={styles.switchCard}>
+                <View style={styles.switchContent}>
+                  <Text style={styles.switchTitle}>Accept Online Payment</Text>
+                  <Text style={styles.switchDesc}>Credit/Debit cards, digital wallets</Text>
+                </View>
+                <Switch
+                  value={settingsData.acceptsOnlinePayment}
+                  onValueChange={(value) => setSettingsData({ ...settingsData, acceptsOnlinePayment: value })}
+                  trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
+                  thumbColor={settingsData.acceptsOnlinePayment ? '#0d9488' : '#f8faf9'}
+                />
+              </View>
+              <View style={styles.switchCard}>
+                <View style={styles.switchContent}>
+                  <Text style={styles.switchTitle}>Cash on Delivery</Text>
+                  <Text style={styles.switchDesc}>Accept cash when order is delivered</Text>
+                </View>
+                <Switch
+                  value={settingsData.acceptsCashOnDelivery}
+                  onValueChange={(value) => setSettingsData({ ...settingsData, acceptsCashOnDelivery: value })}
+                  trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
+                  thumbColor={settingsData.acceptsCashOnDelivery ? '#0d9488' : '#f8faf9'}
+                />
+              </View>
+            </View>
+          )}
+
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          <View style={styles.actions}>
+            {step > 1 && (
+              <TouchableOpacity
+                style={styles.backBtn}
+                onPress={() => setStep(step - 1)}
+                activeOpacity={0.7}
+              >
+                <ArrowLeft size={18} color="#64748b" />
+                <Text style={styles.backBtnText}>Back</Text>
+              </TouchableOpacity>
+            )}
+            {step < 3 ? (
+              <TouchableOpacity
+                style={[styles.nextBtn, step === 1 && { flex: 1 }]}
+                onPress={step === 1 ? handleStoreInfoSubmit : handleSettingsSubmit}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.nextBtnText}>Continue</Text>
+                <ArrowRight size={18} color="#ffffff" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.completeBtn, loading && { opacity: 0.6 }]}
+                onPress={handleFinalSubmit}
+                disabled={loading}
+                activeOpacity={0.8}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <>
+                    <Check size={18} color="#ffffff" />
+                    <Text style={styles.completeBtnText}>Complete Setup</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 }
@@ -454,128 +385,137 @@ export default function StoreSetup({ onComplete }: StoreSetupProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f8faf9',
   },
   header: {
-    backgroundColor: '#ff8c00',
-    padding: 20,
-    paddingTop: 60,
-    paddingBottom: 32,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    backgroundColor: '#0f1f1c',
+    paddingHorizontal: 20,
+    paddingBottom: 28,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  headerTitle: {
+    fontSize: 24,
+    fontFamily: Fonts.dmSansBold,
     color: '#ffffff',
+    letterSpacing: -0.3,
   },
-  subtitle: {
+  headerSub: {
     fontSize: 14,
-    color: '#d1fae5',
+    fontFamily: Fonts.dmSans,
+    color: '#94a3b8',
     marginTop: 4,
   },
-  stepIndicator: {
+  stepBar: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 24,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   stepItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  stepCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#e5e7eb',
+  stepDot: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e2e8f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  stepCircleActive: {
-    backgroundColor: '#ff8c00',
+  stepDotActive: {
+    backgroundColor: '#0d9488',
   },
-  stepCircleComplete: {
+  stepDotDone: {
     backgroundColor: '#059669',
   },
-  stepNumber: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#9ca3af',
+  stepNum: {
+    fontSize: 13,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#94a3b8',
   },
-  stepNumberActive: {
+  stepNumActive: {
     color: '#ffffff',
   },
+  stepLabel: {
+    fontSize: 12,
+    fontFamily: Fonts.dmSansMedium,
+    color: '#94a3b8',
+    marginLeft: 6,
+  },
+  stepLabelActive: {
+    color: '#0f1f1c',
+  },
   stepLine: {
-    width: 40,
+    width: 24,
     height: 2,
-    backgroundColor: '#e5e7eb',
-    marginHorizontal: 4,
+    backgroundColor: '#e2e8f0',
+    marginHorizontal: 8,
   },
   stepLineActive: {
-    backgroundColor: '#ff8c00',
+    backgroundColor: '#0d9488',
   },
-  content: {
-    padding: 20,
+  body: {
+    paddingHorizontal: 16,
   },
-  stepContent: {
+  card: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: 20,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: '#f1f5f3',
   },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#d1fae5',
-    justifyContent: 'center',
+  cardHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  stepTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  stepDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
+    gap: 14,
     marginBottom: 24,
   },
-  inputGroup: {
-    marginBottom: 20,
+  cardIconWrap: {
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    backgroundColor: '#f0fdfa',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
+    letterSpacing: -0.2,
+  },
+  cardSub: {
+    fontSize: 13,
+    fontFamily: Fonts.dmSans,
+    color: '#94a3b8',
+    marginTop: 2,
+  },
+  form: {},
+  field: {
+    marginBottom: 18,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#334155',
     marginBottom: 8,
   },
   subLabel: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#6b7280',
+    fontFamily: Fonts.dmSansMedium,
+    color: '#64748b',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#ffffff',
-    borderWidth: 2.5,
-    borderColor: '#ff8c00',
-    borderRadius: 14,
+    backgroundColor: '#f8faf9',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
     padding: 14,
-    fontSize: 16,
-    color: '#1f2937',
-    fontWeight: '600',
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    fontSize: 15,
+    fontFamily: Fonts.dmSans,
+    color: '#0f1f1c',
   },
   textArea: {
     height: 80,
@@ -585,87 +525,90 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  flex1: {
-    flex: 1,
-  },
-  switchGroup: {
-    marginBottom: 20,
-  },
-  switchRow: {
+  switchCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    backgroundColor: '#f8faf9',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f3',
   },
-  switchInfo: {
+  switchContent: {
     flex: 1,
     marginRight: 16,
   },
-  switchLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
+  switchTitle: {
+    fontSize: 15,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#0f1f1c',
+    marginBottom: 3,
   },
-  switchDescription: {
+  switchDesc: {
     fontSize: 13,
-    color: '#6b7280',
+    fontFamily: Fonts.dmSans,
+    color: '#94a3b8',
   },
   errorText: {
     color: '#ef4444',
     fontSize: 14,
+    fontFamily: Fonts.dmSansMedium,
     marginBottom: 16,
     textAlign: 'center',
+    backgroundColor: '#fef2f2',
+    padding: 12,
+    borderRadius: 10,
   },
-  nextButton: {
-    flexDirection: 'row',
-    backgroundColor: '#ff8c00',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  nextButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  buttonRow: {
+  actions: {
     flexDirection: 'row',
     gap: 12,
+    marginTop: 8,
   },
-  backButton: {
-    flex: 1,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backButtonText: {
-    color: '#6b7280',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  completeButton: {
+  backBtn: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#ff8c00',
-    borderRadius: 12,
-    padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 14,
+    paddingVertical: 16,
+    gap: 6,
+  },
+  backBtnText: {
+    fontSize: 15,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#64748b',
+  },
+  nextBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0d9488',
+    borderRadius: 14,
+    paddingVertical: 16,
     gap: 8,
   },
-  completeButtonText: {
+  nextBtnText: {
+    fontSize: 15,
+    fontFamily: Fonts.dmSansSemiBold,
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
   },
-  buttonDisabled: {
-    opacity: 0.5,
+  completeBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0f1f1c',
+    borderRadius: 14,
+    paddingVertical: 16,
+    gap: 8,
+  },
+  completeBtnText: {
+    fontSize: 15,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#ffffff',
   },
 });

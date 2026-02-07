@@ -294,7 +294,7 @@ export default function VendorSettings() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1c1917" />
+        <ActivityIndicator size="large" color="#0d9488" />
       </View>
     );
   }
@@ -303,14 +303,14 @@ export default function VendorSettings() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.headerIconWrap}>
-          <Store size={22} color="#ff8c00" />
+          <Store size={22} color="#0d9488" />
         </View>
         <Text style={styles.headerTitle}>Store Settings</Text>
       </View>
 
-      <View style={styles.sectionGroup}>
+      <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Truck size={18} color="#78716c" />
+          <Truck size={16} color="#64748b" />
           <Text style={styles.sectionTitle}>Delivery Settings</Text>
         </View>
         <View style={styles.sectionCard}>
@@ -322,11 +322,10 @@ export default function VendorSettings() {
               onChangeText={setDeliveryRadius}
               keyboardType="decimal-pad"
               placeholder="10"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#94a3b8"
             />
           </View>
-
-          <View style={styles.inputGroup}>
+          <View style={[styles.inputGroup, { marginBottom: 0 }]}>
             <Text style={styles.label}>Minimum Order Amount ({'\u20A6'})</Text>
             <TextInput
               style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
@@ -334,15 +333,15 @@ export default function VendorSettings() {
               onChangeText={setMinimumOrder}
               keyboardType="decimal-pad"
               placeholder="0"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#94a3b8"
             />
           </View>
         </View>
       </View>
 
-      <View style={styles.sectionGroup}>
+      <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <CreditCard size={18} color="#78716c" />
+          <CreditCard size={16} color="#64748b" />
           <Text style={styles.sectionTitle}>Payment Methods</Text>
         </View>
         <View style={styles.sectionCard}>
@@ -351,26 +350,25 @@ export default function VendorSettings() {
             <Switch
               value={acceptsOnlinePayment}
               onValueChange={setAcceptsOnlinePayment}
-              trackColor={{ false: '#d6d3d1', true: '#fed7aa' }}
-              thumbColor={acceptsOnlinePayment ? '#ff8c00' : '#fafaf9'}
+              trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
+              thumbColor={acceptsOnlinePayment ? '#0d9488' : '#f8faf9'}
             />
           </View>
-
           <View style={[styles.switchRow, { borderBottomWidth: 0 }]}>
             <Text style={styles.switchLabel}>Accept Cash on Delivery</Text>
             <Switch
               value={acceptsCashOnDelivery}
               onValueChange={setAcceptsCashOnDelivery}
-              trackColor={{ false: '#d6d3d1', true: '#fed7aa' }}
-              thumbColor={acceptsCashOnDelivery ? '#ff8c00' : '#fafaf9'}
+              trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
+              thumbColor={acceptsCashOnDelivery ? '#0d9488' : '#f8faf9'}
             />
           </View>
         </View>
       </View>
 
-      <View style={styles.sectionGroup}>
+      <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <ImageIcon size={18} color="#78716c" />
+          <ImageIcon size={16} color="#64748b" />
           <Text style={styles.sectionTitle}>Store Banner</Text>
         </View>
         <View style={styles.sectionCard}>
@@ -390,7 +388,7 @@ export default function VendorSettings() {
             </View>
           ) : (
             <View style={styles.noBannerPreview}>
-              <ImageIcon size={40} color="#d6d3d1" />
+              <ImageIcon size={36} color="#d1d5db" />
               <Text style={styles.noBannerText}>No banner uploaded</Text>
             </View>
           )}
@@ -408,7 +406,7 @@ export default function VendorSettings() {
               </>
             ) : (
               <>
-                <Upload size={18} color="#fff" />
+                <Upload size={16} color="#fff" />
                 <Text style={styles.uploadBtnText}>
                   {storeBannerUrl ? 'Change Banner' : 'Upload Banner'}
                 </Text>
@@ -423,16 +421,16 @@ export default function VendorSettings() {
               value={storeBannerUrl}
               onChangeText={setStoreBannerUrl}
               placeholder="https://example.com/banner.jpg"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#94a3b8"
               autoCapitalize="none"
             />
           </View>
         </View>
       </View>
 
-      <View style={styles.sectionGroup}>
+      <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Clock size={18} color="#78716c" />
+          <Clock size={16} color="#64748b" />
           <Text style={styles.sectionTitle}>Store Hours</Text>
         </View>
         <View style={styles.sectionCard}>
@@ -445,8 +443,8 @@ export default function VendorSettings() {
                   <Switch
                     value={storeHours[day]?.closed || false}
                     onValueChange={(value) => updateStoreHours(day, 'closed', value)}
-                    trackColor={{ false: '#d6d3d1', true: '#fed7aa' }}
-                    thumbColor={storeHours[day]?.closed ? '#ff8c00' : '#fafaf9'}
+                    trackColor={{ false: '#e2e8f0', true: '#99f6e4' }}
+                    thumbColor={storeHours[day]?.closed ? '#0d9488' : '#f8faf9'}
                   />
                 </View>
               </View>
@@ -459,7 +457,7 @@ export default function VendorSettings() {
                       value={storeHours[day]?.open || '09:00'}
                       onChangeText={(value) => updateStoreHours(day, 'open', value)}
                       placeholder="09:00"
-                      placeholderTextColor="#a8a29e"
+                      placeholderTextColor="#94a3b8"
                     />
                   </View>
                   <View style={styles.timeInput}>
@@ -469,7 +467,7 @@ export default function VendorSettings() {
                       value={storeHours[day]?.close || '17:00'}
                       onChangeText={(value) => updateStoreHours(day, 'close', value)}
                       placeholder="17:00"
-                      placeholderTextColor="#a8a29e"
+                      placeholderTextColor="#94a3b8"
                     />
                   </View>
                 </View>
@@ -479,9 +477,9 @@ export default function VendorSettings() {
         </View>
       </View>
 
-      <View style={styles.sectionGroup}>
+      <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Share2 size={18} color="#78716c" />
+          <Share2 size={16} color="#64748b" />
           <Text style={styles.sectionTitle}>Social Media</Text>
         </View>
         <View style={styles.sectionCard}>
@@ -492,11 +490,10 @@ export default function VendorSettings() {
               value={facebook}
               onChangeText={setFacebook}
               placeholder="https://facebook.com/yourstore"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#94a3b8"
               autoCapitalize="none"
             />
           </View>
-
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Instagram</Text>
             <TextInput
@@ -504,11 +501,10 @@ export default function VendorSettings() {
               value={instagram}
               onChangeText={setInstagram}
               placeholder="https://instagram.com/yourstore"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#94a3b8"
               autoCapitalize="none"
             />
           </View>
-
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Twitter</Text>
             <TextInput
@@ -516,11 +512,10 @@ export default function VendorSettings() {
               value={twitter}
               onChangeText={setTwitter}
               placeholder="https://twitter.com/yourstore"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#94a3b8"
               autoCapitalize="none"
             />
           </View>
-
           <View style={[styles.inputGroup, { marginBottom: 0 }]}>
             <Text style={styles.label}>WhatsApp</Text>
             <TextInput
@@ -528,7 +523,7 @@ export default function VendorSettings() {
               value={whatsapp}
               onChangeText={setWhatsapp}
               placeholder="+234XXXXXXXXXX"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#94a3b8"
               keyboardType="phone-pad"
             />
           </View>
@@ -559,13 +554,13 @@ export default function VendorSettings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#f8faf9',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#f8faf9',
   },
   header: {
     flexDirection: 'row',
@@ -578,17 +573,17 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: '#fff7ed',
+    backgroundColor: '#f0fdfa',
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 24,
-    fontFamily: Fonts.groteskBold,
-    color: '#1c1917',
-    letterSpacing: -0.5,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
+    letterSpacing: -0.3,
   },
-  sectionGroup: {
+  section: {
     marginHorizontal: 16,
     marginBottom: 20,
   },
@@ -600,37 +595,37 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontFamily: Fonts.groteskSemiBold,
-    color: '#78716c',
+    fontSize: 13,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#64748b',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
   },
   sectionCard: {
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#f1f5f3',
   },
   inputGroup: {
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
-    fontFamily: Fonts.groteskSemiBold,
-    color: '#44403c',
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#334155',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#f8faf9',
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#e2e8f0',
     borderRadius: 12,
     padding: 14,
     fontSize: 15,
-    fontFamily: Fonts.grotesk,
-    color: '#1c1917',
+    fontFamily: Fonts.dmSans,
+    color: '#0f1f1c',
   },
   switchRow: {
     flexDirection: 'row',
@@ -638,20 +633,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f4',
+    borderBottomColor: '#f1f5f3',
   },
   switchLabel: {
     fontSize: 15,
-    fontFamily: Fonts.groteskMedium,
-    color: '#44403c',
+    fontFamily: Fonts.dmSansMedium,
+    color: '#334155',
   },
   dayRow: {
     marginBottom: 14,
     padding: 14,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#f8faf9',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#f5f5f4',
+    borderColor: '#f1f5f3',
   },
   dayHeader: {
     flexDirection: 'row',
@@ -661,8 +656,8 @@ const styles = StyleSheet.create({
   },
   dayName: {
     fontSize: 15,
-    fontFamily: Fonts.groteskSemiBold,
-    color: '#1c1917',
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#0f1f1c',
   },
   closedSwitch: {
     flexDirection: 'row',
@@ -671,8 +666,8 @@ const styles = StyleSheet.create({
   },
   closedLabel: {
     fontSize: 13,
-    fontFamily: Fonts.grotesk,
-    color: '#78716c',
+    fontFamily: Fonts.dmSans,
+    color: '#64748b',
   },
   timeRow: {
     flexDirection: 'row',
@@ -683,12 +678,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   timeLabel: {
-    fontSize: 12,
-    fontFamily: Fonts.groteskMedium,
-    color: '#a8a29e',
+    fontSize: 11,
+    fontFamily: Fonts.dmSansMedium,
+    color: '#94a3b8',
     marginBottom: 6,
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.4,
   },
   timeField: {
     padding: 10,
@@ -709,7 +704,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(28,25,23,0.7)',
+    backgroundColor: 'rgba(15,31,28,0.7)',
     borderRadius: 16,
     padding: 6,
   },
@@ -717,9 +712,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 150,
     borderRadius: 12,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#f8faf9',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#e2e8f0',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
@@ -728,14 +723,14 @@ const styles = StyleSheet.create({
   noBannerText: {
     marginTop: 10,
     fontSize: 14,
-    fontFamily: Fonts.groteskMedium,
-    color: '#a8a29e',
+    fontFamily: Fonts.dmSansMedium,
+    color: '#94a3b8',
   },
   uploadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1c1917',
+    backgroundColor: '#0f1f1c',
     padding: 14,
     borderRadius: 12,
     gap: 8,
@@ -744,13 +739,13 @@ const styles = StyleSheet.create({
   uploadBtnText: {
     color: '#fff',
     fontSize: 15,
-    fontFamily: Fonts.groteskSemiBold,
+    fontFamily: Fonts.dmSansSemiBold,
   },
   saveBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1c1917',
+    backgroundColor: '#0d9488',
     marginHorizontal: 16,
     marginTop: 4,
     padding: 16,
@@ -760,6 +755,6 @@ const styles = StyleSheet.create({
   saveBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: Fonts.groteskBold,
+    fontFamily: Fonts.dmSansBold,
   },
 });

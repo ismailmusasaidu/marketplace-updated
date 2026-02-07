@@ -22,6 +22,12 @@ import {
   SpaceGrotesk_600SemiBold,
   SpaceGrotesk_700Bold,
 } from '@expo-google-fonts/space-grotesk';
+import {
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+  DMSans_700Bold,
+} from '@expo-google-fonts/dm-sans';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
@@ -46,6 +52,10 @@ export default function RootLayout() {
     'SpaceGrotesk-Medium': SpaceGrotesk_500Medium,
     'SpaceGrotesk-SemiBold': SpaceGrotesk_600SemiBold,
     'SpaceGrotesk-Bold': SpaceGrotesk_700Bold,
+    'DMSans-Regular': DMSans_400Regular,
+    'DMSans-Medium': DMSans_500Medium,
+    'DMSans-SemiBold': DMSans_600SemiBold,
+    'DMSans-Bold': DMSans_700Bold,
   });
 
   useEffect(() => {

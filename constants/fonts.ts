@@ -11,4 +11,8 @@ export const Fonts = {
   groteskMedium: 'SpaceGrotesk-Medium',
   groteskSemiBold: 'SpaceGrotesk-SemiBold',
   groteskBold: 'SpaceGrotesk-Bold',
+  dmSans: 'DMSans-Regular',
+  dmSansMedium: 'DMSans-Medium',
+  dmSansSemiBold: 'DMSans-SemiBold',
+  dmSansBold: 'DMSans-Bold',
 };

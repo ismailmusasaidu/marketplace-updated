@@ -9,7 +9,19 @@ import {
   Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Package, DollarSign, ShoppingBag, TrendingUp, AlertCircle, Clock, XCircle, Star } from 'lucide-react-native';
+import {
+  Package,
+  DollarSign,
+  ShoppingBag,
+  TrendingUp,
+  AlertTriangle,
+  Clock,
+  XCircle,
+  Star,
+  ArrowUpRight,
+  BarChart3,
+  ChevronRight,
+} from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { router, useFocusEffect } from 'expo-router';
@@ -53,8 +65,6 @@ export default function VendorHome() {
         setLoading(true);
       }
 
-      console.log('Fetching stats for vendor ID:', vendorId);
-
       const [productsResult, ordersResult, reviewsResult] = await Promise.all([
         supabase.from('products').select('*').eq('vendor_id', vendorId),
         supabase
@@ -69,29 +79,18 @@ export default function VendorHome() {
           ),
       ]);
 
-      if (productsResult.error) {
-        console.error('Products error:', productsResult.error);
-        throw productsResult.error;
-      }
-      if (ordersResult.error) {
-        console.error('Orders error:', ordersResult.error);
-        throw ordersResult.error;
-      }
+      if (productsResult.error) throw productsResult.error;
+      if (ordersResult.error) throw ordersResult.error;
 
       const products = productsResult.data || [];
       const orders = ordersResult.data || [];
 
-      console.log('Products found:', products.length);
-      console.log('Orders found:', orders.length);
-
       const activeProducts = products.filter((p) => p.is_available).length;
       const lowStockProducts = products.filter((p) => p.stock_quantity < 10).length;
-
       const completedOrders = orders.filter((o) => o.status === 'delivered').length;
       const pendingOrders = orders.filter(
         (o) => o.status === 'pending' || o.status === 'confirmed' || o.status === 'preparing'
       ).length;
-
       const totalRevenue = orders
         .filter((o) => o.status === 'delivered')
         .reduce((sum, order) => sum + parseFloat(order.total.toString()), 0);
@@ -101,16 +100,6 @@ export default function VendorHome() {
       const averageRating = totalReviews > 0
         ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
         : 0;
-
-      console.log('Stats calculated:', {
-        totalProducts: products.length,
-        activeProducts,
-        pendingOrders,
-        completedOrders,
-        totalRevenue,
-        totalReviews,
-        averageRating,
-      });
 
       setStats({
         totalProducts: products.length,
@@ -132,9 +121,7 @@ export default function VendorHome() {
   };
 
   useEffect(() => {
-    // vendor_id in products and orders references profile.id, not vendors.id
     if (profile) {
-      console.log('Vendor ID found:', profile.id);
       setVendorId(profile.id);
       fetchVendorBanner();
     }
@@ -181,10 +168,7 @@ export default function VendorHome() {
           table: 'products',
           filter: `vendor_id=eq.${vendorId}`,
         },
-        () => {
-          console.log('Products changed, refreshing stats...');
-          fetchDashboardStats(false);
-        }
+        () => fetchDashboardStats(false)
       )
       .subscribe();
 
@@ -198,10 +182,7 @@ export default function VendorHome() {
           table: 'orders',
           filter: `vendor_id=eq.${vendorId}`,
         },
-        () => {
-          console.log('Orders changed, refreshing stats...');
-          fetchDashboardStats(false);
-        }
+        () => fetchDashboardStats(false)
       )
       .subscribe();
 
@@ -214,10 +195,7 @@ export default function VendorHome() {
           schema: 'public',
           table: 'reviews',
         },
-        () => {
-          console.log('Reviews changed, refreshing stats...');
-          fetchDashboardStats(false);
-        }
+        () => fetchDashboardStats(false)
       )
       .subscribe();
 
@@ -237,7 +215,6 @@ export default function VendorHome() {
         .select('id')
         .eq('user_id', profile.id)
         .maybeSingle();
-
       return vendorData?.id;
     };
 
@@ -256,7 +233,6 @@ export default function VendorHome() {
             filter: `vendor_id=eq.${vendorSettingsId}`,
           },
           (payload) => {
-            console.log('Vendor settings changed, updating banner...');
             const newBannerUrl = payload.new.store_banner_url;
             setBannerUrl(newBannerUrl || null);
           }
@@ -292,22 +268,28 @@ export default function VendorHome() {
 
   if (profile?.vendor_status === 'pending') {
     return (
-      <View style={styles.statusContainer}>
-        <View style={styles.statusIconContainer}>
-          <Clock size={64} color="#f59e0b" />
+      <View style={[styles.statusContainer, { paddingTop: insets.top + 40 }]}>
+        <View style={styles.statusIconWrap}>
+          <View style={styles.statusIconInner}>
+            <Clock size={48} color="#d97706" />
+          </View>
         </View>
         <Text style={styles.statusTitle}>Application Under Review</Text>
         <Text style={styles.statusText}>
           Your vendor application is being reviewed by our admin team. You'll receive an email once
           your account is approved.
         </Text>
-        <Text style={styles.statusWait}>This usually takes 24-48 hours</Text>
+        <View style={styles.statusTimeBadge}>
+          <Clock size={14} color="#92400e" />
+          <Text style={styles.statusTimeText}>Usually takes 24-48 hours</Text>
+        </View>
         <TouchableOpacity
           style={styles.statusButton}
           onPress={async () => {
             await signOut();
             router.replace('/auth/login');
           }}
+          activeOpacity={0.8}
         >
           <Text style={styles.statusButtonText}>Sign Out</Text>
         </TouchableOpacity>
@@ -317,9 +299,11 @@ export default function VendorHome() {
 
   if (profile?.vendor_status === 'rejected') {
     return (
-      <View style={styles.statusContainer}>
-        <View style={[styles.statusIconContainer, styles.statusIconRejected]}>
-          <XCircle size={64} color="#ef4444" />
+      <View style={[styles.statusContainer, { paddingTop: insets.top + 40 }]}>
+        <View style={[styles.statusIconWrap, styles.statusIconRejected]}>
+          <View style={[styles.statusIconInner, { backgroundColor: '#fef2f2' }]}>
+            <XCircle size={48} color="#dc2626" />
+          </View>
         </View>
         <Text style={styles.statusTitle}>Application Rejected</Text>
         <Text style={styles.statusText}>
@@ -327,7 +311,7 @@ export default function VendorHome() {
         </Text>
         {profile.rejection_reason && (
           <View style={styles.rejectionBox}>
-            <Text style={styles.rejectionTitle}>Reason:</Text>
+            <Text style={styles.rejectionTitle}>Reason</Text>
             <Text style={styles.rejectionText}>{profile.rejection_reason}</Text>
           </View>
         )}
@@ -338,6 +322,7 @@ export default function VendorHome() {
             await signOut();
             router.replace('/auth/login');
           }}
+          activeOpacity={0.8}
         >
           <Text style={styles.statusButtonText}>Sign Out</Text>
         </TouchableOpacity>
@@ -348,16 +333,25 @@ export default function VendorHome() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#ff8c00" />
+        <ActivityIndicator size="large" color="#0d9488" />
       </View>
     );
   }
 
+  const firstName = profile?.full_name?.split(' ')[0] || 'Vendor';
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-        <Text style={styles.greeting}>Welcome back, {profile?.full_name}!</Text>
-        <Text style={styles.subtitle}>Here's your store overview</Text>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.greeting}>Hello, {firstName}</Text>
+            <Text style={styles.subtitle}>Here's your store at a glance</Text>
+          </View>
+          <View style={styles.headerBadge}>
+            <BarChart3 size={20} color="#0d9488" />
+          </View>
+        </View>
       </View>
 
       {bannerUrl && (
@@ -371,114 +365,139 @@ export default function VendorHome() {
       )}
 
       <View style={styles.content}>
-        <View>
-          <View style={styles.statsGrid}>
-            <View style={[styles.statCard, styles.statCardPrimary]}>
-              <View style={styles.statIconContainer}>
-                <DollarSign size={24} color="#ffffff" />
-              </View>
-              <Text style={styles.statValuePrimary}>₦{stats.totalRevenue.toFixed(2)}</Text>
-              <Text style={styles.statLabelPrimary}>Total Revenue</Text>
+        <View style={styles.revenueCard}>
+          <View style={styles.revenueTop}>
+            <View style={styles.revenueIconWrap}>
+              <DollarSign size={20} color="#ffffff" />
             </View>
-
-            <View style={styles.statCard}>
-              <View style={[styles.statIconContainer, styles.iconBlue]}>
-                <ShoppingBag size={24} color="#ff8c00" />
-              </View>
-              <Text style={styles.statValue}>{stats.pendingOrders}</Text>
-              <Text style={styles.statLabel}>Pending Orders</Text>
+            <View style={styles.revenueLabelWrap}>
+              <Text style={styles.revenueLabel}>Total Revenue</Text>
             </View>
+          </View>
+          <Text style={styles.revenueValue}>
+            {'\u20A6'}{stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
+          <View style={styles.revenueMeta}>
+            <Text style={styles.revenueMetaText}>
+              {stats.completedOrders} completed order{stats.completedOrders !== 1 ? 's' : ''}
+            </Text>
           </View>
         </View>
 
-        <View>
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <View style={[styles.statIconContainer, styles.iconGreen]}>
-                <Package size={24} color="#ff8c00" />
-              </View>
-              <Text style={styles.statValue}>{stats.activeProducts}</Text>
-              <Text style={styles.statLabel}>Active Products</Text>
+        <View style={styles.metricsRow}>
+          <View style={styles.metricCard}>
+            <View style={[styles.metricIconWrap, { backgroundColor: '#fff7ed' }]}>
+              <ShoppingBag size={18} color="#ea580c" />
             </View>
-
-            <View style={styles.statCard}>
-              <View style={[styles.statIconContainer, styles.iconPurple]}>
-                <TrendingUp size={24} color="#ff8c00" />
-              </View>
-              <Text style={styles.statValue}>{stats.completedOrders}</Text>
-              <Text style={styles.statLabel}>Completed Orders</Text>
+            <Text style={styles.metricValue}>{stats.pendingOrders}</Text>
+            <Text style={styles.metricLabel}>Pending</Text>
+          </View>
+          <View style={styles.metricCard}>
+            <View style={[styles.metricIconWrap, { backgroundColor: '#f0fdf4' }]}>
+              <Package size={18} color="#16a34a" />
             </View>
+            <Text style={styles.metricValue}>{stats.activeProducts}</Text>
+            <Text style={styles.metricLabel}>Products</Text>
+          </View>
+          <View style={styles.metricCard}>
+            <View style={[styles.metricIconWrap, { backgroundColor: '#eff6ff' }]}>
+              <TrendingUp size={18} color="#2563eb" />
+            </View>
+            <Text style={styles.metricValue}>{stats.completedOrders}</Text>
+            <Text style={styles.metricLabel}>Delivered</Text>
           </View>
         </View>
 
-        <View>
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <View style={[styles.statIconContainer, styles.iconYellow]}>
-                <Star size={24} color="#ff8c00" />
-              </View>
-              <Text style={styles.statValue}>{stats.totalReviews}</Text>
-              <Text style={styles.statLabel}>Total Reviews</Text>
-            </View>
-
-            <View style={styles.statCard}>
-              <View style={[styles.statIconContainer, styles.iconYellow]}>
-                <Star size={24} color="#fbbf24" fill="#fbbf24" />
-              </View>
-              <Text style={styles.statValue}>
-                {stats.averageRating > 0 ? stats.averageRating.toFixed(1) : '0.0'}
+        <View style={styles.ratingsRow}>
+          <View style={styles.ratingCard}>
+            <View style={styles.ratingTop}>
+              <Star size={18} color="#eab308" fill="#eab308" />
+              <Text style={styles.ratingValue}>
+                {stats.averageRating > 0 ? stats.averageRating.toFixed(1) : '--'}
               </Text>
-              <Text style={styles.statLabel}>Average Rating</Text>
             </View>
+            <Text style={styles.ratingLabel}>Avg Rating</Text>
+          </View>
+          <View style={styles.ratingCard}>
+            <View style={styles.ratingTop}>
+              <Star size={18} color="#0d9488" />
+              <Text style={styles.ratingValue}>{stats.totalReviews}</Text>
+            </View>
+            <Text style={styles.ratingLabel}>Reviews</Text>
           </View>
         </View>
 
         {stats.lowStockProducts > 0 && (
-          <View>
-            <View style={styles.alertCard}>
-              <AlertCircle size={24} color="#f59e0b" />
-              <View style={styles.alertContent}>
-                <Text style={styles.alertTitle}>Low Stock Alert</Text>
-                <Text style={styles.alertText}>
-                  {stats.lowStockProducts} product(s) are running low on stock
-                </Text>
-              </View>
+          <View style={styles.alertCard}>
+            <View style={styles.alertIconWrap}>
+              <AlertTriangle size={18} color="#d97706" />
             </View>
+            <View style={styles.alertContent}>
+              <Text style={styles.alertTitle}>Low Stock Alert</Text>
+              <Text style={styles.alertText}>
+                {stats.lowStockProducts} product{stats.lowStockProducts !== 1 ? 's' : ''} running low
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/vendor')} activeOpacity={0.7}>
+              <ChevronRight size={18} color="#d97706" />
+            </TouchableOpacity>
           </View>
         )}
 
-        <View>
-          <View style={styles.quickActions}>
-            <Text style={styles.sectionTitle}>Quick Actions</Text>
-            <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/(tabs)/vendor')}>
-              <Package size={20} color="#ff8c00" />
-              <Text style={styles.actionButtonText}>Manage Products</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => setShowOrders(true)}>
-              <ShoppingBag size={20} color="#ff8c00" />
-              <Text style={styles.actionButtonText}>View Orders</Text>
-            </TouchableOpacity>
-          </View>
+        <Text style={styles.sectionHeading}>Quick Actions</Text>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => router.push('/(tabs)/vendor')}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.actionIconWrap, { backgroundColor: '#f0fdf4' }]}>
+              <Package size={20} color="#16a34a" />
+            </View>
+            <Text style={styles.actionTitle}>Products</Text>
+            <Text style={styles.actionSub}>Manage inventory</Text>
+            <View style={styles.actionArrow}>
+              <ArrowUpRight size={14} color="#16a34a" />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => setShowOrders(true)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.actionIconWrap, { backgroundColor: '#eff6ff' }]}>
+              <ShoppingBag size={20} color="#2563eb" />
+            </View>
+            <Text style={styles.actionTitle}>Orders</Text>
+            <Text style={styles.actionSub}>Track & fulfill</Text>
+            <View style={styles.actionArrow}>
+              <ArrowUpRight size={14} color="#2563eb" />
+            </View>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.summary}>
+        <View style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>Store Summary</Text>
-          <View style={styles.summaryRow}>
+          <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Total Products</Text>
             <Text style={styles.summaryValue}>{stats.totalProducts}</Text>
           </View>
-          <View style={styles.summaryRow}>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Active Listings</Text>
             <Text style={styles.summaryValue}>{stats.activeProducts}</Text>
           </View>
-          <View style={styles.summaryRow}>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryItem}>
             <Text style={styles.summaryLabel}>Low Stock Items</Text>
-            <Text style={[styles.summaryValue, styles.warningText]}>
+            <Text style={[styles.summaryValue, stats.lowStockProducts > 0 && styles.warnValue]}>
               {stats.lowStockProducts}
             </Text>
           </View>
         </View>
       </View>
+
+      <View style={{ height: 32 }} />
     </ScrollView>
   );
 }
@@ -486,293 +505,368 @@ export default function VendorHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f8faf9',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f8faf9',
   },
   header: {
-    backgroundColor: '#ff8c00',
+    backgroundColor: '#0f1f1c',
     paddingHorizontal: 20,
-    paddingBottom: 36,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    paddingBottom: 28,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   greeting: {
-    fontSize: 26,
-    fontFamily: Fonts.headingBold,
+    fontSize: 24,
+    fontFamily: Fonts.dmSansBold,
     color: '#ffffff',
-    marginBottom: 6,
-    letterSpacing: 0.5,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 15,
-    fontFamily: Fonts.medium,
-    color: '#e0f2fe',
+    fontSize: 14,
+    fontFamily: Fonts.dmSans,
+    color: '#94a3b8',
+    marginTop: 4,
+  },
+  headerBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(13, 148, 136, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bannerContainer: {
     marginHorizontal: 16,
-    marginTop: -20,
-    marginBottom: 16,
+    marginTop: 16,
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   bannerImage: {
     width: '100%',
     height: 160,
   },
   content: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 20,
   },
-  statsGrid: {
+  revenueCard: {
+    backgroundColor: '#0f1f1c',
+    borderRadius: 20,
+    padding: 22,
+    marginBottom: 16,
+  },
+  revenueTop: {
     flexDirection: 'row',
-    gap: 12,
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
+  },
+  revenueIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#0d9488',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  revenueLabelWrap: {
+    flex: 1,
+  },
+  revenueLabel: {
+    fontSize: 14,
+    fontFamily: Fonts.dmSansMedium,
+    color: '#94a3b8',
+    letterSpacing: 0.2,
+  },
+  revenueValue: {
+    fontSize: 32,
+    fontFamily: Fonts.dmSansBold,
+    color: '#ffffff',
+    letterSpacing: -0.5,
+  },
+  revenueMeta: {
+    marginTop: 10,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
+  },
+  revenueMetaText: {
+    fontSize: 13,
+    fontFamily: Fonts.dmSans,
+    color: '#64748b',
+  },
+  metricsRow: {
+    flexDirection: 'row',
+    gap: 10,
     marginBottom: 12,
   },
-  statCard: {
+  metricCard: {
     flex: 1,
     backgroundColor: '#ffffff',
-    borderRadius: 18,
-    padding: 18,
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f1f5f3',
   },
-  statCardPrimary: {
-    backgroundColor: '#ff8c00',
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  statIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  metricIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
+  },
+  metricValue: {
+    fontSize: 22,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
+    marginBottom: 2,
+  },
+  metricLabel: {
+    fontSize: 12,
+    fontFamily: Fonts.dmSansMedium,
+    color: '#64748b',
+  },
+  ratingsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  ratingCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#f1f5f3',
+  },
+  ratingTop: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconBlue: {
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-  },
-  iconGreen: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-  },
-  iconPurple: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-  },
-  iconYellow: {
-    backgroundColor: 'rgba(251, 191, 36, 0.1)',
-  },
-  statValue: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
-    color: '#1f2937',
+    gap: 8,
     marginBottom: 4,
   },
-  statValuePrimary: {
-    fontSize: 24,
-    fontFamily: Fonts.bold,
-    color: '#ffffff',
-    marginBottom: 4,
+  ratingValue: {
+    fontSize: 20,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
   },
-  statLabel: {
+  ratingLabel: {
     fontSize: 12,
-    fontFamily: Fonts.medium,
-    color: '#6b7280',
-    textAlign: 'center',
-  },
-  statLabelPrimary: {
-    fontSize: 12,
-    fontFamily: Fonts.medium,
-    color: '#ffffff',
-    textAlign: 'center',
-    opacity: 0.9,
+    fontFamily: Fonts.dmSansMedium,
+    color: '#64748b',
   },
   alertCard: {
     flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#fef3c7',
+  },
+  alertIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: '#fef3c7',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   alertContent: {
     flex: 1,
-    marginLeft: 12,
   },
   alertTitle: {
-    fontSize: 16,
-    fontFamily: Fonts.semiBold,
+    fontSize: 14,
+    fontFamily: Fonts.dmSansSemiBold,
     color: '#92400e',
-    marginBottom: 4,
   },
   alertText: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: '#78350f',
+    fontSize: 13,
+    fontFamily: Fonts.dmSans,
+    color: '#a16207',
+    marginTop: 1,
   },
-  quickActions: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 16,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.semiBold,
-    color: '#1f2937',
-    marginBottom: 12,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f9ff',
-    borderRadius: 14,
-    padding: 18,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#e0f2fe',
-  },
-  actionButtonText: {
+  sectionHeading: {
     fontSize: 17,
-    fontFamily: Fonts.bold,
-    color: '#0369a1',
-    marginLeft: 12,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
+    marginBottom: 12,
+    letterSpacing: -0.2,
   },
-  summary: {
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
+  actionCard: {
+    flex: 1,
     backgroundColor: '#ffffff',
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 18,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f1f5f3',
+  },
+  actionIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  actionTitle: {
+    fontSize: 15,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
+    marginBottom: 2,
+  },
+  actionSub: {
+    fontSize: 12,
+    fontFamily: Fonts.dmSans,
+    color: '#94a3b8',
+  },
+  actionArrow: {
+    position: 'absolute',
+    top: 18,
+    right: 18,
+  },
+  summaryCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f3',
   },
   summaryTitle: {
-    fontSize: 18,
-    fontFamily: Fonts.semiBold,
-    color: '#1f2937',
+    fontSize: 16,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
     marginBottom: 16,
+    letterSpacing: -0.2,
   },
-  summaryRow: {
+  summaryItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: '#f1f5f3',
   },
   summaryLabel: {
     fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: '#6b7280',
+    fontFamily: Fonts.dmSans,
+    color: '#64748b',
   },
   summaryValue: {
-    fontSize: 14,
-    fontFamily: Fonts.semiBold,
-    color: '#1f2937',
+    fontSize: 15,
+    fontFamily: Fonts.dmSansSemiBold,
+    color: '#0f1f1c',
   },
-  warningText: {
-    color: '#f59e0b',
+  warnValue: {
+    color: '#d97706',
   },
   statusContainer: {
     flex: 1,
-    backgroundColor: '#f9fafb',
-    justifyContent: 'center',
+    backgroundColor: '#f8faf9',
     alignItems: 'center',
     padding: 32,
   },
-  statusIconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#fef3c7',
-    justifyContent: 'center',
+  statusIconWrap: {
+    marginBottom: 28,
+  },
+  statusIconInner: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#fef9ec',
     alignItems: 'center',
-    marginBottom: 24,
+    justifyContent: 'center',
   },
-  statusIconRejected: {
-    backgroundColor: '#fee2e2',
-  },
+  statusIconRejected: {},
   statusTitle: {
-    fontSize: 24,
-    fontFamily: Fonts.headingBold,
-    color: '#1f2937',
+    fontSize: 22,
+    fontFamily: Fonts.dmSansBold,
+    color: '#0f1f1c',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+    letterSpacing: -0.3,
   },
   statusText: {
-    fontSize: 16,
-    fontFamily: Fonts.regular,
-    color: '#6b7280',
+    fontSize: 15,
+    fontFamily: Fonts.dmSans,
+    color: '#64748b',
     textAlign: 'center',
     marginBottom: 16,
-    lineHeight: 24,
+    lineHeight: 23,
+    maxWidth: 320,
   },
-  statusWait: {
-    fontSize: 14,
-    fontFamily: Fonts.medium,
-    color: '#f59e0b',
-    fontStyle: 'italic',
-    marginBottom: 24,
+  statusTimeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 28,
+  },
+  statusTimeText: {
+    fontSize: 13,
+    fontFamily: Fonts.dmSansMedium,
+    color: '#92400e',
   },
   statusButton: {
-    backgroundColor: '#ff8c00',
-    borderRadius: 16,
-    padding: 18,
-    paddingHorizontal: 56,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    backgroundColor: '#0f1f1c',
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 48,
   },
   statusButtonText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontFamily: Fonts.semiBold,
+    fontSize: 15,
+    fontFamily: Fonts.dmSansSemiBold,
   },
   rejectionBox: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#fef2f2',
+    borderRadius: 14,
+    padding: 18,
     width: '100%',
+    maxWidth: 360,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#fecaca',
   },
   rejectionTitle: {
-    fontSize: 14,
-    fontFamily: Fonts.semiBold,
+    fontSize: 13,
+    fontFamily: Fonts.dmSansSemiBold,
     color: '#991b1b',
-    marginBottom: 8,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   rejectionText: {
     fontSize: 14,
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.dmSans,
     color: '#7f1d1d',
-    lineHeight: 20,
+    lineHeight: 21,
   },
 });
