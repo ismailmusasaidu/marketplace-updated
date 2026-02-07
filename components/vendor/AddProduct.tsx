@@ -25,6 +25,9 @@ import {
   Layers,
   FileText,
   Info,
+  Percent,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
@@ -60,6 +63,8 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
     price: '',
     unit: 'lb',
     stock_quantity: '',
+    discount_percentage: '',
+    discount_active: false,
   });
 
   useEffect(() => {
@@ -277,6 +282,7 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
     try {
       setLoading(true);
 
+      const discountPct = parseInt(formData.discount_percentage) || 0;
       const { data: product, error: productError } = await supabase
         .from('products')
         .insert({
@@ -290,6 +296,8 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
           stock_quantity: parseInt(formData.stock_quantity),
           is_available: true,
           is_featured: false,
+          discount_percentage: Math.min(Math.max(discountPct, 0), 100),
+          discount_active: formData.discount_active && discountPct > 0,
         })
         .select()
         .single();
@@ -577,7 +585,7 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
               </View>
             </View>
 
-            <View style={[styles.inputGroup, { marginBottom: 0 }]}>
+            <View style={styles.inputGroup}>
               <View style={styles.labelRow}>
                 <Layers size={14} color="#888" />
                 <Text style={styles.label}>Stock Quantity</Text>
@@ -592,6 +600,57 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
                 keyboardType="number-pad"
               />
               <Text style={styles.helperText}>Number of items available for sale</Text>
+            </View>
+
+            <View style={styles.discountDivider} />
+
+            <View style={styles.discountSection}>
+              <View style={styles.discountHeaderRow}>
+                <View style={styles.discountIconWrap}>
+                  <Percent size={16} color="#ff8c00" strokeWidth={2.2} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.discountHeaderTitle}>Discount</Text>
+                  <Text style={styles.discountHeaderSub}>Set a percentage off for customers</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setFormData({ ...formData, discount_active: !formData.discount_active })}
+                  activeOpacity={0.7}
+                >
+                  {formData.discount_active ? (
+                    <ToggleRight size={32} color="#ff8c00" />
+                  ) : (
+                    <ToggleLeft size={32} color="#ccc" />
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {formData.discount_active && (
+                <View style={styles.discountInputRow}>
+                  <TextInput
+                    style={[styles.discountInput, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                    placeholder="0"
+                    placeholderTextColor="#b0b0b0"
+                    value={formData.discount_percentage}
+                    onChangeText={(text) => {
+                      const num = text.replace(/[^0-9]/g, '');
+                      const clamped = Math.min(parseInt(num) || 0, 100);
+                      setFormData({ ...formData, discount_percentage: num ? String(clamped) : '' });
+                    }}
+                    keyboardType="number-pad"
+                    maxLength={3}
+                  />
+                  <Text style={styles.discountPercent}>%</Text>
+                  {formData.discount_percentage && parseFloat(formData.price) > 0 && (
+                    <View style={styles.discountPreview}>
+                      <Text style={styles.discountPreviewLabel}>Sale price</Text>
+                      <Text style={styles.discountPreviewPrice}>
+                        {'\u20A6'}{(parseFloat(formData.price) * (1 - (parseInt(formData.discount_percentage) || 0) / 100)).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -989,5 +1048,79 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.headingBold,
     color: '#ffffff',
     letterSpacing: 0.3,
+  },
+  discountDivider: {
+    height: 1,
+    backgroundColor: '#f0ebe4',
+    marginVertical: 4,
+    marginBottom: 18,
+  },
+  discountSection: {
+    gap: 14,
+  },
+  discountHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  discountIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#fff7ed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ffedd5',
+  },
+  discountHeaderTitle: {
+    fontSize: 15,
+    fontFamily: Fonts.headingBold,
+    color: '#1a1a1a',
+  },
+  discountHeaderSub: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: '#888',
+    marginTop: 1,
+  },
+  discountInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  discountInput: {
+    width: 80,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 20,
+    fontFamily: Fonts.bold,
+    color: '#1a1a1a',
+    textAlign: 'center',
+    borderWidth: 1.5,
+    borderColor: '#ffedd5',
+  },
+  discountPercent: {
+    fontSize: 18,
+    fontFamily: Fonts.bold,
+    color: '#888',
+  },
+  discountPreview: {
+    flex: 1,
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  discountPreviewLabel: {
+    fontSize: 11,
+    fontFamily: Fonts.semiBold,
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  discountPreviewPrice: {
+    fontSize: 18,
+    fontFamily: Fonts.headingBold,
+    color: '#059669',
   },
 });

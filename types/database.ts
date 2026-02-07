@@ -89,6 +89,8 @@ export interface Product {
   is_featured: boolean;
   rating: number;
   total_reviews: number;
+  discount_percentage: number;
+  discount_active: boolean;
   created_at: string;
   updated_at: string;
 }

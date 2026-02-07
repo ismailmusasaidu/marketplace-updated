@@ -84,6 +84,10 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
   const hasFailed = failedImages.has(currentImageUrl);
   const finalImageUrl = (hasFailed || !isValidUrl) ? fallbackUrl : currentImageUrl;
   const inWishlist = isInWishlist(product.id);
+  const hasDiscount = product.discount_active && product.discount_percentage > 0;
+  const discountedPrice = hasDiscount
+    ? product.price * (1 - product.discount_percentage / 100)
+    : product.price;
 
   const handleWishlistToggle = (e: any) => {
     e.stopPropagation();
@@ -101,6 +105,12 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
               setFailedImages(prev => new Set(prev).add(currentImageUrl));
             }}
           />
+
+          {hasDiscount && (
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountBadgeText}>-{product.discount_percentage}%</Text>
+            </View>
+          )}
 
           <TouchableOpacity
             style={[styles.wishlistButton, inWishlist && styles.wishlistButtonActive]}
@@ -141,9 +151,20 @@ export default function ProductCard({ product, onPress, onAddToCart }: ProductCa
 
           <View style={styles.footer}>
             <View>
-              <Text style={styles.price}>
-                {'\u20A6'}{product.price.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
-              </Text>
+              {hasDiscount ? (
+                <>
+                  <Text style={styles.price}>
+                    {'\u20A6'}{discountedPrice.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                  </Text>
+                  <Text style={styles.originalPrice}>
+                    {'\u20A6'}{product.price.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.price}>
+                  {'\u20A6'}{product.price.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                </Text>
+              )}
               <Text style={styles.unit}>per {product.unit}</Text>
             </View>
             <TouchableOpacity
@@ -269,6 +290,34 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: '#999',
     marginTop: 1,
+  },
+  originalPrice: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#999',
+    textDecorationLine: 'line-through',
+    marginTop: 1,
+  },
+  discountBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    zIndex: 10,
+    shadowColor: '#ef4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  discountBadgeText: {
+    fontSize: 11,
+    fontFamily: Fonts.bold,
+    color: '#ffffff',
+    letterSpacing: 0.3,
   },
   cartButton: {
     backgroundColor: '#ff8c00',

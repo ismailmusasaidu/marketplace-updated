@@ -14,7 +14,7 @@ import {
   NativeScrollEvent,
   Platform,
 } from 'react-native';
-import { X, Star, ShoppingCart, Plus, Minus, MapPin, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { X, Star, ShoppingCart, Plus, Minus, MapPin, ZoomIn, ChevronLeft, ChevronRight, Percent } from 'lucide-react-native';
 import { Product, Review } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -351,6 +351,11 @@ export default function ProductDetailModal({
                   <X size={20} color="#ffffff" strokeWidth={2.5} />
                 </TouchableOpacity>
               </View>
+              {currentProduct.discount_active && currentProduct.discount_percentage > 0 && (
+                <View style={styles.imageDiscountBadge}>
+                  <Text style={styles.imageDiscountBadgeText}>-{currentProduct.discount_percentage}%</Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.contentContainer}>
@@ -374,11 +379,33 @@ export default function ProductDetailModal({
 
               <View style={styles.priceSection}>
                 <View style={styles.priceContainer}>
-                  <Text style={styles.priceLabel}>Price</Text>
+                  <Text style={styles.priceLabel}>
+                    {currentProduct.discount_active && currentProduct.discount_percentage > 0 ? 'Sale Price' : 'Price'}
+                  </Text>
                   <View style={styles.priceRow}>
-                    <Text style={styles.price}>₦{currentProduct.price.toFixed(2)}</Text>
-                    <Text style={styles.unit}>/ {currentProduct.unit}</Text>
+                    {currentProduct.discount_active && currentProduct.discount_percentage > 0 ? (
+                      <>
+                        <Text style={styles.price}>
+                          ₦{(currentProduct.price * (1 - currentProduct.discount_percentage / 100)).toFixed(2)}
+                        </Text>
+                        <Text style={styles.unit}>/ {currentProduct.unit}</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.price}>₦{currentProduct.price.toFixed(2)}</Text>
+                        <Text style={styles.unit}>/ {currentProduct.unit}</Text>
+                      </>
+                    )}
                   </View>
+                  {currentProduct.discount_active && currentProduct.discount_percentage > 0 && (
+                    <View style={styles.discountRow}>
+                      <View style={styles.discountBadgeInline}>
+                        <Percent size={12} color="#ffffff" />
+                        <Text style={styles.discountBadgeInlineText}>-{currentProduct.discount_percentage}% OFF</Text>
+                      </View>
+                      <Text style={styles.originalPriceText}>₦{currentProduct.price.toFixed(2)}</Text>
+                    </View>
+                  )}
                 </View>
               </View>
 
@@ -455,7 +482,9 @@ export default function ProductDetailModal({
                   <View style={styles.subtotalContainer}>
                     <Text style={styles.subtotalLabel}>Subtotal</Text>
                     <Text style={styles.subtotalAmount}>
-                      ₦{(currentProduct.price * quantity).toFixed(2)}
+                      ₦{((currentProduct.discount_active && currentProduct.discount_percentage > 0
+                        ? currentProduct.price * (1 - currentProduct.discount_percentage / 100)
+                        : currentProduct.price) * quantity).toFixed(2)}
                     </Text>
                   </View>
                 </View>
@@ -1067,5 +1096,54 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 16,
     overflow: 'hidden',
+  },
+  imageDiscountBadge: {
+    position: 'absolute',
+    bottom: 40,
+    left: 20,
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    zIndex: 10,
+    shadowColor: '#ef4444',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  imageDiscountBadgeText: {
+    fontSize: 16,
+    fontFamily: Fonts.bold,
+    color: '#ffffff',
+    letterSpacing: 0.5,
+  },
+  discountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 8,
+  },
+  discountBadgeInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  discountBadgeInlineText: {
+    fontSize: 12,
+    fontFamily: Fonts.bold,
+    color: '#ffffff',
+    letterSpacing: 0.3,
+  },
+  originalPriceText: {
+    fontSize: 18,
+    fontFamily: Fonts.medium,
+    color: '#92400e',
+    textDecorationLine: 'line-through',
+    opacity: 0.6,
   },
 });

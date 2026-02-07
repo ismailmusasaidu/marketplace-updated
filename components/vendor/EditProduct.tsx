@@ -22,7 +22,9 @@ import {
   FileText,
   Link as LinkIcon,
   ToggleRight,
+  ToggleLeft,
   Pencil,
+  Percent,
 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
@@ -47,6 +49,10 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
   const [categoryId, setCategoryId] = useState(product.category_id);
   const [isAvailable, setIsAvailable] = useState(product.is_available);
   const [imageUrl, setImageUrl] = useState(product.image_url || '');
+  const [discountPercentage, setDiscountPercentage] = useState(
+    product.discount_percentage ? String(product.discount_percentage) : ''
+  );
+  const [discountActive, setDiscountActive] = useState(product.discount_active || false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
@@ -79,6 +85,7 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
     setLoading(true);
 
     try {
+      const discountPct = parseInt(discountPercentage) || 0;
       const { error } = await supabase
         .from('products')
         .update({
@@ -89,6 +96,8 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
           category_id: categoryId,
           is_available: isAvailable,
           image_url: imageUrl.trim() || null,
+          discount_percentage: Math.min(Math.max(discountPct, 0), 100),
+          discount_active: discountActive && discountPct > 0,
         })
         .eq('id', product.id);
 
@@ -295,6 +304,58 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
                     ios_backgroundColor="#e5e7eb"
                   />
                 </View>
+              </View>
+
+              <View style={styles.sectionCard}>
+                <View style={styles.sectionCardHeader}>
+                  <View style={styles.sectionIconWrap}>
+                    <Percent size={18} color="#ff8c00" strokeWidth={2.2} />
+                  </View>
+                  <Text style={styles.sectionCardTitle}>Discount</Text>
+                </View>
+
+                <View style={styles.discountToggleRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.discountToggleLabel}>Enable Discount</Text>
+                    <Text style={styles.discountToggleSub}>
+                      {discountActive ? 'Customers will see a discount badge' : 'No discount applied'}
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setDiscountActive(!discountActive)} activeOpacity={0.7}>
+                    {discountActive ? (
+                      <ToggleRight size={32} color="#ff8c00" />
+                    ) : (
+                      <ToggleLeft size={32} color="#ccc" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {discountActive && (
+                  <View style={styles.discountInputRow}>
+                    <TextInput
+                      style={[styles.discountInput, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      placeholder="0"
+                      placeholderTextColor="#b0b0b0"
+                      value={discountPercentage}
+                      onChangeText={(text) => {
+                        const num = text.replace(/[^0-9]/g, '');
+                        const clamped = Math.min(parseInt(num) || 0, 100);
+                        setDiscountPercentage(num ? String(clamped) : '');
+                      }}
+                      keyboardType="number-pad"
+                      maxLength={3}
+                    />
+                    <Text style={styles.discountPercent}>%</Text>
+                    {discountPercentage && parseFloat(price) > 0 && (
+                      <View style={styles.discountPreview}>
+                        <Text style={styles.discountPreviewLabel}>Sale price</Text>
+                        <Text style={styles.discountPreviewPrice}>
+                          {'\u20A6'}{(parseFloat(price) * (1 - (parseInt(discountPercentage) || 0) / 100)).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
               </View>
 
               <TouchableOpacity
@@ -596,5 +657,61 @@ const styles = StyleSheet.create({
   },
   reviewsContainer: {
     marginTop: 4,
+  },
+  discountToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+  },
+  discountToggleLabel: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#444',
+  },
+  discountToggleSub: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: '#888',
+    marginTop: 2,
+  },
+  discountInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  discountInput: {
+    width: 80,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 20,
+    fontFamily: Fonts.bold,
+    color: '#1a1a1a',
+    textAlign: 'center',
+    borderWidth: 1.5,
+    borderColor: '#ffedd5',
+  },
+  discountPercent: {
+    fontSize: 18,
+    fontFamily: Fonts.bold,
+    color: '#888',
+  },
+  discountPreview: {
+    flex: 1,
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  discountPreviewLabel: {
+    fontSize: 11,
+    fontFamily: Fonts.semiBold,
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  discountPreviewPrice: {
+    fontSize: 18,
+    fontFamily: Fonts.headingBold,
+    color: '#059669',
   },
 });
