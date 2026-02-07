@@ -19,6 +19,12 @@ import {
   Plus,
   Link as LinkIcon,
   Image as ImageIcon,
+  Package,
+  Tag,
+  DollarSign,
+  Layers,
+  FileText,
+  Info,
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '@/lib/supabase';
@@ -271,7 +277,6 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
     try {
       setLoading(true);
 
-      // vendor_id in products table references profiles.id, not vendors.id
       const { data: product, error: productError } = await supabase
         .from('products')
         .insert({
@@ -349,11 +354,14 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <ArrowLeft size={24} color="#1f2937" />
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
+          <ArrowLeft size={22} color="#1a1a1a" strokeWidth={2.5} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Product</Text>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Add New Product</Text>
+          <Text style={styles.headerSubtitle}>Create a new listing for your store</Text>
+        </View>
         <View style={styles.placeholder} />
       </View>
 
@@ -363,172 +371,232 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Product Images</Text>
-          <Text style={styles.sectionSubtitle}>
-            Add up to multiple images. First image will be the primary image.
-          </Text>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoText}>
-              Use direct image URLs from Pexels or other sources. URLs must end with .jpg, .png, .jpeg, etc.
-            </Text>
-            <Text style={styles.infoExample}>
-              Example: https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg
-            </Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconWrap}>
+              <ImageIcon size={18} color="#ff8c00" strokeWidth={2.2} />
+            </View>
+            <View style={styles.sectionTitleContainer}>
+              <Text style={styles.sectionTitle}>Product Images</Text>
+              <Text style={styles.sectionSubtitle}>
+                First image will be the primary image shown in listings
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.imagesGrid}>
-            {images.map((image, index) => (
-              <View key={image.id} style={styles.imageCard}>
-                <Image source={{ uri: image.uri }} style={styles.imagePreview} />
-                {image.isPrimary && (
-                  <View style={styles.primaryBadge}>
-                    <Text style={styles.primaryBadgeText}>Primary</Text>
-                  </View>
-                )}
-                <TouchableOpacity
-                  style={styles.removeImageButton}
-                  onPress={() => removeImage(image.id)}
-                >
-                  <X size={16} color="#ffffff" />
-                </TouchableOpacity>
-                {!image.isPrimary && (
-                  <TouchableOpacity
-                    style={styles.setPrimaryButton}
-                    onPress={() => setPrimaryImage(image.id)}
-                  >
-                    <Text style={styles.setPrimaryText}>Set as primary</Text>
-                  </TouchableOpacity>
-                )}
+          <View style={styles.sectionCard}>
+            <View style={styles.infoBox}>
+              <Info size={14} color="#92400e" strokeWidth={2.2} />
+              <View style={styles.infoTextContainer}>
+                <Text style={styles.infoText}>
+                  Use direct image URLs from Pexels or other sources ending with .jpg, .png, etc.
+                </Text>
               </View>
-            ))}
+            </View>
 
-            <TouchableOpacity style={styles.addImageButton} onPress={pickImages}>
-              <Upload size={24} color="#ff8c00" />
-              <Text style={styles.addImageText}>Upload from device</Text>
-            </TouchableOpacity>
+            <View style={styles.imagesGrid}>
+              {images.map((image) => (
+                <View key={image.id} style={styles.imageCard}>
+                  <Image source={{ uri: image.uri }} style={styles.imagePreview} />
+                  {image.isPrimary && (
+                    <View style={styles.primaryBadge}>
+                      <Text style={styles.primaryBadgeText}>Primary</Text>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => removeImage(image.id)}
+                  >
+                    <X size={14} color="#ffffff" strokeWidth={2.5} />
+                  </TouchableOpacity>
+                  {!image.isPrimary && (
+                    <TouchableOpacity
+                      style={styles.setPrimaryButton}
+                      onPress={() => setPrimaryImage(image.id)}
+                    >
+                      <Text style={styles.setPrimaryText}>Set as primary</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
 
-            <TouchableOpacity
-              style={styles.addImageButton}
-              onPress={() => setShowUrlInput(true)}
-            >
-              <LinkIcon size={24} color="#ff8c00" />
-              <Text style={styles.addImageText}>Add image URL</Text>
-            </TouchableOpacity>
-          </View>
-
-          {showUrlInput && (
-            <View style={styles.urlInputContainer}>
-              <TextInput
-                style={styles.urlInput}
-                placeholder="https://example.com/image.jpg"
-                value={imageUrl}
-                onChangeText={setImageUrl}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TouchableOpacity style={styles.addUrlButton} onPress={addImageFromUrl}>
-                <Plus size={20} color="#ffffff" />
+              <TouchableOpacity style={styles.addImageButton} onPress={pickImages} activeOpacity={0.7}>
+                <View style={styles.addImageIconWrap}>
+                  <Upload size={22} color="#ff8c00" strokeWidth={2} />
+                </View>
+                <Text style={styles.addImageText}>Upload</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
-                style={styles.cancelUrlButton}
-                onPress={() => {
-                  setShowUrlInput(false);
-                  setImageUrl('');
-                }}
+                style={styles.addImageButton}
+                onPress={() => setShowUrlInput(true)}
+                activeOpacity={0.7}
               >
-                <X size={20} color="#6b7280" />
+                <View style={styles.addImageIconWrap}>
+                  <LinkIcon size={22} color="#ff8c00" strokeWidth={2} />
+                </View>
+                <Text style={styles.addImageText}>Add URL</Text>
               </TouchableOpacity>
             </View>
-          )}
+
+            {showUrlInput && (
+              <View style={styles.urlInputContainer}>
+                <TextInput
+                  style={[styles.urlInput, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                  placeholder="https://example.com/image.jpg"
+                  placeholderTextColor="#b0b0b0"
+                  value={imageUrl}
+                  onChangeText={setImageUrl}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity style={styles.addUrlButton} onPress={addImageFromUrl} activeOpacity={0.8}>
+                  <Plus size={20} color="#ffffff" strokeWidth={2.5} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.cancelUrlButton}
+                  onPress={() => {
+                    setShowUrlInput(false);
+                    setImageUrl('');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <X size={20} color="#6b7280" strokeWidth={2} />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Product Information</Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Product Name *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g., Organic Tomatoes"
-              value={formData.name}
-              onChangeText={(text) => setFormData({ ...formData, name: text })}
-            />
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconWrap}>
+              <Package size={18} color="#ff8c00" strokeWidth={2.2} />
+            </View>
+            <View style={styles.sectionTitleContainer}>
+              <Text style={styles.sectionTitle}>Product Information</Text>
+              <Text style={styles.sectionSubtitle}>Basic details about your product</Text>
+            </View>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Describe your product..."
-              value={formData.description}
-              onChangeText={(text) => setFormData({ ...formData, description: text })}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </View>
+          <View style={styles.sectionCard}>
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Tag size={14} color="#888" />
+                <Text style={styles.label}>Product Name</Text>
+                <Text style={styles.required}>*</Text>
+              </View>
+              <TextInput
+                style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                placeholder="e.g., Organic Tomatoes"
+                placeholderTextColor="#b0b0b0"
+                value={formData.name}
+                onChangeText={(text) => setFormData({ ...formData, name: text })}
+              />
+            </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Category *</Text>
-            <View style={styles.categoryGrid}>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={[
-                    styles.categoryChip,
-                    formData.category_id === category.id && styles.categoryChipActive,
-                  ]}
-                  onPress={() => setFormData({ ...formData, category_id: category.id })}
-                >
-                  <Text
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <FileText size={14} color="#888" />
+                <Text style={styles.label}>Description</Text>
+              </View>
+              <TextInput
+                style={[styles.input, styles.textArea, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                placeholder="Describe your product in detail..."
+                placeholderTextColor="#b0b0b0"
+                value={formData.description}
+                onChangeText={(text) => setFormData({ ...formData, description: text })}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.labelRow}>
+                <Layers size={14} color="#888" />
+                <Text style={styles.label}>Category</Text>
+                <Text style={styles.required}>*</Text>
+              </View>
+              <View style={styles.categoryGrid}>
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category.id}
                     style={[
-                      styles.categoryChipText,
-                      formData.category_id === category.id && styles.categoryChipTextActive,
+                      styles.categoryChip,
+                      formData.category_id === category.id && styles.categoryChipActive,
                     ]}
+                    onPress={() => setFormData({ ...formData, category_id: category.id })}
+                    activeOpacity={0.7}
                   >
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.categoryChipText,
+                        formData.category_id === category.id && styles.categoryChipTextActive,
+                      ]}
+                    >
+                      {category.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
 
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Price *</Text>
+            <View style={styles.row}>
+              <View style={[styles.inputGroup, styles.flex1]}>
+                <View style={styles.labelRow}>
+                  <DollarSign size={14} color="#888" />
+                  <Text style={styles.label}>Price</Text>
+                  <Text style={styles.required}>*</Text>
+                </View>
+                <View style={styles.inputWithPrefix}>
+                  <Text style={styles.prefixText}>{'\u20A6'}</Text>
+                  <TextInput
+                    style={[styles.input, styles.prefixInput, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                    placeholder="0.00"
+                    placeholderTextColor="#b0b0b0"
+                    value={formData.price}
+                    onChangeText={(text) => setFormData({ ...formData, price: text })}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+              </View>
+
+              <View style={[styles.inputGroup, styles.flex1]}>
+                <View style={styles.labelRow}>
+                  <Package size={14} color="#888" />
+                  <Text style={styles.label}>Unit</Text>
+                  <Text style={styles.required}>*</Text>
+                </View>
+                <TextInput
+                  style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                  placeholder="lb, kg, piece"
+                  placeholderTextColor="#b0b0b0"
+                  value={formData.unit}
+                  onChangeText={(text) => setFormData({ ...formData, unit: text })}
+                />
+              </View>
+            </View>
+
+            <View style={[styles.inputGroup, { marginBottom: 0 }]}>
+              <View style={styles.labelRow}>
+                <Layers size={14} color="#888" />
+                <Text style={styles.label}>Stock Quantity</Text>
+                <Text style={styles.required}>*</Text>
+              </View>
               <TextInput
-                style={styles.input}
-                placeholder="0.00"
-                value={formData.price}
-                onChangeText={(text) => setFormData({ ...formData, price: text })}
-                keyboardType="decimal-pad"
+                style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                placeholder="0"
+                placeholderTextColor="#b0b0b0"
+                value={formData.stock_quantity}
+                onChangeText={(text) => setFormData({ ...formData, stock_quantity: text })}
+                keyboardType="number-pad"
               />
+              <Text style={styles.helperText}>Number of items available for sale</Text>
             </View>
-
-            <View style={[styles.inputGroup, styles.flex1]}>
-              <Text style={styles.label}>Unit *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="lb, kg, piece"
-                value={formData.unit}
-                onChangeText={(text) => setFormData({ ...formData, unit: text })}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Stock Quantity *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="0"
-              value={formData.stock_quantity}
-              onChangeText={(text) => setFormData({ ...formData, stock_quantity: text })}
-              keyboardType="number-pad"
-            />
           </View>
         </View>
 
-        <View style={styles.bottomSpacing} />
+        <View style={{ height: 24 }} />
       </ScrollView>
 
       <View style={styles.footer}>
@@ -536,12 +604,16 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
           style={[styles.submitButton, loading && styles.submitButtonDisabled]}
           onPress={handleSubmit}
           disabled={loading}
+          activeOpacity={0.85}
         >
           {loading ? (
-            <ActivityIndicator color="#ffffff" />
+            <>
+              <ActivityIndicator color="#ffffff" style={{ marginRight: 10 }} />
+              <Text style={styles.submitButtonText}>Creating Product...</Text>
+            </>
           ) : (
             <>
-              <Plus size={20} color="#ffffff" />
+              <Plus size={22} color="#ffffff" strokeWidth={2.5} />
               <Text style={styles.submitButtonText}>Add Product</Text>
             </>
           )}
@@ -554,50 +626,116 @@ export default function AddProduct({ onBack, onSuccess }: AddProductProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f8f5f0',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingBottom: 20,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#eee',
   },
   backButton: {
-    padding: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#f8f5f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
-    fontFamily: Fonts.heading,
-    color: '#1f2937',
+    fontSize: 22,
+    fontFamily: Fonts.display,
+    color: '#1a1a1a',
+    letterSpacing: -0.3,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#888',
+    marginTop: 2,
   },
   placeholder: {
-    width: 40,
+    width: 44,
   },
   content: {
     flex: 1,
   },
   section: {
-    backgroundColor: '#ffffff',
-    padding: 20,
-    marginTop: 12,
+    marginTop: 20,
+    marginHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  sectionIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#fff7ed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ffedd5',
+  },
+  sectionTitleContainer: {
+    flex: 1,
+    paddingTop: 2,
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontFamily: Fonts.headingBold,
-    color: '#111827',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    color: '#1a1a1a',
+    letterSpacing: -0.3,
+    marginBottom: 2,
   },
   sectionSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: Fonts.regular,
-    color: '#6b7280',
-    marginBottom: 16,
+    color: '#888',
+    lineHeight: 18,
+  },
+  sectionCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#eee',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    backgroundColor: '#fffbeb',
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: '#fef3c7',
+    gap: 10,
+    alignItems: 'flex-start',
+  },
+  infoTextContainer: {
+    flex: 1,
+  },
+  infoText: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: '#92400e',
+    lineHeight: 18,
   },
   imagesGrid: {
     flexDirection: 'row',
@@ -605,12 +743,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   imageCard: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
+    width: 110,
+    height: 110,
+    borderRadius: 16,
     overflow: 'hidden',
     position: 'relative',
     backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#eee',
   },
   imagePreview: {
     width: '100%',
@@ -618,25 +758,34 @@ const styles = StyleSheet.create({
   },
   primaryBadge: {
     position: 'absolute',
-    top: 4,
-    left: 4,
+    top: 6,
+    left: 6,
     backgroundColor: '#ff8c00',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
   },
   primaryBadgeText: {
     fontSize: 10,
     fontFamily: Fonts.bold,
     color: '#ffffff',
+    letterSpacing: 0.3,
   },
   removeImageButton: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: 6,
+    right: 6,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 12,
-    padding: 4,
+    borderRadius: 10,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   setPrimaryButton: {
     position: 'absolute',
@@ -644,169 +793,201 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 4,
+    paddingVertical: 6,
   },
   setPrimaryText: {
     fontSize: 10,
     fontFamily: Fonts.semiBold,
     color: '#ffffff',
     textAlign: 'center',
+    letterSpacing: 0.2,
   },
   addImageButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
+    width: 110,
+    height: 110,
+    borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#ff8c00',
+    borderColor: '#ffedd5',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
+    backgroundColor: '#fffbf5',
+  },
+  addImageIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fff7ed',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addImageText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: Fonts.semiBold,
     color: '#ff8c00',
     textAlign: 'center',
   },
   urlInputContainer: {
     flexDirection: 'row',
-    marginTop: 12,
+    marginTop: 14,
     gap: 8,
   },
   urlInput: {
     flex: 1,
-    height: 44,
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
+    height: 48,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: 14,
     fontFamily: Fonts.regular,
-    color: '#1f2937',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    color: '#1a1a1a',
+    borderWidth: 1.5,
+    borderColor: '#eee',
   },
   addUrlButton: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     backgroundColor: '#ff8c00',
-    borderRadius: 12,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   cancelUrlButton: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     backgroundColor: '#f3f4f6',
-    borderRadius: 12,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#eee',
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 22,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
   },
   label: {
     fontSize: 14,
     fontFamily: Fonts.semiBold,
-    color: '#374151',
-    marginBottom: 8,
+    color: '#444',
+    letterSpacing: -0.1,
+  },
+  required: {
+    fontSize: 14,
+    fontFamily: Fonts.bold,
+    color: '#ff8c00',
   },
   input: {
-    height: 48,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f8f8',
     borderRadius: 14,
-    paddingHorizontal: 16,
+    padding: 16,
     fontSize: 15,
-    fontFamily: Fonts.medium,
-    color: '#1f2937',
-    borderWidth: 2.5,
-    borderColor: '#ff8c00',
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    fontFamily: Fonts.regular,
+    color: '#1a1a1a',
+    borderWidth: 1.5,
+    borderColor: '#eee',
   },
   textArea: {
-    height: 100,
-    paddingTop: 12,
+    minHeight: 100,
+    paddingTop: 14,
+    textAlignVertical: 'top',
+  },
+  inputWithPrefix: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  prefixText: {
+    position: 'absolute',
+    left: 16,
+    fontSize: 16,
+    fontFamily: Fonts.bold,
+    color: '#888',
+    zIndex: 1,
+  },
+  prefixInput: {
+    flex: 1,
+    paddingLeft: 34,
+  },
+  helperText: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: '#aaa',
+    marginTop: 8,
+    lineHeight: 16,
   },
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   categoryChip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#f3f4f6',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderRadius: 24,
+    backgroundColor: '#f8f8f8',
+    borderWidth: 1.5,
+    borderColor: '#eee',
   },
   categoryChipActive: {
-    backgroundColor: '#d1fae5',
+    backgroundColor: '#fff7ed',
     borderColor: '#ff8c00',
   },
   categoryChipText: {
     fontSize: 14,
-    fontFamily: Fonts.semiBold,
-    color: '#6b7280',
+    fontFamily: Fonts.medium,
+    color: '#888',
   },
   categoryChipTextActive: {
-    color: '#047857',
+    color: '#ff8c00',
+    fontFamily: Fonts.semiBold,
   },
   row: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 14,
   },
   flex1: {
     flex: 1,
-  },
-  infoBox: {
-    backgroundColor: '#fef3c7',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#f59e0b',
-  },
-  infoText: {
-    fontSize: 13,
-    fontFamily: Fonts.semiBold,
-    color: '#92400e',
-    marginBottom: 6,
-  },
-  infoExample: {
-    fontSize: 11,
-    fontFamily: Fonts.medium,
-    color: '#78350f',
-  },
-  bottomSpacing: {
-    height: 24,
   },
   footer: {
     padding: 20,
     paddingBottom: 32,
     backgroundColor: '#ffffff',
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: '#eee',
   },
   submitButton: {
     backgroundColor: '#ff8c00',
     borderRadius: 16,
-    paddingVertical: 16,
+    paddingVertical: 18,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
     fontSize: 17,
-    fontFamily: Fonts.bold,
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
+    letterSpacing: 0.3,
   },
 });

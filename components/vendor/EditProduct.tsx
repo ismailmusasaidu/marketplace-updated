@@ -9,11 +9,25 @@ import {
   ActivityIndicator,
   Alert,
   Switch,
+  Platform,
 } from 'react-native';
-import { ArrowLeft, Save, MessageSquare } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Save,
+  MessageSquare,
+  Package,
+  Tag,
+  DollarSign,
+  Layers,
+  FileText,
+  Link as LinkIcon,
+  ToggleRight,
+  Pencil,
+} from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { Product, Category } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
+import { Fonts } from '@/constants/fonts';
 import ProductReviews from '@/components/ProductReviews';
 
 interface EditProductProps {
@@ -91,10 +105,13 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <ArrowLeft size={24} color="#ffffff" />
+        <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
+          <ArrowLeft size={22} color="#ffffff" strokeWidth={2.5} />
         </TouchableOpacity>
-        <Text style={styles.title}>Edit Product</Text>
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.title}>Edit Product</Text>
+          <Text style={styles.headerSubtitle}>Update your product details</Text>
+        </View>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -103,7 +120,9 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
             <TouchableOpacity
               style={[styles.tab, !showReviews && styles.tabActive]}
               onPress={() => setShowReviews(false)}
+              activeOpacity={0.7}
             >
+              <Pencil size={16} color={!showReviews ? '#ff8c00' : '#888'} strokeWidth={2.2} />
               <Text style={[styles.tabText, !showReviews && styles.tabTextActive]}>
                 Product Details
               </Text>
@@ -111,8 +130,9 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
             <TouchableOpacity
               style={[styles.tab, showReviews && styles.tabActive]}
               onPress={() => setShowReviews(true)}
+              activeOpacity={0.7}
             >
-              <MessageSquare size={16} color={showReviews ? '#ff8c00' : '#6b7280'} />
+              <MessageSquare size={16} color={showReviews ? '#ff8c00' : '#888'} strokeWidth={2.2} />
               <Text style={[styles.tabText, showReviews && styles.tabTextActive]}>
                 Reviews
               </Text>
@@ -121,107 +141,174 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
 
           {!showReviews ? (
             <>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Product Name *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter product name"
-                  value={name}
-                  onChangeText={setName}
-                />
+              <View style={styles.sectionCard}>
+                <View style={styles.sectionCardHeader}>
+                  <View style={styles.sectionIconWrap}>
+                    <Package size={18} color="#ff8c00" strokeWidth={2.2} />
+                  </View>
+                  <Text style={styles.sectionCardTitle}>Basic Information</Text>
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <Tag size={14} color="#888" />
+                    <Text style={styles.label}>Product Name</Text>
+                    <Text style={styles.required}>*</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                    placeholder="Enter product name"
+                    placeholderTextColor="#b0b0b0"
+                    value={name}
+                    onChangeText={setName}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <FileText size={14} color="#888" />
+                    <Text style={styles.label}>Description</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, styles.textArea, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                    placeholder="Enter product description"
+                    placeholderTextColor="#b0b0b0"
+                    value={description}
+                    onChangeText={setDescription}
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                  />
+                </View>
+
+                <View style={styles.row}>
+                  <View style={[styles.inputGroup, styles.halfWidth]}>
+                    <View style={styles.labelRow}>
+                      <DollarSign size={14} color="#888" />
+                      <Text style={styles.label}>Price</Text>
+                      <Text style={styles.required}>*</Text>
+                    </View>
+                    <View style={styles.inputWithPrefix}>
+                      <Text style={styles.prefixText}>{'\u20A6'}</Text>
+                      <TextInput
+                        style={[styles.input, styles.prefixInput, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                        placeholder="0.00"
+                        placeholderTextColor="#b0b0b0"
+                        value={price}
+                        onChangeText={setPrice}
+                        keyboardType="decimal-pad"
+                      />
+                    </View>
+                  </View>
+
+                  <View style={[styles.inputGroup, styles.halfWidth]}>
+                    <View style={styles.labelRow}>
+                      <Layers size={14} color="#888" />
+                      <Text style={styles.label}>Stock</Text>
+                      <Text style={styles.required}>*</Text>
+                    </View>
+                    <TextInput
+                      style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                      placeholder="0"
+                      placeholderTextColor="#b0b0b0"
+                      value={stockQuantity}
+                      onChangeText={setStockQuantity}
+                      keyboardType="number-pad"
+                    />
+                  </View>
+                </View>
               </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Enter product description"
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              numberOfLines={4}
-            />
-          </View>
+              <View style={styles.sectionCard}>
+                <View style={styles.sectionCardHeader}>
+                  <View style={styles.sectionIconWrap}>
+                    <Layers size={18} color="#ff8c00" strokeWidth={2.2} />
+                  </View>
+                  <Text style={styles.sectionCardTitle}>Category</Text>
+                </View>
 
-          <View style={styles.row}>
-            <View style={[styles.inputGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Price *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0.00"
-                value={price}
-                onChangeText={setPrice}
-                keyboardType="decimal-pad"
-              />
-            </View>
+                <View style={styles.categoryGrid}>
+                  {categories.map((category) => (
+                    <TouchableOpacity
+                      key={category.id}
+                      style={[
+                        styles.categoryChip,
+                        categoryId === category.id && styles.categoryChipActive,
+                      ]}
+                      onPress={() => setCategoryId(category.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.categoryText,
+                          categoryId === category.id && styles.categoryTextActive,
+                        ]}
+                      >
+                        {category.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
 
-            <View style={[styles.inputGroup, styles.halfWidth]}>
-              <Text style={styles.label}>Stock Quantity *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0"
-                value={stockQuantity}
-                onChangeText={setStockQuantity}
-                keyboardType="number-pad"
-              />
-            </View>
-          </View>
+              <View style={styles.sectionCard}>
+                <View style={styles.sectionCardHeader}>
+                  <View style={styles.sectionIconWrap}>
+                    <LinkIcon size={18} color="#ff8c00" strokeWidth={2.2} />
+                  </View>
+                  <Text style={styles.sectionCardTitle}>Image & Availability</Text>
+                </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Category *</Text>
-            <View style={styles.categoryGrid}>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={[
-                    styles.categoryChip,
-                    categoryId === category.id && styles.categoryChipActive,
-                  ]}
-                  onPress={() => setCategoryId(category.id)}
-                >
-                  <Text
-                    style={[
-                      styles.categoryText,
-                      categoryId === category.id && styles.categoryTextActive,
-                    ]}
-                  >
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+                <View style={styles.inputGroup}>
+                  <View style={styles.labelRow}>
+                    <LinkIcon size={14} color="#888" />
+                    <Text style={styles.label}>Image URL</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, Platform.OS === 'web' && { outlineStyle: 'none' } as any]}
+                    placeholder="https://example.com/image.jpg"
+                    placeholderTextColor="#b0b0b0"
+                    value={imageUrl}
+                    onChangeText={setImageUrl}
+                    autoCapitalize="none"
+                  />
+                  <Text style={styles.helperText}>Direct link to product image (.jpg, .png, etc.)</Text>
+                </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Image URL</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="https://example.com/image.jpg"
-              value={imageUrl}
-              onChangeText={setImageUrl}
-            />
-          </View>
-
-          <View style={styles.switchContainer}>
-            <Text style={styles.label}>Product Available</Text>
-            <Switch
-              value={isAvailable}
-              onValueChange={setIsAvailable}
-              trackColor={{ false: '#d1d5db', true: '#6ee7b7' }}
-              thumbColor={isAvailable ? '#ff8c00' : '#f3f4f6'}
-            />
-          </View>
+                <View style={styles.switchContainer}>
+                  <View style={styles.switchContent}>
+                    <View style={styles.labelRow}>
+                      <ToggleRight size={14} color="#888" />
+                      <Text style={styles.label}>Product Available</Text>
+                    </View>
+                    <Text style={styles.switchDescription}>
+                      {isAvailable ? 'Product is visible and can be purchased' : 'Product is hidden from customers'}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={isAvailable}
+                    onValueChange={setIsAvailable}
+                    trackColor={{ false: '#e5e7eb', true: '#fed7aa' }}
+                    thumbColor={isAvailable ? '#ff8c00' : '#cbd5e1'}
+                    ios_backgroundColor="#e5e7eb"
+                  />
+                </View>
+              </View>
 
               <TouchableOpacity
                 style={[styles.submitButton, loading && styles.submitButtonDisabled]}
                 onPress={handleUpdate}
                 disabled={loading}
+                activeOpacity={0.85}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <>
+                    <ActivityIndicator size="small" color="#ffffff" style={{ marginRight: 10 }} />
+                    <Text style={styles.submitButtonText}>Updating...</Text>
+                  </>
                 ) : (
                   <>
-                    <Save size={20} color="#ffffff" />
+                    <Save size={20} color="#ffffff" strokeWidth={2.5} />
                     <Text style={styles.submitButtonText}>Update Product</Text>
                   </>
                 )}
@@ -237,6 +324,8 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
               />
             </View>
           )}
+
+          <View style={{ height: 32 }} />
         </View>
       </ScrollView>
     </View>
@@ -246,24 +335,46 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f8f5f0',
   },
   header: {
     backgroundColor: '#ff8c00',
-    padding: 20,
+    paddingHorizontal: 24,
     paddingTop: 60,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingBottom: 28,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
     flexDirection: 'row',
     alignItems: 'center',
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 5,
   },
   backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 16,
   },
+  headerTextContainer: {
+    flex: 1,
+  },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontFamily: Fonts.display,
     color: '#ffffff',
+    letterSpacing: -0.3,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 2,
   },
   content: {
     flex: 1,
@@ -271,37 +382,143 @@ const styles = StyleSheet.create({
   form: {
     padding: 20,
   },
-  inputGroup: {
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 24,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 5,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#eee',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  tabActive: {
+    backgroundColor: '#fff7ed',
+  },
+  tabText: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#888',
+  },
+  tabTextActive: {
+    color: '#ff8c00',
+    fontFamily: Fonts.bold,
+  },
+  sectionCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 22,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#eee',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  sectionCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  sectionIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#fff7ed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#ffedd5',
+  },
+  sectionCardTitle: {
+    fontSize: 17,
+    fontFamily: Fonts.headingBold,
+    color: '#1a1a1a',
+    letterSpacing: -0.2,
+  },
+  inputGroup: {
+    marginBottom: 22,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    fontFamily: Fonts.semiBold,
+    color: '#444',
+    letterSpacing: -0.1,
+  },
+  required: {
+    fontSize: 14,
+    fontFamily: Fonts.bold,
+    color: '#ff8c00',
   },
   input: {
-    backgroundColor: '#ffffff',
-    borderWidth: 2.5,
-    borderColor: '#ff8c00',
+    backgroundColor: '#f8f8f8',
+    borderWidth: 1.5,
+    borderColor: '#eee',
     borderRadius: 14,
-    padding: 14,
-    fontSize: 16,
-    color: '#1f2937',
-    fontWeight: '600',
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    padding: 16,
+    fontSize: 15,
+    fontFamily: Fonts.regular,
+    color: '#1a1a1a',
   },
   textArea: {
     minHeight: 100,
     textAlignVertical: 'top',
+    paddingTop: 14,
+  },
+  inputWithPrefix: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  prefixText: {
+    position: 'absolute',
+    left: 16,
+    fontSize: 16,
+    fontFamily: Fonts.bold,
+    color: '#888',
+    zIndex: 1,
+  },
+  prefixInput: {
+    flex: 1,
+    paddingLeft: 34,
+  },
+  helperText: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: '#aaa',
+    marginTop: 8,
+    lineHeight: 16,
   },
   row: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 14,
   },
   halfWidth: {
     flex: 1,
@@ -309,84 +526,74 @@ const styles = StyleSheet.create({
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 24,
+    backgroundColor: '#f8f8f8',
+    borderWidth: 1.5,
+    borderColor: '#eee',
   },
   categoryChipActive: {
-    backgroundColor: '#ff8c00',
+    backgroundColor: '#fff7ed',
     borderColor: '#ff8c00',
   },
   categoryText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
+    fontFamily: Fonts.medium,
+    color: '#888',
   },
   categoryTextActive: {
-    color: '#ffffff',
+    color: '#ff8c00',
+    fontFamily: Fonts.semiBold,
   },
   switchContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1.5,
+    borderColor: '#eee',
+  },
+  switchContent: {
+    flex: 1,
+    marginRight: 16,
+  },
+  switchDescription: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#888',
+    lineHeight: 18,
+    marginTop: 2,
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#ff8c00',
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
+    borderRadius: 16,
+    paddingVertical: 18,
+    gap: 10,
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   submitButtonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   submitButtonText: {
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 4,
-    gap: 4,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    gap: 6,
-  },
-  tabActive: {
-    backgroundColor: '#fff7ed',
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6b7280',
-  },
-  tabTextActive: {
-    color: '#ff8c00',
+    fontSize: 17,
+    fontFamily: Fonts.headingBold,
+    letterSpacing: 0.3,
   },
   reviewsContainer: {
-    marginTop: 8,
+    marginTop: 4,
   },
 });
