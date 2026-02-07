@@ -8,13 +8,38 @@ import {
   Modal,
   TextInput,
   ScrollView,
-  Switch,
   ActivityIndicator,
-  Alert,
+  Image,
 } from 'react-native';
-import { Plus, Edit, Trash2, Image as ImageIcon, ExternalLink } from 'lucide-react-native';
+import {
+  Plus,
+  Edit3,
+  Trash2,
+  Image as ImageIcon,
+  ExternalLink,
+  X,
+  Check,
+  Megaphone,
+  ToggleLeft,
+  ToggleRight,
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Clock,
+  Zap,
+  Hash,
+  Type,
+  Link,
+  Tag,
+  Flame,
+  Star,
+  TrendingUp,
+  Timer,
+} from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/contexts/ToastContext';
+import { Fonts } from '@/constants/fonts';
 
 interface Advert {
   id: string;
@@ -35,12 +60,21 @@ interface Advert {
   created_at: string;
 }
 
+const FREQUENCY_OPTIONS: { key: 'once' | 'daily' | 'always'; label: string; icon: any }[] = [
+  { key: 'once', label: 'Once', icon: Eye },
+  { key: 'daily', label: 'Daily', icon: Clock },
+  { key: 'always', label: 'Always', icon: Zap },
+];
+
 export default function AdvertManagement() {
+  const insets = useSafeAreaInsets();
   const { showToast } = useToast();
   const [adverts, setAdverts] = useState<Advert[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingAdvert, setEditingAdvert] = useState<Advert | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Advert | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -70,7 +104,6 @@ export default function AdvertManagement() {
         .from('adverts')
         .select('*')
         .order('priority', { ascending: false });
-
       if (error) throw error;
       setAdverts(data || []);
     } catch (error: any) {
@@ -127,7 +160,6 @@ export default function AdvertManagement() {
       showToast('Please fill in title and description', 'error');
       return;
     }
-
     try {
       const advertData = {
         title: formData.title,
@@ -151,16 +183,13 @@ export default function AdvertManagement() {
           .from('adverts')
           .update(advertData)
           .eq('id', editingAdvert.id);
-
         if (error) throw error;
         showToast('Advert updated successfully', 'success');
       } else {
         const { error } = await supabase.from('adverts').insert([advertData]);
-
         if (error) throw error;
         showToast('Advert created successfully', 'success');
       }
-
       setShowModal(false);
       fetchAdverts();
     } catch (error: any) {
@@ -168,94 +197,100 @@ export default function AdvertManagement() {
     }
   };
 
-  const handleDelete = async (advertId: string) => {
-    Alert.alert(
-      'Delete Advert',
-      'Are you sure you want to delete this advert?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const { error } = await supabase.from('adverts').delete().eq('id', advertId);
-
-              if (error) throw error;
-              showToast('Advert deleted successfully', 'success');
-              fetchAdverts();
-            } catch (error: any) {
-              showToast(error.message || 'Error deleting advert', 'error');
-            }
-          },
-        },
-      ]
-    );
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      const { error } = await supabase.from('adverts').delete().eq('id', deleteTarget.id);
+      if (error) throw error;
+      showToast('Advert deleted successfully', 'success');
+      setDeleteTarget(null);
+      fetchAdverts();
+    } catch (error: any) {
+      showToast(error.message || 'Error deleting advert', 'error');
+    }
   };
 
   const toggleActive = async (advert: Advert) => {
     try {
+      setTogglingId(advert.id);
       const { error } = await supabase
         .from('adverts')
         .update({ is_active: !advert.is_active })
         .eq('id', advert.id);
-
       if (error) throw error;
-      showToast(
-        `Advert ${!advert.is_active ? 'activated' : 'deactivated'} successfully`,
-        'success'
-      );
+      showToast(`Advert ${!advert.is_active ? 'activated' : 'deactivated'}`, 'success');
       fetchAdverts();
     } catch (error: any) {
       showToast(error.message || 'Error updating advert', 'error');
+    } finally {
+      setTogglingId(null);
     }
   };
 
-  const renderAdvert = ({ item }: { item: Advert }) => (
-    <View style={styles.advertCard}>
-      <View style={styles.advertHeader}>
-        <View style={styles.advertTitleRow}>
-          <Text style={styles.advertTitle}>{item.title}</Text>
-          <View style={[styles.badge, item.is_active ? styles.badgeActive : styles.badgeInactive]}>
-            <Text style={styles.badgeText}>{item.is_active ? 'Active' : 'Inactive'}</Text>
-          </View>
-        </View>
-        <Text style={styles.advertDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      </View>
+  const activeCount = adverts.filter((a) => a.is_active).length;
 
-      <View style={styles.advertDetails}>
-        <Text style={styles.detailText}>Frequency: {item.display_frequency}</Text>
-        <Text style={styles.detailText}>Priority: {item.priority}</Text>
-        {item.action_url && (
-          <View style={styles.linkIndicator}>
-            <ExternalLink size={14} color="#3b82f6" />
-            <Text style={styles.linkText}>Has Link</Text>
+  const renderAdvert = ({ item }: { item: Advert }) => {
+    const isToggling = togglingId === item.id;
+    return (
+      <View style={[styles.advertCard, !item.is_active && styles.advertCardInactive]}>
+        {item.image_url ? (
+          <Image source={{ uri: item.image_url }} style={styles.advertImage} />
+        ) : (
+          <View style={styles.advertImagePlaceholder}>
+            <ImageIcon size={24} color="#d1d5db" />
           </View>
         )}
+
+        <View style={styles.advertBody}>
+          <View style={styles.advertTitleRow}>
+            <Text style={styles.advertTitle} numberOfLines={1}>{item.title}</Text>
+            <View style={[styles.statusDot, { backgroundColor: item.is_active ? '#059669' : '#8b909a' }]} />
+          </View>
+
+          <Text style={styles.advertDescription} numberOfLines={2}>{item.description}</Text>
+
+          <View style={styles.chipRow}>
+            <View style={styles.chip}>
+              <Clock size={11} color="#8b909a" />
+              <Text style={styles.chipText}>{item.display_frequency}</Text>
+            </View>
+            <View style={styles.chip}>
+              <Hash size={11} color="#8b909a" />
+              <Text style={styles.chipText}>P{item.priority}</Text>
+            </View>
+            {item.action_url && (
+              <View style={[styles.chip, { backgroundColor: '#eef6ff' }]}>
+                <ExternalLink size={11} color="#3b82f6" />
+                <Text style={[styles.chipText, { color: '#3b82f6' }]}>Link</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.advertActions}>
+            <TouchableOpacity
+              style={styles.toggleBtn}
+              onPress={() => toggleActive(item)}
+              disabled={isToggling}
+            >
+              {isToggling ? (
+                <ActivityIndicator size="small" color="#ff8c00" />
+              ) : item.is_active ? (
+                <ToggleRight size={22} color="#059669" />
+              ) : (
+                <ToggleLeft size={22} color="#8b909a" />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionBtn} onPress={() => openEditModal(item)}>
+              <Edit3 size={16} color="#ff8c00" />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.actionBtn, styles.actionBtnDanger]} onPress={() => setDeleteTarget(item)}>
+              <Trash2 size={16} color="#ef4444" />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
-
-      <View style={styles.advertActions}>
-        <TouchableOpacity
-          style={[styles.toggleButton, item.is_active ? styles.deactivateButton : styles.activateButton]}
-          onPress={() => toggleActive(item)}
-        >
-          <Text style={styles.toggleButtonText}>
-            {item.is_active ? 'Deactivate' : 'Activate'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.iconButton} onPress={() => openEditModal(item)}>
-          <Edit size={20} color="#3b82f6" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.iconButton} onPress={() => handleDelete(item.id)}>
-          <Trash2 size={20} color="#ef4444" />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -267,12 +302,17 @@ export default function AdvertManagement() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Advert Management</Text>
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Plus size={20} color="#ffffff" />
-          <Text style={styles.addButtonText}>Add Advert</Text>
-        </TouchableOpacity>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.headerTop}>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Adverts</Text>
+            <Text style={styles.headerSubtitle}>{adverts.length} total, {activeCount} active</Text>
+          </View>
+          <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
+            <Plus size={18} color="#ffffff" />
+            <Text style={styles.addBtnText}>New</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
@@ -282,156 +322,120 @@ export default function AdvertManagement() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <ImageIcon size={48} color="#d1d5db" />
+            <Megaphone size={48} color="#d1d5db" />
             <Text style={styles.emptyText}>No adverts yet</Text>
             <Text style={styles.emptySubtext}>Create your first advert to get started</Text>
           </View>
         }
       />
 
-      <Modal visible={showModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.modalTitle}>
-                {editingAdvert ? 'Edit Advert' : 'Create New Advert'}
-              </Text>
-
-              <Text style={styles.label}>Title</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.title}
-                onChangeText={(text) => setFormData({ ...formData, title: text })}
-                placeholder="Enter advert title"
-              />
-
-              <Text style={styles.label}>Description</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={formData.description}
-                onChangeText={(text) => setFormData({ ...formData, description: text })}
-                placeholder="Enter advert description"
-                multiline
-                numberOfLines={4}
-              />
-
-              <Text style={styles.label}>Image URL</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.image_url}
-                onChangeText={(text) => setFormData({ ...formData, image_url: text })}
-                placeholder="https://example.com/image.jpg"
-              />
-
-              <Text style={styles.label}>Action Button Text (Optional)</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.action_text}
-                onChangeText={(text) => setFormData({ ...formData, action_text: text })}
-                placeholder="e.g., Shop Now (defaults to 'Shop Now' if empty)"
-              />
-
-              <Text style={styles.label}>Action URL (Link for the button)</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.action_url}
-                onChangeText={(text) => setFormData({ ...formData, action_url: text })}
-                placeholder="https://example.com"
-                autoCapitalize="none"
-              />
-
-              <Text style={[styles.label, styles.sectionLabel]}>Customizable Labels (Optional)</Text>
-
-              <Text style={styles.label}>Hot Deal Badge Text</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.hot_deal_text}
-                onChangeText={(text) => setFormData({ ...formData, hot_deal_text: text })}
-                placeholder="HOT DEAL (default)"
-              />
-
-              <Text style={styles.label}>Featured Badge Text</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.featured_text}
-                onChangeText={(text) => setFormData({ ...formData, featured_text: text })}
-                placeholder="Featured (default)"
-              />
-
-              <Text style={styles.label}>Trending Badge Text</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.trending_text}
-                onChangeText={(text) => setFormData({ ...formData, trending_text: text })}
-                placeholder="Trending Now (default)"
-              />
-
-              <Text style={styles.label}>Limited Offer Text</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.limited_offer_text}
-                onChangeText={(text) => setFormData({ ...formData, limited_offer_text: text })}
-                placeholder="Limited Time Offer (default)"
-              />
-
-              <Text style={styles.label}>Display Frequency</Text>
-              <View style={styles.frequencyContainer}>
-                {['once', 'daily', 'always'].map((freq) => (
-                  <TouchableOpacity
-                    key={freq}
-                    style={[
-                      styles.frequencyButton,
-                      formData.display_frequency === freq && styles.frequencyButtonActive,
-                    ]}
-                    onPress={() =>
-                      setFormData({ ...formData, display_frequency: freq as any })
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.frequencyButtonText,
-                        formData.display_frequency === freq && styles.frequencyButtonTextActive,
-                      ]}
-                    >
-                      {freq.charAt(0).toUpperCase() + freq.slice(1)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <Text style={styles.label}>Priority</Text>
-              <TextInput
-                style={styles.input}
-                value={String(formData.priority)}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, priority: parseInt(text) || 0 })
-                }
-                placeholder="0"
-                keyboardType="numeric"
-              />
-
-              <View style={styles.switchRow}>
-                <Text style={styles.label}>Active</Text>
-                <Switch
-                  value={formData.is_active}
-                  onValueChange={(value) => setFormData({ ...formData, is_active: value })}
-                  trackColor={{ false: '#d1d5db', true: '#ff8c00' }}
-                  thumbColor="#ffffff"
-                />
-              </View>
-
-              <View style={styles.modalActions}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => setShowModal(false)}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
+      {/* Create/Edit Modal */}
+      <Modal visible={showModal} animationType="slide" transparent onRequestClose={() => setShowModal(false)}>
+        <View style={styles.sheetOverlay}>
+          <TouchableOpacity style={styles.sheetBackdrop} onPress={() => setShowModal(false)} />
+          <View style={[styles.sheetContainer, { paddingBottom: insets.bottom + 20 }]}>
+            <View style={styles.sheetHandle} />
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.formContent}>
+              <View style={styles.formHeaderRow}>
+                <Text style={styles.formTitle}>
+                  {editingAdvert ? 'Edit Advert' : 'New Advert'}
+                </Text>
+                <TouchableOpacity onPress={() => setShowModal(false)}>
+                  <X size={22} color="#8b909a" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                  <Text style={styles.saveButtonText}>Save</Text>
+              </View>
+
+              <FormField label="Title" placeholder="Enter advert title" value={formData.title} onChangeText={(t) => setFormData({ ...formData, title: t })} />
+              <FormField label="Description" placeholder="Enter advert description" value={formData.description} onChangeText={(t) => setFormData({ ...formData, description: t })} multiline />
+              <FormField label="Image URL" placeholder="https://example.com/image.jpg" value={formData.image_url} onChangeText={(t) => setFormData({ ...formData, image_url: t })} />
+
+              <View style={styles.fieldRow}>
+                <View style={styles.fieldHalf}>
+                  <FormField label="Button Text" placeholder="Shop Now" value={formData.action_text} onChangeText={(t) => setFormData({ ...formData, action_text: t })} />
+                </View>
+                <View style={styles.fieldHalf}>
+                  <FormField label="Button URL" placeholder="https://..." value={formData.action_url} onChangeText={(t) => setFormData({ ...formData, action_url: t })} />
+                </View>
+              </View>
+
+              <Text style={styles.fieldLabel}>Display Frequency</Text>
+              <View style={styles.frequencyRow}>
+                {FREQUENCY_OPTIONS.map((opt) => {
+                  const isSelected = formData.display_frequency === opt.key;
+                  const Icon = opt.icon;
+                  return (
+                    <TouchableOpacity
+                      key={opt.key}
+                      style={[styles.freqOption, isSelected && styles.freqOptionActive]}
+                      onPress={() => setFormData({ ...formData, display_frequency: opt.key })}
+                    >
+                      <Icon size={16} color={isSelected ? '#ffffff' : '#8b909a'} />
+                      <Text style={[styles.freqOptionText, isSelected && styles.freqOptionTextActive]}>{opt.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <FormField label="Priority" placeholder="0" value={String(formData.priority)} onChangeText={(t) => setFormData({ ...formData, priority: parseInt(t) || 0 })} keyboardType="number-pad" />
+
+              <Text style={styles.sectionLabel}>Customizable Labels</Text>
+
+              <View style={styles.fieldRow}>
+                <View style={styles.fieldHalf}>
+                  <FormField label="Hot Deal Badge" placeholder="HOT DEAL" value={formData.hot_deal_text} onChangeText={(t) => setFormData({ ...formData, hot_deal_text: t })} />
+                </View>
+                <View style={styles.fieldHalf}>
+                  <FormField label="Featured Badge" placeholder="Featured" value={formData.featured_text} onChangeText={(t) => setFormData({ ...formData, featured_text: t })} />
+                </View>
+              </View>
+
+              <View style={styles.fieldRow}>
+                <View style={styles.fieldHalf}>
+                  <FormField label="Trending Badge" placeholder="Trending Now" value={formData.trending_text} onChangeText={(t) => setFormData({ ...formData, trending_text: t })} />
+                </View>
+                <View style={styles.fieldHalf}>
+                  <FormField label="Limited Offer" placeholder="Limited Time" value={formData.limited_offer_text} onChangeText={(t) => setFormData({ ...formData, limited_offer_text: t })} />
+                </View>
+              </View>
+
+              <TouchableOpacity style={styles.toggleRow} onPress={() => setFormData({ ...formData, is_active: !formData.is_active })}>
+                {formData.is_active ? <ToggleRight size={28} color="#ff8c00" /> : <ToggleLeft size={28} color="#8b909a" />}
+                <Text style={[styles.toggleLabel, formData.is_active && { color: '#1e293b' }]}>Active</Text>
+              </TouchableOpacity>
+
+              <View style={styles.formActions}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowModal(false)}>
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+                  <Check size={18} color="#ffffff" />
+                  <Text style={styles.saveBtnText}>Save</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal visible={!!deleteTarget} transparent animationType="fade" onRequestClose={() => setDeleteTarget(null)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.confirmModal}>
+            <View style={styles.confirmIconWrap}>
+              <AlertTriangle size={28} color="#ef4444" />
+            </View>
+            <Text style={styles.confirmTitle}>Delete Advert</Text>
+            <Text style={styles.confirmMessage}>
+              Are you sure you want to delete "{deleteTarget?.title}"? This cannot be undone.
+            </Text>
+            <View style={styles.confirmActions}>
+              <TouchableOpacity style={styles.confirmCancelBtn} onPress={() => setDeleteTarget(null)}>
+                <Text style={styles.confirmCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.confirmDeleteBtn} onPress={handleDelete}>
+                <Text style={styles.confirmDeleteText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -439,10 +443,64 @@ export default function AdvertManagement() {
   );
 }
 
+function FormField({ label, placeholder, value, onChangeText, multiline, keyboardType }: {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChangeText: (t: string) => void;
+  multiline?: boolean;
+  keyboardType?: 'number-pad' | 'decimal-pad';
+}) {
+  return (
+    <View style={fieldStyles.field}>
+      <Text style={fieldStyles.label}>{label}</Text>
+      <TextInput
+        style={[fieldStyles.input, multiline && fieldStyles.multiline]}
+        placeholder={placeholder}
+        placeholderTextColor="#b0b5bf"
+        value={value}
+        onChangeText={onChangeText}
+        multiline={multiline}
+        numberOfLines={multiline ? 3 : 1}
+        textAlignVertical={multiline ? 'top' : 'center'}
+        keyboardType={keyboardType}
+      />
+    </View>
+  );
+}
+
+const fieldStyles = StyleSheet.create({
+  field: {
+    marginBottom: 14,
+  },
+  label: {
+    fontSize: 13,
+    fontFamily: Fonts.semiBold,
+    color: '#1e293b',
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: '#f8f9fb',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#e8ecf1',
+    outlineStyle: 'none',
+  } as any,
+  multiline: {
+    minHeight: 80,
+    paddingTop: 12,
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f8f9fb',
   },
   loadingContainer: {
     flex: 1,
@@ -450,257 +508,364 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
+    backgroundColor: '#1a1d23',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1f2937',
+  headerTextWrap: {
+    flex: 1,
   },
-  addButton: {
+  headerTitle: {
+    fontSize: 22,
+    fontFamily: Fonts.headingBold,
+    color: '#ffffff',
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 2,
+  },
+  addBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
     backgroundColor: '#ff8c00',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8,
-    gap: 8,
+    borderRadius: 12,
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  addButtonText: {
+  addBtnText: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
     color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   list: {
-    padding: 20,
+    padding: 16,
+    paddingBottom: 40,
   },
   advertCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 18,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+    overflow: 'hidden',
   },
-  advertHeader: {
-    marginBottom: 12,
+  advertCardInactive: {
+    opacity: 0.6,
+  },
+  advertImage: {
+    width: '100%',
+    height: 140,
+    backgroundColor: '#f1f5f9',
+  },
+  advertImagePlaceholder: {
+    width: '100%',
+    height: 80,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  advertBody: {
+    padding: 14,
+    gap: 8,
   },
   advertTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
   },
   advertTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
+    fontSize: 16,
+    fontFamily: Fonts.bold,
+    color: '#1e293b',
     flex: 1,
+    marginRight: 8,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   advertDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#64748b',
+    lineHeight: 19,
   },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeActive: {
-    backgroundColor: '#d1fae5',
-  },
-  badgeInactive: {
-    backgroundColor: '#fee2e2',
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  advertDetails: {
+  chipRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    gap: 6,
     flexWrap: 'wrap',
-    marginBottom: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    gap: 8,
   },
-  detailText: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  linkIndicator: {
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#dbeafe',
+    gap: 4,
+    backgroundColor: '#f8f9fb',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
-    gap: 4,
   },
-  linkText: {
-    fontSize: 12,
-    color: '#3b82f6',
-    fontWeight: '600',
+  chipText: {
+    fontSize: 11,
+    fontFamily: Fonts.groteskMedium,
+    color: '#8b909a',
+    textTransform: 'capitalize',
   },
   advertActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
   },
-  toggleButton: {
+  toggleBtn: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
+  },
+  actionBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#fff7ed',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  activateButton: {
-    backgroundColor: '#10b981',
-  },
-  deactivateButton: {
-    backgroundColor: '#6b7280',
-  },
-  toggleButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  iconButton: {
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: '#f3f4f6',
+  actionBtnDanger: {
+    backgroundColor: '#fef2f2',
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
+    gap: 10,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#6b7280',
-    marginTop: 16,
+    fontSize: 17,
+    fontFamily: Fonts.semiBold,
+    color: '#8b909a',
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#9ca3af',
-    marginTop: 4,
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#b0b5bf',
   },
-  modalOverlay: {
+  sheetOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
-  modalContainer: {
+  sheetBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  sheetContainer: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
-    width: '90%',
-    maxHeight: '80%',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '90%',
   },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 24,
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#e2e8f0',
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 4,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+  formContent: {
+    padding: 20,
+    paddingBottom: 20,
   },
-  sectionLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ff8c00',
-    marginTop: 16,
-    marginBottom: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    backgroundColor: '#ffffff',
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  frequencyContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  frequencyButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    alignItems: 'center',
-  },
-  frequencyButtonActive: {
-    backgroundColor: '#ff8c00',
-    borderColor: '#ff8c00',
-  },
-  frequencyButtonText: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  frequencyButtonTextActive: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  switchRow: {
+  formHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  modalActions: {
+  formTitle: {
+    fontSize: 20,
+    fontFamily: Fonts.headingBold,
+    color: '#1e293b',
+  },
+  fieldRow: {
     flexDirection: 'row',
     gap: 12,
   },
-  cancelButton: {
+  fieldHalf: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
+  },
+  fieldLabel: {
+    fontSize: 13,
+    fontFamily: Fonts.semiBold,
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontFamily: Fonts.headingBold,
+    color: '#ff8c00',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  frequencyRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  freqOption: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 11,
+    borderRadius: 12,
+    backgroundColor: '#f8f9fb',
+    borderWidth: 1.5,
+    borderColor: '#e8ecf1',
   },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6b7280',
-  },
-  saveButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
+  freqOptionActive: {
     backgroundColor: '#ff8c00',
+    borderColor: '#ff8c00',
+  },
+  freqOptionText: {
+    fontSize: 13,
+    fontFamily: Fonts.semiBold,
+    color: '#8b909a',
+  },
+  freqOptionTextActive: {
+    color: '#ffffff',
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+  },
+  toggleLabel: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#8b909a',
+  },
+  formActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: '#f1f5f9',
     alignItems: 'center',
   },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+  cancelBtnText: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#64748b',
+  },
+  saveBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: '#ff8c00',
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  saveBtnText: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#ffffff',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  confirmModal: {
+    backgroundColor: '#ffffff',
+    borderRadius: 24,
+    padding: 28,
+    width: '100%',
+    maxWidth: 360,
+    alignItems: 'center',
+  },
+  confirmIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    backgroundColor: '#fee2e2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  confirmTitle: {
+    fontSize: 18,
+    fontFamily: Fonts.headingBold,
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  confirmMessage: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 21,
+    marginBottom: 24,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  confirmCancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+  },
+  confirmCancelText: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#64748b',
+  },
+  confirmDeleteBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: '#ef4444',
+    alignItems: 'center',
+  },
+  confirmDeleteText: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
     color: '#ffffff',
   },
 });

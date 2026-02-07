@@ -7,11 +7,30 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
-  Alert,
   Platform,
 } from 'react-native';
-import { ArrowLeft, FileText, Save, Plus, Trash2 } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  FileText,
+  Save,
+  Plus,
+  Trash2,
+  HelpCircle,
+  Shield,
+  Scale,
+  Mail,
+  Phone,
+  MessageCircle,
+  Check,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  BookOpen,
+  AlertCircle,
+} from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
+import { Fonts } from '@/constants/fonts';
 
 interface ContentManagementProps {
   onBack?: () => void;
@@ -41,10 +60,26 @@ interface Section {
   content: string;
 }
 
+type PageType = 'help_center' | 'terms_of_service' | 'privacy_policy';
+
+const TABS: { key: PageType; label: string; icon: any }[] = [
+  { key: 'help_center', label: 'Help', icon: HelpCircle },
+  { key: 'terms_of_service', label: 'Terms', icon: Scale },
+  { key: 'privacy_policy', label: 'Privacy', icon: Shield },
+];
+
+const CONTACT_TYPES: { key: string; label: string; icon: any }[] = [
+  { key: 'email', label: 'Email', icon: Mail },
+  { key: 'phone', label: 'Phone', icon: Phone },
+  { key: 'chat', label: 'Chat', icon: MessageCircle },
+];
+
 export default function ContentManagement({ onBack }: ContentManagementProps) {
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [selectedPage, setSelectedPage] = useState<'help_center' | 'terms_of_service' | 'privacy_policy'>('help_center');
+  const [saved, setSaved] = useState(false);
+  const [selectedPage, setSelectedPage] = useState<PageType>('help_center');
   const [contentPages, setContentPages] = useState<Record<string, ContentPage>>({});
 
   const [helpCenterFAQs, setHelpCenterFAQs] = useState<FAQItem[]>([]);
@@ -53,10 +88,20 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
   const [termsSections, setTermsSections] = useState<Section[]>([]);
   const [privacyLastUpdated, setPrivacyLastUpdated] = useState('');
   const [privacySections, setPrivacySections] = useState<Section[]>([]);
+  const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchContentPages();
   }, []);
+
+  const toggleCollapse = (key: string) => {
+    setCollapsedCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   const fetchContentPages = async () => {
     try {
@@ -65,23 +110,13 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
         .from('content_pages')
         .select('*')
         .order('page_type');
-
       if (error) throw error;
-
       const pagesMap: Record<string, ContentPage> = {};
-      data?.forEach((page) => {
-        pagesMap[page.page_type] = page;
-      });
-
+      data?.forEach((page) => { pagesMap[page.page_type] = page; });
       setContentPages(pagesMap);
       loadPageData(pagesMap);
     } catch (error) {
       console.error('Error fetching content pages:', error);
-      if (Platform.OS === 'web') {
-        window.alert('Failed to fetch content pages');
-      } else {
-        Alert.alert('Error', 'Failed to fetch content pages');
-      }
     } finally {
       setLoading(false);
     }
@@ -93,13 +128,11 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
       setHelpCenterFAQs(content.sections?.[0]?.items || []);
       setHelpCenterContacts(content.sections?.[1]?.items || []);
     }
-
     if (pages.terms_of_service) {
       const content = pages.terms_of_service.content;
       setTermsLastUpdated(content.lastUpdated || '');
       setTermsSections(content.sections || []);
     }
-
     if (pages.privacy_policy) {
       const content = pages.privacy_policy.content;
       setPrivacyLastUpdated(content.lastUpdated || '');
@@ -110,34 +143,19 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
   const saveContent = async () => {
     try {
       setSaving(true);
-
       let content: any = {};
-
       if (selectedPage === 'help_center') {
         content = {
           sections: [
-            {
-              title: 'Frequently Asked Questions',
-              items: helpCenterFAQs,
-            },
-            {
-              title: 'Contact Support',
-              items: helpCenterContacts,
-            },
+            { title: 'Frequently Asked Questions', items: helpCenterFAQs },
+            { title: 'Contact Support', items: helpCenterContacts },
           ],
         };
       } else if (selectedPage === 'terms_of_service') {
-        content = {
-          lastUpdated: termsLastUpdated,
-          sections: termsSections,
-        };
+        content = { lastUpdated: termsLastUpdated, sections: termsSections };
       } else if (selectedPage === 'privacy_policy') {
-        content = {
-          lastUpdated: privacyLastUpdated,
-          sections: privacySections,
-        };
+        content = { lastUpdated: privacyLastUpdated, sections: privacySections };
       }
-
       const { error } = await supabase
         .from('content_pages')
         .update({
@@ -145,76 +163,42 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
           last_updated_by: (await supabase.auth.getUser()).data.user?.id,
         })
         .eq('page_type', selectedPage);
-
       if (error) throw error;
-
-      if (Platform.OS === 'web') {
-        window.alert('Content updated successfully');
-      } else {
-        Alert.alert('Success', 'Content updated successfully');
-      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
       await fetchContentPages();
     } catch (error: any) {
       console.error('Error saving content:', error);
       if (Platform.OS === 'web') {
         window.alert(error.message || 'Failed to save content');
-      } else {
-        Alert.alert('Error', error.message || 'Failed to save content');
       }
     } finally {
       setSaving(false);
     }
   };
 
-  const addFAQ = () => {
-    console.log('Adding new FAQ');
-    const newFAQs = [...helpCenterFAQs, { question: '', answer: '' }];
-    setHelpCenterFAQs(newFAQs);
-    console.log('FAQs after adding:', newFAQs.length);
-  };
-
+  const addFAQ = () => setHelpCenterFAQs([...helpCenterFAQs, { question: '', answer: '' }]);
   const updateFAQ = (index: number, field: 'question' | 'answer', value: string) => {
     const updated = [...helpCenterFAQs];
     updated[index][field] = value;
     setHelpCenterFAQs(updated);
   };
+  const removeFAQ = (index: number) => setHelpCenterFAQs(helpCenterFAQs.filter((_, i) => i !== index));
 
-  const removeFAQ = (index: number) => {
-    setHelpCenterFAQs(helpCenterFAQs.filter((_, i) => i !== index));
-  };
-
-  const addContact = () => {
-    console.log('Adding new contact');
-    const newContacts = [...helpCenterContacts, { type: 'email', label: '', value: '' }];
-    setHelpCenterContacts(newContacts);
-    console.log('Contacts after adding:', newContacts.length);
-  };
-
+  const addContact = () => setHelpCenterContacts([...helpCenterContacts, { type: 'email', label: '', value: '' }]);
   const updateContact = (index: number, field: 'type' | 'label' | 'value', value: string) => {
     const updated = [...helpCenterContacts];
     updated[index][field] = value;
     setHelpCenterContacts(updated);
   };
-
-  const removeContact = (index: number) => {
-    setHelpCenterContacts(helpCenterContacts.filter((_, i) => i !== index));
-  };
+  const removeContact = (index: number) => setHelpCenterContacts(helpCenterContacts.filter((_, i) => i !== index));
 
   const addSection = (type: 'terms' | 'privacy') => {
     const newSection = { heading: '', content: '' };
-    if (type === 'terms') {
-      setTermsSections([...termsSections, newSection]);
-    } else {
-      setPrivacySections([...privacySections, newSection]);
-    }
+    if (type === 'terms') setTermsSections([...termsSections, newSection]);
+    else setPrivacySections([...privacySections, newSection]);
   };
-
-  const updateSection = (
-    type: 'terms' | 'privacy',
-    index: number,
-    field: 'heading' | 'content',
-    value: string
-  ) => {
+  const updateSection = (type: 'terms' | 'privacy', index: number, field: 'heading' | 'content', value: string) => {
     if (type === 'terms') {
       const updated = [...termsSections];
       updated[index][field] = value;
@@ -225,13 +209,9 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
       setPrivacySections(updated);
     }
   };
-
   const removeSection = (type: 'terms' | 'privacy', index: number) => {
-    if (type === 'terms') {
-      setTermsSections(termsSections.filter((_, i) => i !== index));
-    } else {
-      setPrivacySections(privacySections.filter((_, i) => i !== index));
-    }
+    if (type === 'terms') setTermsSections(termsSections.filter((_, i) => i !== index));
+    else setPrivacySections(privacySections.filter((_, i) => i !== index));
   };
 
   if (loading) {
@@ -242,244 +222,201 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
     );
   }
 
+  const renderHelpCenter = () => (
+    <View style={styles.section}>
+      <SectionHeader
+        title="FAQs"
+        count={helpCenterFAQs.length}
+        onAdd={addFAQ}
+        addLabel="Add FAQ"
+      />
+      {helpCenterFAQs.length === 0 && (
+        <EmptyCard text="No FAQs yet. Add your first FAQ above." />
+      )}
+      {helpCenterFAQs.map((faq, index) => {
+        const key = `faq-${index}`;
+        const isCollapsed = collapsedCards.has(key);
+        return (
+          <View key={index} style={styles.card}>
+            <TouchableOpacity style={styles.cardHeader} onPress={() => toggleCollapse(key)}>
+              <View style={styles.cardNumberWrap}>
+                <Text style={styles.cardNumber}>{index + 1}</Text>
+              </View>
+              <Text style={styles.cardTitle} numberOfLines={1}>
+                {faq.question || `FAQ ${index + 1}`}
+              </Text>
+              <TouchableOpacity style={styles.deleteBtn} onPress={() => removeFAQ(index)}>
+                <Trash2 size={14} color="#ef4444" />
+              </TouchableOpacity>
+              {isCollapsed ? <ChevronDown size={16} color="#8b909a" /> : <ChevronUp size={16} color="#8b909a" />}
+            </TouchableOpacity>
+            {!isCollapsed && (
+              <View style={styles.cardBody}>
+                <FieldInput label="Question" placeholder="Enter question" value={faq.question} onChangeText={(t) => updateFAQ(index, 'question', t)} />
+                <FieldInput label="Answer" placeholder="Enter answer" value={faq.answer} onChangeText={(t) => updateFAQ(index, 'answer', t)} multiline />
+              </View>
+            )}
+          </View>
+        );
+      })}
+
+      <View style={styles.divider} />
+
+      <SectionHeader
+        title="Contact Support"
+        count={helpCenterContacts.length}
+        onAdd={addContact}
+        addLabel="Add Contact"
+      />
+      {helpCenterContacts.length === 0 && (
+        <EmptyCard text="No contact info yet. Add a contact method above." />
+      )}
+      {helpCenterContacts.map((contact, index) => {
+        const key = `contact-${index}`;
+        const isCollapsed = collapsedCards.has(key);
+        return (
+          <View key={index} style={styles.card}>
+            <TouchableOpacity style={styles.cardHeader} onPress={() => toggleCollapse(key)}>
+              <View style={styles.cardNumberWrap}>
+                <Text style={styles.cardNumber}>{index + 1}</Text>
+              </View>
+              <Text style={styles.cardTitle} numberOfLines={1}>
+                {contact.label || `Contact ${index + 1}`}
+              </Text>
+              <TouchableOpacity style={styles.deleteBtn} onPress={() => removeContact(index)}>
+                <Trash2 size={14} color="#ef4444" />
+              </TouchableOpacity>
+              {isCollapsed ? <ChevronDown size={16} color="#8b909a" /> : <ChevronUp size={16} color="#8b909a" />}
+            </TouchableOpacity>
+            {!isCollapsed && (
+              <View style={styles.cardBody}>
+                <Text style={styles.fieldLabel}>Type</Text>
+                <View style={styles.typeRow}>
+                  {CONTACT_TYPES.map((ct) => {
+                    const isActive = contact.type === ct.key;
+                    const Icon = ct.icon;
+                    return (
+                      <TouchableOpacity
+                        key={ct.key}
+                        style={[styles.typeOption, isActive && styles.typeOptionActive]}
+                        onPress={() => updateContact(index, 'type', ct.key)}
+                      >
+                        <Icon size={14} color={isActive ? '#ffffff' : '#8b909a'} />
+                        <Text style={[styles.typeText, isActive && styles.typeTextActive]}>{ct.label}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+                <FieldInput label="Label" placeholder="e.g., Email Support" value={contact.label} onChangeText={(t) => updateContact(index, 'label', t)} />
+                <FieldInput label="Value" placeholder="e.g., support@example.com" value={contact.value} onChangeText={(t) => updateContact(index, 'value', t)} />
+              </View>
+            )}
+          </View>
+        );
+      })}
+    </View>
+  );
+
+  const renderSectionsPage = (type: 'terms' | 'privacy') => {
+    const sections = type === 'terms' ? termsSections : privacySections;
+    const lastUpdated = type === 'terms' ? termsLastUpdated : privacyLastUpdated;
+    const setLastUpdated = type === 'terms' ? setTermsLastUpdated : setPrivacyLastUpdated;
+
+    return (
+      <View style={styles.section}>
+        <View style={styles.dateCard}>
+          <View style={styles.dateCardLeft}>
+            <Calendar size={16} color="#ff8c00" />
+            <Text style={styles.dateCardLabel}>Last Updated</Text>
+          </View>
+          <TextInput
+            style={styles.dateInput}
+            value={lastUpdated}
+            onChangeText={setLastUpdated}
+            placeholder="e.g., February 7, 2026"
+            placeholderTextColor="#b0b5bf"
+          />
+        </View>
+
+        <SectionHeader
+          title="Sections"
+          count={sections.length}
+          onAdd={() => addSection(type)}
+          addLabel="Add Section"
+        />
+        {sections.length === 0 && (
+          <EmptyCard text="No sections yet. Add your first section above." />
+        )}
+        {sections.map((section, index) => {
+          const key = `${type}-${index}`;
+          const isCollapsed = collapsedCards.has(key);
+          return (
+            <View key={index} style={styles.card}>
+              <TouchableOpacity style={styles.cardHeader} onPress={() => toggleCollapse(key)}>
+                <View style={styles.cardNumberWrap}>
+                  <Text style={styles.cardNumber}>{index + 1}</Text>
+                </View>
+                <Text style={styles.cardTitle} numberOfLines={1}>
+                  {section.heading || `Section ${index + 1}`}
+                </Text>
+                <TouchableOpacity style={styles.deleteBtn} onPress={() => removeSection(type, index)}>
+                  <Trash2 size={14} color="#ef4444" />
+                </TouchableOpacity>
+                {isCollapsed ? <ChevronDown size={16} color="#8b909a" /> : <ChevronUp size={16} color="#8b909a" />}
+              </TouchableOpacity>
+              {!isCollapsed && (
+                <View style={styles.cardBody}>
+                  <FieldInput label="Heading" placeholder="Enter heading" value={section.heading} onChangeText={(t) => updateSection(type, index, 'heading', t)} />
+                  <FieldInput label="Content" placeholder="Enter content" value={section.content} onChangeText={(t) => updateSection(type, index, 'content', t)} multiline />
+                </View>
+              )}
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <View style={styles.headerTop}>
           {onBack && (
-            <TouchableOpacity style={styles.backButton} onPress={onBack}>
-              <ArrowLeft size={24} color="#ffffff" />
+            <TouchableOpacity style={styles.backBtn} onPress={onBack}>
+              <ArrowLeft size={20} color="#ff8c00" />
             </TouchableOpacity>
           )}
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.title}>Content Management</Text>
-            <Text style={styles.subtitle}>Manage app content pages</Text>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.headerTitle}>Content</Text>
+            <Text style={styles.headerSubtitle}>Manage app content pages</Text>
           </View>
+        </View>
+
+        <View style={styles.tabBar}>
+          {TABS.map((tab) => {
+            const isActive = selectedPage === tab.key;
+            const Icon = tab.icon;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[styles.tabItem, isActive && styles.tabItemActive]}
+                onPress={() => setSelectedPage(tab.key)}
+              >
+                <Icon size={16} color={isActive ? '#1e293b' : 'rgba(255,255,255,0.4)'} />
+                <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>{tab.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, selectedPage === 'help_center' && styles.activeTab]}
-          onPress={() => setSelectedPage('help_center')}
-        >
-          <Text style={[styles.tabText, selectedPage === 'help_center' && styles.activeTabText]}>
-            Help Center
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, selectedPage === 'terms_of_service' && styles.activeTab]}
-          onPress={() => setSelectedPage('terms_of_service')}
-        >
-          <Text style={[styles.tabText, selectedPage === 'terms_of_service' && styles.activeTabText]}>
-            Terms
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, selectedPage === 'privacy_policy' && styles.activeTab]}
-          onPress={() => setSelectedPage('privacy_policy')}
-        >
-          <Text style={[styles.tabText, selectedPage === 'privacy_policy' && styles.activeTabText]}>
-            Privacy
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {selectedPage === 'help_center' && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>FAQs ({helpCenterFAQs.length})</Text>
-              <TouchableOpacity style={styles.addButton} onPress={addFAQ}>
-                <Plus size={16} color="#ffffff" />
-                <Text style={styles.addButtonText}>Add FAQ</Text>
-              </TouchableOpacity>
-            </View>
-            {helpCenterFAQs.length === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No FAQs yet. Click "Add FAQ" to create one.</Text>
-              </View>
-            )}
-            {helpCenterFAQs.map((faq, index) => (
-              <View key={index} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>FAQ {index + 1}</Text>
-                  <TouchableOpacity onPress={() => removeFAQ(index)}>
-                    <Trash2 size={18} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.label}>Question</Text>
-                <TextInput
-                  style={styles.input}
-                  value={faq.question}
-                  onChangeText={(text) => updateFAQ(index, 'question', text)}
-                  placeholder="Enter question"
-                  multiline
-                />
-                <Text style={styles.label}>Answer</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={faq.answer}
-                  onChangeText={(text) => updateFAQ(index, 'answer', text)}
-                  placeholder="Enter answer"
-                  multiline
-                  numberOfLines={4}
-                />
-              </View>
-            ))}
-
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Contact Support ({helpCenterContacts.length})</Text>
-              <TouchableOpacity style={styles.addButton} onPress={addContact}>
-                <Plus size={16} color="#ffffff" />
-                <Text style={styles.addButtonText}>Add Contact</Text>
-              </TouchableOpacity>
-            </View>
-            {helpCenterContacts.length === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>No contact info yet. Click "Add Contact" to create one.</Text>
-              </View>
-            )}
-            {helpCenterContacts.map((contact, index) => (
-              <View key={index} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>Contact {index + 1}</Text>
-                  <TouchableOpacity onPress={() => removeContact(index)}>
-                    <Trash2 size={18} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.label}>Type</Text>
-                <View style={styles.pickerContainer}>
-                  <TouchableOpacity
-                    style={[styles.pickerOption, contact.type === 'email' && styles.pickerOptionActive]}
-                    onPress={() => updateContact(index, 'type', 'email')}
-                  >
-                    <Text style={[styles.pickerOptionText, contact.type === 'email' && styles.pickerOptionTextActive]}>Email</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.pickerOption, contact.type === 'phone' && styles.pickerOptionActive]}
-                    onPress={() => updateContact(index, 'type', 'phone')}
-                  >
-                    <Text style={[styles.pickerOptionText, contact.type === 'phone' && styles.pickerOptionTextActive]}>Phone</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.pickerOption, contact.type === 'chat' && styles.pickerOptionActive]}
-                    onPress={() => updateContact(index, 'type', 'chat')}
-                  >
-                    <Text style={[styles.pickerOptionText, contact.type === 'chat' && styles.pickerOptionTextActive]}>Chat</Text>
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.label}>Label</Text>
-                <TextInput
-                  style={styles.input}
-                  value={contact.label}
-                  onChangeText={(text) => updateContact(index, 'label', text)}
-                  placeholder="e.g., Email Support"
-                />
-                <Text style={styles.label}>Value</Text>
-                <TextInput
-                  style={styles.input}
-                  value={contact.value}
-                  onChangeText={(text) => updateContact(index, 'value', text)}
-                  placeholder="e.g., support@example.com"
-                />
-              </View>
-            ))}
-          </View>
-        )}
-
-        {selectedPage === 'terms_of_service' && (
-          <View style={styles.section}>
-            <Text style={styles.label}>Last Updated</Text>
-            <TextInput
-              style={styles.input}
-              value={termsLastUpdated}
-              onChangeText={setTermsLastUpdated}
-              placeholder="e.g., November 30, 2025"
-            />
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Sections</Text>
-              <TouchableOpacity style={styles.addButton} onPress={() => addSection('terms')}>
-                <Plus size={16} color="#ffffff" />
-                <Text style={styles.addButtonText}>Add Section</Text>
-              </TouchableOpacity>
-            </View>
-            {termsSections.map((section, index) => (
-              <View key={index} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>Section {index + 1}</Text>
-                  <TouchableOpacity onPress={() => removeSection('terms', index)}>
-                    <Trash2 size={18} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.label}>Heading</Text>
-                <TextInput
-                  style={styles.input}
-                  value={section.heading}
-                  onChangeText={(text) => updateSection('terms', index, 'heading', text)}
-                  placeholder="Enter heading"
-                />
-                <Text style={styles.label}>Content</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={section.content}
-                  onChangeText={(text) => updateSection('terms', index, 'content', text)}
-                  placeholder="Enter content"
-                  multiline
-                  numberOfLines={4}
-                />
-              </View>
-            ))}
-          </View>
-        )}
-
-        {selectedPage === 'privacy_policy' && (
-          <View style={styles.section}>
-            <Text style={styles.label}>Last Updated</Text>
-            <TextInput
-              style={styles.input}
-              value={privacyLastUpdated}
-              onChangeText={setPrivacyLastUpdated}
-              placeholder="e.g., November 30, 2025"
-            />
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Sections</Text>
-              <TouchableOpacity style={styles.addButton} onPress={() => addSection('privacy')}>
-                <Plus size={16} color="#ffffff" />
-                <Text style={styles.addButtonText}>Add Section</Text>
-              </TouchableOpacity>
-            </View>
-            {privacySections.map((section, index) => (
-              <View key={index} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>Section {index + 1}</Text>
-                  <TouchableOpacity onPress={() => removeSection('privacy', index)}>
-                    <Trash2 size={18} color="#ef4444" />
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.label}>Heading</Text>
-                <TextInput
-                  style={styles.input}
-                  value={section.heading}
-                  onChangeText={(text) => updateSection('privacy', index, 'heading', text)}
-                  placeholder="Enter heading"
-                />
-                <Text style={styles.label}>Content</Text>
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={section.content}
-                  onChangeText={(text) => updateSection('privacy', index, 'content', text)}
-                  placeholder="Enter content"
-                  multiline
-                  numberOfLines={4}
-                />
-              </View>
-            ))}
-          </View>
-        )}
+        {selectedPage === 'help_center' && renderHelpCenter()}
+        {selectedPage === 'terms_of_service' && renderSectionsPage('terms')}
+        {selectedPage === 'privacy_policy' && renderSectionsPage('privacy')}
 
         <TouchableOpacity
-          style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+          style={[styles.saveBtn, saving && styles.saveBtnDisabled, saved && styles.saveBtnSuccess]}
           onPress={saveContent}
           disabled={saving}
         >
@@ -487,8 +424,8 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
             <ActivityIndicator size="small" color="#ffffff" />
           ) : (
             <>
-              <Save size={20} color="#ffffff" />
-              <Text style={styles.saveButtonText}>Save Changes</Text>
+              {saved ? <Check size={18} color="#ffffff" /> : <Save size={18} color="#ffffff" />}
+              <Text style={styles.saveBtnText}>{saved ? 'Saved!' : 'Save Changes'}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -497,10 +434,151 @@ export default function ContentManagement({ onBack }: ContentManagementProps) {
   );
 }
 
+function SectionHeader({ title, count, onAdd, addLabel }: {
+  title: string; count: number; onAdd: () => void; addLabel: string;
+}) {
+  return (
+    <View style={sectionHeaderStyles.container}>
+      <View style={sectionHeaderStyles.titleRow}>
+        <Text style={sectionHeaderStyles.title}>{title}</Text>
+        <View style={sectionHeaderStyles.countBadge}>
+          <Text style={sectionHeaderStyles.countText}>{count}</Text>
+        </View>
+      </View>
+      <TouchableOpacity style={sectionHeaderStyles.addBtn} onPress={onAdd}>
+        <Plus size={14} color="#ffffff" />
+        <Text style={sectionHeaderStyles.addBtnText}>{addLabel}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function EmptyCard({ text }: { text: string }) {
+  return (
+    <View style={emptyStyles.container}>
+      <AlertCircle size={20} color="#d1d5db" />
+      <Text style={emptyStyles.text}>{text}</Text>
+    </View>
+  );
+}
+
+function FieldInput({ label, placeholder, value, onChangeText, multiline }: {
+  label: string; placeholder: string; value: string; onChangeText: (t: string) => void; multiline?: boolean;
+}) {
+  return (
+    <View style={inputStyles.field}>
+      <Text style={inputStyles.label}>{label}</Text>
+      <TextInput
+        style={[inputStyles.input, multiline && inputStyles.multiline]}
+        placeholder={placeholder}
+        placeholderTextColor="#b0b5bf"
+        value={value}
+        onChangeText={onChangeText}
+        multiline={multiline}
+        numberOfLines={multiline ? 4 : 1}
+        textAlignVertical={multiline ? 'top' : 'center'}
+      />
+    </View>
+  );
+}
+
+const sectionHeaderStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  title: {
+    fontSize: 17,
+    fontFamily: Fonts.headingBold,
+    color: '#1e293b',
+  },
+  countBadge: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  countText: {
+    fontSize: 12,
+    fontFamily: Fonts.groteskBold,
+    color: '#8b909a',
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ff8c00',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  addBtnText: {
+    fontSize: 12,
+    fontFamily: Fonts.semiBold,
+    color: '#ffffff',
+  },
+});
+
+const emptyStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#f8f9fb',
+    padding: 20,
+    borderRadius: 14,
+    marginBottom: 14,
+    borderWidth: 1.5,
+    borderColor: '#e8ecf1',
+    borderStyle: 'dashed',
+  },
+  text: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#8b909a',
+    flex: 1,
+  },
+});
+
+const inputStyles = StyleSheet.create({
+  field: {
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 13,
+    fontFamily: Fonts.semiBold,
+    color: '#1e293b',
+    marginBottom: 6,
+  },
+  input: {
+    backgroundColor: '#f8f9fb',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#e8ecf1',
+    outlineStyle: 'none',
+  } as any,
+  multiline: {
+    minHeight: 90,
+    paddingTop: 12,
+  },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f8f9fb',
   },
   loadingContainer: {
     flex: 1,
@@ -508,56 +586,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: '#ff8c00',
-    paddingTop: 60,
-    paddingBottom: 20,
+    backgroundColor: '#1a1d23',
     paddingHorizontal: 20,
+    paddingBottom: 0,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
   headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    marginBottom: 16,
   },
-  backButton: {
-    padding: 8,
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 140, 0, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerTextContainer: {
+  headerTextWrap: {
     flex: 1,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
+  headerTitle: {
+    fontSize: 22,
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#e0f2fe',
-    marginTop: 4,
+  headerSubtitle: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 2,
   },
-  tabContainer: {
+  tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    gap: 8,
+    gap: 4,
+    marginBottom: -1,
   },
-  tab: {
+  tabItem: {
     flex: 1,
-    paddingVertical: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
   },
-  activeTab: {
-    borderBottomColor: '#ff8c00',
+  tabItemActive: {
+    backgroundColor: '#f8f9fb',
   },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6b7280',
+  tabLabel: {
+    fontSize: 13,
+    fontFamily: Fonts.semiBold,
+    color: 'rgba(255,255,255,0.4)',
   },
-  activeTabText: {
-    color: '#ff8c00',
+  tabLabelActive: {
+    color: '#1e293b',
   },
   content: {
     flex: 1,
@@ -565,133 +652,158 @@ const styles = StyleSheet.create({
   section: {
     padding: 16,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-    marginTop: 8,
+  divider: {
+    height: 1,
+    backgroundColor: '#e8ecf1',
+    marginVertical: 16,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1f2937',
-  },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ff8c00',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    gap: 6,
-  },
-  addButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  card: {
+  dateCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  dateCardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  dateCardLabel: {
+    fontSize: 13,
+    fontFamily: Fonts.semiBold,
+    color: '#1e293b',
+  },
+  dateInput: {
+    backgroundColor: '#f8f9fb',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#e8ecf1',
+    outlineStyle: 'none',
+  } as any,
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
+    overflow: 'hidden',
   },
   cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  cardNumberWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#fff7ed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardNumber: {
+    fontSize: 12,
+    fontFamily: Fonts.groteskBold,
+    color: '#ff8c00',
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1f2937',
-  },
-  label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 8,
-    marginTop: 8,
+    fontFamily: Fonts.semiBold,
+    color: '#1e293b',
+    flex: 1,
   },
-  input: {
-    backgroundColor: '#f8fafc',
+  deleteBtn: {
+    width: 30,
+    height: 30,
     borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    color: '#1f2937',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    backgroundColor: '#fef2f2',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: 'top',
+  cardBody: {
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
   },
-  saveButton: {
+  fieldLabel: {
+    fontSize: 13,
+    fontFamily: Fonts.semiBold,
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  typeRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  typeOption: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#f8f9fb',
+    borderWidth: 1.5,
+    borderColor: '#e8ecf1',
+  },
+  typeOptionActive: {
+    backgroundColor: '#ff8c00',
+    borderColor: '#ff8c00',
+  },
+  typeText: {
+    fontSize: 12,
+    fontFamily: Fonts.semiBold,
+    color: '#8b909a',
+  },
+  typeTextActive: {
+    color: '#ffffff',
+  },
+  saveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     backgroundColor: '#ff8c00',
     marginHorizontal: 16,
     marginBottom: 32,
     paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
+    borderRadius: 14,
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  saveButtonDisabled: {
+  saveBtnDisabled: {
     opacity: 0.6,
   },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
+  saveBtnSuccess: {
+    backgroundColor: '#059669',
+    shadowColor: '#059669',
+  },
+  saveBtnText: {
+    fontSize: 15,
+    fontFamily: Fonts.semiBold,
     color: '#ffffff',
-  },
-  emptyState: {
-    backgroundColor: '#f8fafc',
-    padding: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#e2e8f0',
-    borderStyle: 'dashed',
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-  },
-  pickerContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
-  },
-  pickerOption: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-  },
-  pickerOptionActive: {
-    borderColor: '#ff8c00',
-    backgroundColor: '#ffedd5',
-  },
-  pickerOptionText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6b7280',
-  },
-  pickerOptionTextActive: {
-    color: '#ff8c00',
   },
 });
