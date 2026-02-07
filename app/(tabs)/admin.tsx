@@ -8,8 +8,24 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Users, ShoppingBag, DollarSign, TrendingUp, Package, FileText, Truck, Building2, Megaphone, Layers, Star } from 'lucide-react-native';
+import {
+  Users,
+  ShoppingBag,
+  DollarSign,
+  TrendingUp,
+  Package,
+  FileText,
+  Truck,
+  Building2,
+  Megaphone,
+  Layers,
+  Star,
+  ChevronRight,
+  BarChart3,
+  Shield,
+} from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
+import { Fonts } from '@/constants/fonts';
 import VendorManagement from '@/components/admin/VendorManagement';
 import OrderManagement from '@/components/admin/OrderManagement';
 import UserManagement from '@/components/admin/UserManagement';
@@ -30,6 +46,19 @@ interface Stats {
   totalRevenue: number;
 }
 
+const MENU_ITEMS = [
+  { key: 'users', icon: Users, label: 'Manage Users', desc: 'View and manage user accounts', color: '#ff8c00' },
+  { key: 'vendors', icon: ShoppingBag, label: 'Manage Vendors', desc: 'Approve and manage vendors', color: '#f59e0b' },
+  { key: 'products', icon: Package, label: 'Manage Products', desc: 'Review product listings', color: '#10b981' },
+  { key: 'categories', icon: Layers, label: 'Manage Categories', desc: 'Organize product categories', color: '#3b82f6' },
+  { key: 'orders', icon: TrendingUp, label: 'Manage Orders', desc: 'Track and manage orders', color: '#ef4444' },
+  { key: 'content', icon: FileText, label: 'Manage Content', desc: 'Edit pages and FAQs', color: '#8b5cf6' },
+  { key: 'delivery', icon: Truck, label: 'Delivery Management', desc: 'Zones, pricing and logs', color: '#06b6d4' },
+  { key: 'bank', icon: Building2, label: 'Bank Accounts', desc: 'Payment account settings', color: '#64748b' },
+  { key: 'adverts', icon: Megaphone, label: 'Advert Management', desc: 'Manage promotional adverts', color: '#ec4899' },
+  { key: 'reviews', icon: Star, label: 'Review Moderation', desc: 'Moderate customer reviews', color: '#f59e0b' },
+];
+
 export default function AdminScreen() {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
@@ -41,44 +70,21 @@ export default function AdminScreen() {
     totalRevenue: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [showVendorManagement, setShowVendorManagement] = useState(false);
-  const [showOrderManagement, setShowOrderManagement] = useState(false);
-  const [showUserManagement, setShowUserManagement] = useState(false);
-  const [showProductManagement, setShowProductManagement] = useState(false);
-  const [showContentManagement, setShowContentManagement] = useState(false);
-  const [showDeliveryManagement, setShowDeliveryManagement] = useState(false);
-  const [showBankAccountManagement, setShowBankAccountManagement] = useState(false);
-  const [showAdvertManagement, setShowAdvertManagement] = useState(false);
-  const [showCategoryManagement, setShowCategoryManagement] = useState(false);
-  const [showReviewModeration, setShowReviewModeration] = useState(false);
+  const [activeScreen, setActiveScreen] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStats();
   }, []);
 
   useEffect(() => {
-    if (params.screen === 'users') {
-      setShowUserManagement(true);
-      setShowVendorManagement(false);
-      setShowOrderManagement(false);
-      setShowProductManagement(false);
-    } else if (params.screen === 'vendors') {
-      setShowVendorManagement(true);
-      setShowUserManagement(false);
-      setShowOrderManagement(false);
-      setShowProductManagement(false);
-    } else if (params.screen === 'products') {
-      setShowProductManagement(true);
-      setShowUserManagement(false);
-      setShowVendorManagement(false);
-      setShowOrderManagement(false);
-    }
+    if (params.screen === 'users') setActiveScreen('users');
+    else if (params.screen === 'vendors') setActiveScreen('vendors');
+    else if (params.screen === 'products') setActiveScreen('products');
   }, [params.screen]);
 
   const fetchStats = async () => {
     try {
       setLoading(true);
-
       const [
         { count: usersCount },
         { count: vendorsCount },
@@ -112,116 +118,34 @@ export default function AdminScreen() {
     }
   };
 
-  const StatCard = ({
-    icon: Icon,
-    title,
-    value,
-    color,
-    index,
-  }: {
-    icon: any;
-    title: string;
-    value: string;
-    color: string;
-    index: number;
-  }) => (
-    <View style={styles.statCard}>
-      <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
-        <Icon size={24} color={color} />
-      </View>
-      <View style={styles.statInfo}>
-        <Text style={styles.statValue}>{value}</Text>
-        <Text style={styles.statTitle}>{title}</Text>
-      </View>
-    </View>
-  );
+  const handleBack = () => setActiveScreen(null);
 
-  if (showUserManagement) {
-    return <UserManagement onBack={() => setShowUserManagement(false)} />;
-  }
+  if (activeScreen === 'users') return <UserManagement onBack={handleBack} />;
+  if (activeScreen === 'vendors') return <VendorManagement onBack={handleBack} />;
+  if (activeScreen === 'products') return <ProductManagement onBack={handleBack} />;
+  if (activeScreen === 'orders') return <OrderManagement onBack={handleBack} />;
+  if (activeScreen === 'content') return <ContentManagement onBack={handleBack} />;
 
-  if (showVendorManagement) {
-    return <VendorManagement onBack={() => setShowVendorManagement(false)} />;
-  }
+  const subScreens: Record<string, { title: string; component: React.ReactNode }> = {
+    delivery: { title: 'Delivery Management', component: <DeliveryManagement /> },
+    bank: { title: 'Bank Accounts', component: <BankAccountManagement /> },
+    adverts: { title: 'Advert Management', component: <AdvertManagement /> },
+    categories: { title: 'Category Management', component: <CategoryManagement /> },
+    reviews: { title: 'Review Moderation', component: <ReviewModeration /> },
+  };
 
-  if (showProductManagement) {
-    return <ProductManagement onBack={() => setShowProductManagement(false)} />;
-  }
-
-  if (showOrderManagement) {
-    return <OrderManagement onBack={() => setShowOrderManagement(false)} />;
-  }
-
-  if (showContentManagement) {
-    return <ContentManagement onBack={() => setShowContentManagement(false)} />;
-  }
-
-  if (showDeliveryManagement) {
+  if (activeScreen && subScreens[activeScreen]) {
+    const screen = subScreens[activeScreen];
     return (
-      <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-        <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-          <TouchableOpacity onPress={() => setShowDeliveryManagement(false)} style={{ marginBottom: 8 }}>
-            <Text style={{ color: '#fff', fontSize: 16 }}>← Back</Text>
+      <View style={{ flex: 1, backgroundColor: '#f8f9fb' }}>
+        <View style={[styles.subHeader, { paddingTop: insets.top + 16 }]}>
+          <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+            <Text style={styles.backBtnText}>Back</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Delivery Management</Text>
+          <Text style={styles.subHeaderTitle}>{screen.title}</Text>
+          <View style={{ width: 48 }} />
         </View>
-        <DeliveryManagement />
-      </View>
-    );
-  }
-
-  if (showBankAccountManagement) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-        <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-          <TouchableOpacity onPress={() => setShowBankAccountManagement(false)} style={{ marginBottom: 8 }}>
-            <Text style={{ color: '#fff', fontSize: 16 }}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>Bank Account Management</Text>
-        </View>
-        <BankAccountManagement />
-      </View>
-    );
-  }
-
-  if (showAdvertManagement) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-        <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-          <TouchableOpacity onPress={() => setShowAdvertManagement(false)} style={{ marginBottom: 8 }}>
-            <Text style={{ color: '#fff', fontSize: 16 }}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>Advert Management</Text>
-        </View>
-        <AdvertManagement />
-      </View>
-    );
-  }
-
-  if (showCategoryManagement) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-        <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-          <TouchableOpacity onPress={() => setShowCategoryManagement(false)} style={{ marginBottom: 8 }}>
-            <Text style={{ color: '#fff', fontSize: 16 }}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>Category Management</Text>
-        </View>
-        <CategoryManagement />
-      </View>
-    );
-  }
-
-  if (showReviewModeration) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
-        <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-          <TouchableOpacity onPress={() => setShowReviewModeration(false)} style={{ marginBottom: 8 }}>
-            <Text style={{ color: '#fff', fontSize: 16 }}>← Back</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>Review Moderation</Text>
-        </View>
-        <ReviewModeration />
+        {screen.component}
       </View>
     );
   }
@@ -235,140 +159,99 @@ export default function AdminScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-        <Text style={styles.title}>Admin Dashboard</Text>
-        <Text style={styles.subtitle}>Platform Overview</Text>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
+        <View style={styles.headerBadge}>
+          <Shield size={14} color="#ff8c00" />
+          <Text style={styles.headerBadgeText}>Admin Panel</Text>
+        </View>
+        <Text style={styles.title}>Dashboard</Text>
+        <Text style={styles.subtitle}>Your platform at a glance</Text>
       </View>
 
       <View style={styles.content}>
-        <View style={styles.statsGrid}>
-          <StatCard
-            icon={Users}
-            title="Total Users"
-            value={stats.totalUsers.toString()}
-            color="#ff8c00"
-            index={0}
-          />
-          <StatCard
-            icon={ShoppingBag}
-            title="Vendors"
-            value={stats.totalVendors.toString()}
-            color="#ff8c00"
-            index={1}
-          />
-        </View>
-
-        <View style={styles.statsGrid}>
-          <StatCard
-            icon={Package}
-            title="Products"
-            value={stats.totalProducts.toString()}
-            color="#ff8c00"
-            index={2}
-          />
-          <StatCard
-            icon={TrendingUp}
-            title="Orders"
-            value={stats.totalOrders.toString()}
-            color="#f59e0b"
-            index={3}
-          />
-        </View>
-
         <View style={styles.revenueCard}>
-          <View style={[styles.iconContainer, { backgroundColor: '#ff8c0020' }]}>
-            <DollarSign size={32} color="#ff8c00" />
+          <View style={styles.revenueTop}>
+            <View style={styles.revenueIconWrap}>
+              <DollarSign size={24} color="#ffffff" />
+            </View>
+            <View style={styles.revenueBadge}>
+              <BarChart3 size={12} color="#ff8c00" />
+              <Text style={styles.revenueBadgeText}>Revenue</Text>
+            </View>
           </View>
-          <View style={styles.revenueInfo}>
-            <Text style={styles.revenueLabel}>Total Revenue</Text>
-            <Text style={styles.revenueValue}>₦{stats.totalRevenue.toFixed(2)}</Text>
+          <Text style={styles.revenueLabel}>Total Revenue</Text>
+          <Text style={styles.revenueValue}>
+            {'\u20A6'}{stats.totalRevenue.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+          </Text>
+        </View>
+
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconWrap, { backgroundColor: '#fff7ed' }]}>
+              <Users size={20} color="#ff8c00" />
+            </View>
+            <Text style={styles.statValue}>{stats.totalUsers.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>Users</Text>
+          </View>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconWrap, { backgroundColor: '#fef3c7' }]}>
+              <ShoppingBag size={20} color="#f59e0b" />
+            </View>
+            <Text style={styles.statValue}>{stats.totalVendors.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>Vendors</Text>
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconWrap, { backgroundColor: '#ecfdf5' }]}>
+              <Package size={20} color="#10b981" />
+            </View>
+            <Text style={styles.statValue}>{stats.totalProducts.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>Products</Text>
+          </View>
+          <View style={styles.statCard}>
+            <View style={[styles.statIconWrap, { backgroundColor: '#fef2f2' }]}>
+              <TrendingUp size={20} color="#ef4444" />
+            </View>
+            <Text style={styles.statValue}>{stats.totalOrders.toLocaleString()}</Text>
+            <Text style={styles.statLabel}>Orders</Text>
+          </View>
+        </View>
+
+        <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>Management</Text>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowUserManagement(true)}
-          >
-            <Users size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Manage Users</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowVendorManagement(true)}
-          >
-            <ShoppingBag size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Manage Vendors</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowProductManagement(true)}
-          >
-            <Package size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Manage Products</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowCategoryManagement(true)}
-          >
-            <Layers size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Manage Categories</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowOrderManagement(true)}
-          >
-            <TrendingUp size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Manage Orders</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowContentManagement(true)}
-          >
-            <FileText size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Manage Content</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowDeliveryManagement(true)}
-          >
-            <Truck size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Delivery Management</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowBankAccountManagement(true)}
-          >
-            <Building2 size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Bank Account Management</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowAdvertManagement(true)}
-          >
-            <Megaphone size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Advert Management</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => setShowReviewModeration(true)}
-          >
-            <Star size={20} color="#6b7280" />
-            <Text style={styles.menuText}>Review Moderation</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionCount}>{MENU_ITEMS.length} sections</Text>
         </View>
+
+        <View style={styles.menuCard}>
+          {MENU_ITEMS.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <TouchableOpacity
+                key={item.key}
+                style={[
+                  styles.menuItem,
+                  index < MENU_ITEMS.length - 1 && styles.menuItemBorder,
+                ]}
+                onPress={() => setActiveScreen(item.key)}
+                activeOpacity={0.6}
+              >
+                <View style={[styles.menuIconWrap, { backgroundColor: item.color + '14' }]}>
+                  <Icon size={20} color={item.color} />
+                </View>
+                <View style={styles.menuTextWrap}>
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <Text style={styles.menuDesc}>{item.desc}</Text>
+                </View>
+                <ChevronRight size={18} color="#c4c9d4" />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <View style={{ height: 32 }} />
       </View>
     </ScrollView>
   );
@@ -377,39 +260,107 @@ export default function AdminScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f8f9fb',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f8f9fb',
   },
   header: {
-    backgroundColor: '#ff8c00',
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    shadowColor: '#ff8c00',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    backgroundColor: '#1a1d23',
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  headerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 140, 0, 0.12)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+    marginBottom: 16,
+  },
+  headerBadgeText: {
+    fontFamily: Fonts.groteskMedium,
+    fontSize: 12,
+    color: '#ff8c00',
+    letterSpacing: 0.5,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontFamily: Fonts.headingBold,
     color: '#ffffff',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#d1fae5',
+    fontSize: 15,
+    fontFamily: Fonts.regular,
+    color: '#8b909a',
     marginTop: 4,
   },
   content: {
-    padding: 16,
+    padding: 20,
+    marginTop: -4,
   },
-  statsGrid: {
+  revenueCard: {
+    backgroundColor: '#ff8c00',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 16,
+    shadowColor: '#ff8c00',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  revenueTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  revenueIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  revenueBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    gap: 4,
+  },
+  revenueBadgeText: {
+    fontFamily: Fonts.groteskMedium,
+    fontSize: 11,
+    color: '#ff8c00',
+    letterSpacing: 0.3,
+  },
+  revenueLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 4,
+  },
+  revenueValue: {
+    fontFamily: Fonts.groteskBold,
+    fontSize: 30,
+    color: '#ffffff',
+    letterSpacing: -0.5,
+  },
+  statsRow: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 12,
@@ -418,76 +369,118 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
     borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
+    padding: 18,
     alignItems: 'center',
-    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  iconContainer: {
-    width: 48,
-    height: 48,
+  statIconWrap: {
+    width: 44,
+    height: 44,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  statInfo: {
-    flex: 1,
+    marginBottom: 12,
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontFamily: Fonts.groteskBold,
+    fontSize: 26,
+    color: '#1a1d23',
+    letterSpacing: -0.5,
+    marginBottom: 2,
   },
-  statTitle: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginTop: 2,
+  statLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: '#8b909a',
   },
-  revenueCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
+  sectionHeaderRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 16,
-    marginBottom: 24,
-  },
-  revenueInfo: {
-    flex: 1,
-  },
-  revenueLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 4,
-  },
-  revenueValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#ff8c00',
-  },
-  section: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
+    marginTop: 12,
+    marginBottom: 12,
+    paddingHorizontal: 4,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 16,
+    fontFamily: Fonts.heading,
+    fontSize: 20,
+    color: '#1a1d23',
+  },
+  sectionCount: {
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: '#8b909a',
+  },
+  menuCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: '#f9fafb',
-    marginBottom: 8,
-    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    gap: 14,
   },
-  menuText: {
-    fontSize: 16,
-    color: '#1f2937',
-    fontWeight: '500',
+  menuItemBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#f0f1f3',
+  },
+  menuIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuTextWrap: {
+    flex: 1,
+  },
+  menuLabel: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 15,
+    color: '#1a1d23',
+    marginBottom: 2,
+  },
+  menuDesc: {
+    fontFamily: Fonts.regular,
+    fontSize: 12,
+    color: '#8b909a',
+  },
+  subHeader: {
+    backgroundColor: '#1a1d23',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+  backBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255, 140, 0, 0.12)',
+    borderRadius: 8,
+  },
+  backBtnText: {
+    fontFamily: Fonts.semiBold,
+    fontSize: 14,
+    color: '#ff8c00',
+  },
+  subHeaderTitle: {
+    fontFamily: Fonts.heading,
+    fontSize: 18,
+    color: '#ffffff',
   },
 });
