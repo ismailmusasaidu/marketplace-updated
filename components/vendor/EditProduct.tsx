@@ -24,6 +24,7 @@ import {
   ToggleRight,
   Pencil,
 } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { Product, Category } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +39,7 @@ interface EditProductProps {
 
 export default function EditProduct({ product, onBack, onSuccess }: EditProductProps) {
   const { profile } = useAuth();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description || '');
   const [price, setPrice] = useState(product.price.toString());
@@ -104,7 +106,7 @@ export default function EditProduct({ product, onBack, onSuccess }: EditProductP
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
           <ArrowLeft size={22} color="#ffffff" strokeWidth={2.5} />
         </TouchableOpacity>
@@ -340,7 +342,6 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#ff8c00',
     paddingHorizontal: 24,
-    paddingTop: 60,
     paddingBottom: 28,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
